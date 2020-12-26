@@ -1,10 +1,4 @@
 # 1. Intermediate Server
-<p align="center">
-
-<a href="https://www.gnu.org/licenses/gpl-3.0">
-<img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3>
-</a>
-
 Welcome to the intermediate server repository. The intermediate server is a black-box application server which sits between the SUFST car telemetry system and the front-end GUI clients for the translation of telemetry frames. Moreover, the telemetry communciation protocol is defined here in which the car telemetry system and front-end GUI must adhere to. 
 
 # 2. Wiki
