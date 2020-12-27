@@ -150,10 +150,14 @@ class Server:
         pdu = protocol.get_frame_from_buffer(frame)
         if pdu is not None:
             self._logger.info(str(pdu))
+            if pdu.header.frame_type == protocol.AIPDU:
+                self._logger.info("Got frame AIPDU")
+                return pdu.pack_raw()
+            elif pdu.header.frame_type == protocol.ACPDU:
+                self._logger.info("Got frame ACPDU")
+                # Need to send it to all GUI sockets.
         else:
             self._logger.error("Failed to decode frame from buffer")
-
-        return pdu.pack_raw()
 
     def run(self) -> None:
         """
