@@ -23,9 +23,10 @@ import datetime
 import logging
 from typing import Optional
 
-import common
 from digi.xbee import devices as xbee_devices
 from digi.xbee.models import message as xbee_message
+
+import common
 import protocol
 
 _SW_VERSION = 10000
@@ -65,10 +66,14 @@ class Client:
             :param data:    The received data.
             """
             self._logger.info(f"-> {data}")
-            
+
             asyncio.create_task(self._master.handle_recv(data))
 
-        def connection_lost(self, exc):
+        def connection_lost(self, exc: Optional[Exception]) -> None:
+            """
+            Invoked when the connection is lost.
+            :param exc:
+            """
             self._logger.critical("The server closed the connection")
             self._on_con_lost.set_result(True)
 
@@ -154,7 +159,12 @@ class Client:
                 self._xbee.close()
         self._logger.info("Stopped")
 
-    def _write(self, buffer: bytes):
+    def _write(self, buffer: bytes) -> None:
+        """
+        Handles writing the buffer to either the socket transport or the Xbee depending on the type of emulator
+        we are carrying out.
+        :param buffer:  Buffer of bytes to write to the intermediate server.
+        """
         if self._emu_type == SOCKET:
             self._logger.info(f"socket <- {buffer}")
             self._transport.write(buffer)
@@ -162,7 +172,10 @@ class Client:
             self._logger.info(f"xbee <- {buffer}")
             self._xbee.send_data_async(self._xbee_remote, buffer)
 
-    async def periodic_pdu_transmit(self):
+    async def periodic_pdu_transmit(self) -> None:
+        """
+        A recursive function which periodically goes through each frame and writes it.
+        """
         await asyncio.sleep(1)
         out = self.getacpdu_raw()
         self._write(out)
