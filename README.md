@@ -5,4 +5,4 @@ Welcome to the intermediate server repository. The intermediate server is a blac
 Please read the wiki @https://github.com/sufst/intermediate-server/wiki
 
 # 3. Contributions :heart:
-Any contributions are welcomed. Please just submit a pull request for your contribution and it will be reviewed.
+Any contributions are welcomed. Please check the issues page for outstanding feature requests or bugs. If you contribute to resolve an issue please submit a pull request for your contribution and it will be reviewed.
