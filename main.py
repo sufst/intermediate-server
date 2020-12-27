@@ -24,6 +24,7 @@ import common
 from digi.xbee import devices as xbee_devices
 from digi.xbee.models import message as xbee_message
 import asyncio
+import protocol
 
 
 class Server:
@@ -109,7 +110,6 @@ class Server:
     def __enter__(self) -> Server:
         """
         Enter for use with "with as"
-        :return:
         """
         self._xbee.open()
         self._xbee.add_data_received_callback(self._xbee_data_recv_cb)
@@ -147,7 +147,13 @@ class Server:
         """
         self._logger.info(f"Handling raw frame: {frame}")
 
-        return frame
+        pdu = protocol.get_frame_from_buffer(frame)
+        if pdu is not None:
+            self._logger.info(str(pdu))
+        else:
+            self._logger.error("Failed to decode frame from buffer")
+
+        return pdu.pack_raw()
 
     def run(self) -> None:
         """
