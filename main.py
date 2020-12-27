@@ -102,6 +102,10 @@ class Server:
         self._verbose = verbose
 
         self._event_loop = None
+        self._on_methods = {protocol.AIPDU: self._on_aipdu, protocol.ACPDU: self._on_acpdu,
+                            protocol.AAPDU: self._on_aapdu, protocol.ADPDU: self._on_adpdu,
+                            protocol.APPDU: self._on_appdu, protocol.ASPDU: self._on_aspdu,
+                            protocol.AMPDU: self._on_aspdu}
 
         self._xbee = xbee_devices.XBeeDevice(com, baud)
         self._xbee_remote = xbee_devices.RemoteXBeeDevice(self._xbee, xbee_devices.XBee64BitAddress.from_hex_string(
@@ -150,14 +154,66 @@ class Server:
         pdu = protocol.get_frame_from_buffer(frame)
         if pdu is not None:
             self._logger.info(str(pdu))
-            if pdu.header.frame_type == protocol.AIPDU:
-                self._logger.info("Got frame AIPDU")
-                return pdu.pack_raw()
-            elif pdu.header.frame_type == protocol.ACPDU:
-                self._logger.info("Got frame ACPDU")
-                # Need to send it to all GUI sockets.
+            if pdu.header.frame_type in self._on_methods:
+                return self._on_methods[pdu.header.frame_type](pdu)
         else:
             self._logger.error("Failed to decode frame from buffer")
+
+    def _on_aipdu(self, aipdu: protocol.ProtocolAIPDU) -> Optional[bytes]:
+        """
+        Handle a received AIPDU frame.
+        :param aipdu:   The received AIPDU frame.
+        """
+        self._logger.info("Got frame AIPDU")
+        return aipdu.pack_raw()
+
+    def _on_acpdu(self, acpdu: protocol.ProtocolACPDU) -> Optional[bytes]:
+        """
+        Handle a received ACPDU frame.
+        :param acpdu:   The received ACPDU frame.
+        """
+        self._logger.info("Got frame ACPDU")
+        return None
+
+    def _on_aapdu(self, aapdu: protocol.ProtocolAAPDU) -> Optional[bytes]:
+        """
+        Handle a received AAPDU frame.
+        :param aapdu:   The received AAPDU frame.
+        """
+        self._logger.info("Got frame AAPDU")
+        return None
+
+    def _on_adpdu(self, adpdu: protocol.ProtocolADPDU) -> Optional[bytes]:
+        """
+        Handle a received ADPDU frame.
+        :param adpdu:   The received ADPDU frame.
+        """
+        self._logger.info("Got frame ADPDU")
+        return None
+
+    def _on_appdu(self, appdu: protocol.ProtocolAPPDU) -> Optional[bytes]:
+        """
+        Handle a received APPDU frame.
+        :param appdu:   The received APPDU frame.
+        """
+        self._logger.info("Got frame APPDU")
+        return None
+
+    def _on_aspdu(self, aspdu: protocol.ProtocolASPDU) -> Optional[bytes]:
+        """
+        Handle a received ASPDU frame.
+        :param aspdu:   The received ASPDU frame.
+        """
+        self._logger.info("Got frame ASPDU")
+        return None
+
+    def _on_ampdu(self, ampdu: protocol.ProtocolAMPDU) -> Optional[bytes]:
+        """
+        Handle a received AMPDU frame.
+        :param ampdu:   The received AMPDU frame.
+        """
+        self._logger.info("Got frame AMPDU")
+        return None
 
     def run(self) -> None:
         """
