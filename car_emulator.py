@@ -20,7 +20,6 @@ from __future__ import annotations
 import argparse
 import asyncio
 import datetime
-import logging
 from typing import Optional
 
 from digi.xbee import devices as xbee_devices
@@ -28,55 +27,13 @@ from digi.xbee.models import message as xbee_message
 
 import common
 import protocol
+import protocol_factory
 
 _SW_VERSION = 10000
 SOCKET, XBEE = list(range(2))
 
 
 class Client:
-    class _ClientProtocolFactory(asyncio.Protocol):
-        def __init__(self, on_con_lost: asyncio.Future, client_master: Client, logger_handle: logging.Logger):
-            """
-            Initialise the asyncio Protocol class.
-            See https://docs.python.org/3/library/asyncio-protocol.html for details of asyncio protocol and transports.
-            :param logger_handle:  Logger to log to.
-            """
-            self._on_con_lost = on_con_lost
-            self._logger = logger_handle
-            self._transport = None
-            self._seq_num = 1
-            self._master = client_master
-
-        def connection_made(self, transport: asyncio.Transport) -> None:
-            """
-            Invoked when the connection is made.
-            :param transport:   The asyncio transport instance.
-            """
-            self._transport = transport
-            self._logger.info("Connection made")
-
-            out = self._master.get_aipdu_raw()
-
-            self._logger.info(f"<- {out}")
-            self._transport.write(out)
-
-        def data_received(self, data: bytes) -> None:
-            """
-            Invoked when data is received.
-            :param data:    The received data.
-            """
-            self._logger.info(f"-> {data}")
-
-            asyncio.create_task(self._master.handle_recv(data))
-
-        def connection_lost(self, exc: Optional[Exception]) -> None:
-            """
-            Invoked when the connection is lost.
-            :param exc:
-            """
-            self._logger.critical("The server closed the connection")
-            self._on_con_lost.set_result(True)
-
     def __init__(self, ip: str, port: int, com: str, baud: int, xbee_mac: str, emu_type: str, verbose: str) -> None:
         self._logger = common.get_logger(type(self).__name__, verbose)
         self._ip = ip
@@ -92,12 +49,13 @@ class Client:
 
         self._event_loop = None
         self._transport = None
+        self._factory = None
         self._protocol = None
         self._on_con_lost = None
-        self._on_methods = {protocol.AIPDU: self._on_aipdu, protocol.ACPDU: self._onacpdu,
-                            protocol.AAPDU: self._onaapdu, protocol.ADPDU: self._onadpdu,
-                            protocol.APPDU: self._onappdu, protocol.ASPDU: self._onaspdu,
-                            protocol.AMPDU: self._onaspdu}
+        self._on_methods = {protocol.AIPDU: self._on_aipdu, protocol.ACPDU: self._on_acpdu,
+                            protocol.AAPDU: self._on_aapdu, protocol.ADPDU: self._on_adpdu,
+                            protocol.APPDU: self._on_appdu, protocol.ASPDU: self.on_aspdu,
+                            protocol.AMPDU: self.on_aspdu}
 
         self.aipdu = protocol.ProtocolAIPDU()
         self.acpdu = protocol.ProtocolACPDU()
@@ -125,6 +83,39 @@ class Client:
         """
         asyncio.run(self._loop())
 
+    async def _on_socket_receive(self, factory: protocol_factory.ProtocolFactory, data: bytes) -> Optional[bytes]:
+        """
+        Invoked when a socket receive occurs
+        :param factory: The protocol factory corresponding to the receive.
+        :param data:    The received data
+        """
+        self._logger.info(f"Handling {data} from factory {factory.__hash__()}")
+        out = await self.handle_receive(data)
+
+        return out
+
+    async def _on_socket_connection_made(self, factory: protocol_factory.ProtocolFactory) -> Optional[bytes]:
+        """
+        Invoked when a socket connection occurs
+        :param factory: The protocol factory corresponding to the connection.
+        """
+        self._factory = factory
+        self._logger.info(f"New connection with factory {factory.__hash__()}")
+
+        return self._get_aipdu_raw()
+
+    async def _on_socket_connection_lost(self, factory: protocol_factory.ProtocolFactory, exc: Optional[Exception]) \
+            -> None:
+        """
+        Invoked when a socket connection lost occurs
+        :param factory: The protocol factory corresponding to the connection lost.
+        """
+        self._logger.info(f"Connection lost with factory {factory.__hash__()}")
+        if exc is not None:
+            self._logger.error(repr(exc))
+
+        self._on_con_lost.set_result(False)
+
     async def _loop(self) -> None:
         """
         The asyncio event loop for the client.
@@ -137,7 +128,9 @@ class Client:
             self._logger.info(f"Creating client {self._ip}:{self._port}")
 
             self._transport, self._protocol = await self._event_loop.create_connection(
-                lambda: self._ClientProtocolFactory(self._on_con_lost, self, self._logger), self._ip, self._port)
+                lambda: protocol_factory.ProtocolFactory(self._on_socket_connection_made,
+                                                         self._on_socket_receive, self._on_socket_connection_lost,
+                                                         self._verbose), self._ip, self._port)
 
             self._logger.info("Client created")
 
@@ -149,9 +142,9 @@ class Client:
             self._logger.info(f"Creating client for XBee link: {self._mac}")
 
             self._xbee.open()
-            self._xbee.add_data_received_callback(self._xbee_data_recv_cb)
+            self._xbee.add_data_received_callback(self._xbee_data_receive)
 
-            out = self.get_aipdu_raw()
+            out = self._get_aipdu_raw()
             self._write(out)
             try:
                 await self._on_con_lost
@@ -167,7 +160,7 @@ class Client:
         """
         if self._emu_type == SOCKET:
             self._logger.info(f"socket <- {buffer}")
-            self._transport.write(buffer)
+            self._factory.write(buffer)
         else:
             self._logger.info(f"xbee <- {buffer}")
             self._xbee.send_data_async(self._xbee_remote, buffer)
@@ -177,32 +170,32 @@ class Client:
         A recursive function which periodically goes through each frame and writes it.
         """
         await asyncio.sleep(1)
-        out = self.getacpdu_raw()
+        out = self._get_acpdu_raw()
         self._write(out)
 
         await asyncio.sleep(1)
-        out = self.getaapdu_raw()
+        out = self._get_aapdu_raw()
         self._write(out)
 
         await asyncio.sleep(1)
-        out = self.getadpdu_raw()
+        out = self._get_adpdu_raw()
         self._write(out)
 
         await asyncio.sleep(1)
-        out = self.getappdu_raw()
+        out = self._get_appdu_raw()
         self._write(out)
 
         await asyncio.sleep(1)
-        out = self.getaspdu_raw()
+        out = self._get_aspdu_raw()
         self._write(out)
 
         await asyncio.sleep(1)
-        out = self.getampdu_raw()
+        out = self._get_ampdu_raw()
         self._write(out)
 
         asyncio.create_task(self.periodic_pdu_transmit())
 
-    def get_aipdu_raw(self) -> bytes:
+    def _get_aipdu_raw(self) -> bytes:
         """
         Get an AIPDU frame in raw format.
         """
@@ -221,7 +214,7 @@ class Client:
 
         return out
 
-    def getacpdu_raw(self) -> bytes:
+    def _get_acpdu_raw(self) -> bytes:
         """
         Get an ACPDU frame in raw format.
         """
@@ -244,7 +237,7 @@ class Client:
 
         return out
 
-    def getaapdu_raw(self) -> bytes:
+    def _get_aapdu_raw(self) -> bytes:
         """
         Get an AAPDU frame in raw format.
         """
@@ -266,7 +259,7 @@ class Client:
 
         return out
 
-    def getadpdu_raw(self) -> bytes:
+    def _get_adpdu_raw(self) -> bytes:
         """
         Get an ADPDU frame in raw format.
         """
@@ -285,7 +278,7 @@ class Client:
 
         return out
 
-    def getappdu_raw(self) -> bytes:
+    def _get_appdu_raw(self) -> bytes:
         """
         Get an APPDU frame in raw format.
         """
@@ -304,7 +297,7 @@ class Client:
 
         return out
 
-    def getaspdu_raw(self) -> bytes:
+    def _get_aspdu_raw(self) -> bytes:
         """
         Get an ASPDU frame in raw format.
         """
@@ -323,7 +316,7 @@ class Client:
 
         return out
 
-    def getampdu_raw(self) -> bytes:
+    def _get_ampdu_raw(self) -> bytes:
         """
         Get an AMPDU frame in raw format.
         """
@@ -344,7 +337,7 @@ class Client:
 
     def _on_async_xbee_data_handle_done(self, future: asyncio.Future) -> None:
         """
-        Invoked once the handle_recv has finished as a result of an xbee received message.
+        Invoked once the handle_receive has finished as a result of an xbee received message.
         Used to handle sending any response back to the XBee.
         :param future:  The done future.
         """
@@ -353,7 +346,7 @@ class Client:
         if out is not None:
             self._write(out)
 
-    def _xbee_data_recv_cb(self, message: xbee_message.XBeeMessage) -> None:
+    def _xbee_data_receive(self, message: xbee_message.XBeeMessage) -> None:
         """
         XBee call back function for when xbee data is received.
         NOTE: This is called from an XBee library thread and not the server thread.
@@ -362,12 +355,12 @@ class Client:
         data = bytes(message.data)
         self._logger.info(f"XBee -> {data}")
 
-        asyncio.run_coroutine_threadsafe(self.handle_recv(data), self._event_loop).add_done_callback(
+        asyncio.run_coroutine_threadsafe(self.handle_receive(data), self._event_loop).add_done_callback(
             self._on_async_xbee_data_handle_done)
 
-    async def handle_recv(self, frame: bytes) -> Optional[bytes]:
+    async def handle_receive(self, frame: bytes) -> Optional[bytes]:
         """
-        Handle an XBee received frame asynchronously.
+        Handle an XBee or socket received frame asynchronously.
         :param frame: The received frame.
         """
         self._logger.info(f"Handling raw frame: {frame}")
@@ -393,7 +386,7 @@ class Client:
             self._logger.error("AIPDU do not match")
         return None
 
-    def _onacpdu(self, acpdu: protocol.ProtocolACPDU) -> Optional[bytes]:
+    def _on_acpdu(self, acpdu: protocol.ProtocolACPDU) -> Optional[bytes]:
         """
         Handle a received ACPDU frame.
         :param acpdu:   The received ACPDU frame.
@@ -401,7 +394,7 @@ class Client:
         self._logger.info("Got frame ACPDU")
         return None
 
-    def _onaapdu(self, aapdu: protocol.ProtocolAAPDU) -> Optional[bytes]:
+    def _on_aapdu(self, aapdu: protocol.ProtocolAAPDU) -> Optional[bytes]:
         """
         Handle a received AAPDU frame.
         :param aapdu:   The received AAPDU frame.
@@ -409,7 +402,7 @@ class Client:
         self._logger.info("Got frame AAPDU")
         return None
 
-    def _onadpdu(self, adpdu: protocol.ProtocolADPDU) -> Optional[bytes]:
+    def _on_adpdu(self, adpdu: protocol.ProtocolADPDU) -> Optional[bytes]:
         """
         Handle a received ADPDU frame.
         :param adpdu:   The received ADPDU frame.
@@ -417,7 +410,7 @@ class Client:
         self._logger.info("Got frame ADPDU")
         return None
 
-    def _onappdu(self, appdu: protocol.ProtocolAPPDU) -> Optional[bytes]:
+    def _on_appdu(self, appdu: protocol.ProtocolAPPDU) -> Optional[bytes]:
         """
         Handle a received APPDU frame.
         :param appdu:   The received APPDU frame.
@@ -425,7 +418,7 @@ class Client:
         self._logger.info("Got frame APPDU")
         return None
 
-    def _onaspdu(self, aspdu: protocol.ProtocolASPDU) -> Optional[bytes]:
+    def on_aspdu(self, aspdu: protocol.ProtocolASPDU) -> Optional[bytes]:
         """
         Handle a received ASPDU frame.
         :param aspdu:   The received ASPDU frame.
@@ -433,7 +426,7 @@ class Client:
         self._logger.info("Got frame ASPDU")
         return None
 
-    def _onampdu(self, ampdu: protocol.ProtocolAMPDU) -> Optional[bytes]:
+    def _on_ampdu(self, ampdu: protocol.ProtocolAMPDU) -> Optional[bytes]:
         """
         Handle a received AMPDU frame.
         :param ampdu:   The received AMPDU frame.
