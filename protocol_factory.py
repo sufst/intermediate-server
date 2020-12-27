@@ -16,11 +16,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from __future__ import annotations
-from typing import Optional
+
+import asyncio
 from typing import Callable
+from typing import Optional
 
 import common
-import asyncio
 
 
 class ProtocolFactory(asyncio.Protocol):

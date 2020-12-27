@@ -33,7 +33,7 @@ _SW_VERSION = 10000
 SOCKET, XBEE = list(range(2))
 
 
-class Client:
+class CarEmulator:
     def __init__(self, ip: str, port: int, com: str, baud: int, xbee_mac: str, emu_type: str, verbose: str) -> None:
         self._logger = common.get_logger(type(self).__name__, verbose)
         self._ip = ip
@@ -71,7 +71,7 @@ class Client:
             self._xbee_remote = xbee_devices.RemoteXBeeDevice(self._xbee, xbee_devices.XBee64BitAddress.from_hex_string(
                 xbee_mac))
 
-    def __enter__(self) -> Client:
+    def __enter__(self) -> CarEmulator:
         """
         Enter for use with "with as"
         """
@@ -458,7 +458,7 @@ if __name__ == '__main__':
     parser.add_argument("--mac", type=str, default="FFFFFFFFFFFFFFFF", help="MAC address of car XBee.")
     parser.add_argument("--type", type=str, default="sockets", help="Type of emulation to do sockets or xbee")
 
-    print(f"Intermediate Server build {_SW_VERSION} Copyright (C) 2020 Nathan Rowley-Smith\n" +
+    print(f"Car Emulator build {_SW_VERSION} Copyright (C) 2020 Nathan Rowley-Smith\n" +
           "This program comes with ABSOLUTELY NO WARRANTY;\n" +
           "This is free software, and you are welcome to redistribute it")
 
@@ -467,5 +467,5 @@ if __name__ == '__main__':
     logger = common.get_logger("root", "DEBUG")
     logger.info(args.__dict__)
 
-    with Client(args.ip, args.port, args.com, args.baud, args.mac, args.type, args.verbose) as client:
-        client.run()
+    with CarEmulator(args.ip, args.port, args.com, args.baud, args.mac, args.type, args.verbose) as emulator:
+        emulator.run()
