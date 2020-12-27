@@ -40,6 +40,7 @@ class Client:
             self._transport = None
             self._seq_num = 1
             self._last_sent_pdu = None
+            self._acpdu = protocol.ProtocolACPDU()
 
         def connection_made(self, transport: asyncio.Transport) -> None:
             """
@@ -50,7 +51,6 @@ class Client:
             self._logger.info("Connection made")
 
             aipdu = protocol.ProtocolAIPDU()
-            aipdu.header.frame_type = protocol.AIPDU
             aipdu.header.seq_num = self._seq_num
             self._seq_num += 1
             now = datetime.datetime.now()
@@ -76,10 +76,31 @@ class Client:
             pdu = protocol.get_frame_from_buffer(data)
             if pdu is not None:
                 self._logger.info(str(pdu))
-                if pdu == self._last_sent_pdu:
-                    self._logger.info("PDUs match")
-                else:
-                    self._logger.error("PDUs do not match")
+                if pdu.header.frame_type == protocol.AIPDU:
+                    if pdu == self._last_sent_pdu:
+                        self._logger.info("AIPDU match")
+
+                        self._acpdu.header.seq_num = self._seq_num
+                        self._seq_num += 1
+                        now = datetime.datetime.now()
+                        self._acpdu.header.epoch = int(
+                            (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
+                        self._acpdu.rpm += 1
+                        self._acpdu.water_temp += 1
+                        self._acpdu.tps_perc += 1
+                        self._acpdu.battery_mv += 1
+                        self._acpdu.external_5v_mv += 1
+                        self._acpdu.fuel_flow += 1
+                        self._acpdu.lambda_val += 1
+                        self._acpdu.speed_kph += 1
+
+                        out = self._acpdu.pack_raw()
+                        self._logger.info(f"{str(self._acpdu)}")
+                        self._logger.info(f"<- {out}")
+                        self._transport.write(out)
+                        self._last_sent_pdu = self._acpdu
+                    else:
+                        self._logger.error("AIPDU do not match")
 
         def connection_lost(self, exc):
             self._logger.critical("The server closed the connection")
