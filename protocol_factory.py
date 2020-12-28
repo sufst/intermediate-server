@@ -18,48 +18,180 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Callable
 from typing import Optional
+
+import serial
+from digi.xbee import devices as xbee_devices
+from digi.xbee.models import message as xbee_message
 
 import common
 
 
-class ProtocolFactory(asyncio.Protocol):
-    def __init__(self, async_on_connect: Callable[[ProtocolFactory], asyncio.coroutine],
-                 async_on_receive: Callable[[ProtocolFactory, bytes], asyncio.coroutine],
-                 async_on_lost: Callable[[ProtocolFactory, Optional[Exception]], asyncio.coroutine],
-                 verbose: str) -> None:
+async def create_client(ip: str, port: int, callbacks: ProtocolFactoryCallbacks, verbose: str,
+                        event_loop: asyncio.AbstractEventLoop) -> asyncio.coroutine:
+    """
+    Create a socket client factory.
+    :param ip:          IP to connect to.
+    :param port:        Port to connect to.
+    :param callbacks:   Callbacks for events.
+    :param verbose:     Verbose level for logger.
+    :param event_loop:  Event loop to create client on.
+    """
+    return await event_loop.create_connection(lambda: ProtocolFactorySocket(callbacks, verbose), ip, port)
+
+
+async def create_server(ip: str, port: int, callbacks: ProtocolFactoryCallbacks, verbose: str,
+                        event_loop: asyncio.AbstractEventLoop) -> asyncio.coroutine:
+    """
+    Create a socket server factory.
+    :param ip:          IP to host on.
+    :param port:        Port to host on.
+    :param callbacks:   Callbacks for events.
+    :param verbose:     Verbose level for logger.
+    :param event_loop:  Event loop to create server on.
+    """
+    return await event_loop.create_server(lambda: ProtocolFactorySocket(callbacks, verbose), ip, port)
+
+
+async def create_xbee(com: str, baud: int, mac_peer: str, callbacks: ProtocolFactoryCallbacks, verbose: str,
+                      event_loop: asyncio.AbstractEventLoop) -> asyncio.coroutine:
+    """
+    Create a xbee client factory.
+    :param com:         Com port of XBee to connect to.
+    :param baud:        Baud rate of XBee to connect to.
+    :param mac_peer:    MAC address of xbee to transmit to.
+    :param callbacks:   Callbacks for events.
+    :param verbose:     Verbose level for logger.
+    :param event_loop:  Event loop to create xbee client on.
+    """
+    return ProtocolFactoryXBee(com, baud, mac_peer, callbacks, event_loop, verbose)
+
+
+class ProtocolFactoryCallbacks:
+    def on_connection(self, factory: ProtocolFactoryBase) -> None:
+        raise NotImplementedError
+
+    def on_lost(self, exc: Optional[Exception]) -> None:
+        raise NotImplementedError
+
+    def on_receive(self, data: bytes) -> None:
+        raise NotImplementedError
+
+
+class ProtocolFactoryBase(asyncio.Protocol):
+    def connection_made(self, transport: Optional[asyncio.transports.BaseTransport]) -> None:
+        raise NotImplementedError
+
+    def data_received(self, data: bytes) -> None:
+        raise NotImplementedError
+
+    def write(self, data: bytes) -> None:
+        raise NotImplementedError
+
+    def connection_lost(self, exc: Optional[Exception]) -> None:
+        raise NotImplementedError
+
+
+class ProtocolFactoryXBee(ProtocolFactoryBase):
+    def __init__(self, com: str, baud: int, mac_peer: str, callbacks: ProtocolFactoryCallbacks,
+                 event_loop: asyncio.BaseEventLoop, verbose: str) -> None:
+        self._com = com
+        self._baud = baud
+        self._mac_peer = mac_peer
+        self._callbacks = callbacks
+        self._event_loop = event_loop
+        self._verbose = verbose
+        self._logger = common.get_logger(type(self).__name__, verbose)
+
+        self._xbee_remote_first_message = True
+        self._xbee = xbee_devices.XBeeDevice(self._com, self._baud)
+        self._xbee_remote = xbee_devices.RemoteXBeeDevice(self._xbee, xbee_devices.XBee64BitAddress.from_hex_string(
+            self._mac_peer))
+        try:
+            self._xbee.open()
+            self._xbee.add_data_received_callback(self.on_xbee_receive)
+        except serial.SerialException:
+            self._logger.warning(f"Unable to connect to Xbee device {self._com}:{self._baud}")
+
+    def on_xbee_receive(self, message: xbee_message.XBeeMessage) -> None:
+        """
+        XBee call back function for when xbee data is received.
+        NOTE: This is called from an XBee library thread and not the server thread.
+        :param message: The received message.
+        """
+        data = bytes(message.data)
+        self._logger.info(f"XBee -> {data}")
+
+        asyncio.run_coroutine_threadsafe(self.on_xbee_receive_async(data), self._event_loop)
+
+    async def on_xbee_receive_async(self, data: bytes) -> asyncio.coroutine:
+        """
+        This function is used to get back on the thread the client event loop is running on to invoke the common API
+        data_receive.
+        :param data:
+        """
+        # Currently there is no way to know when the connection is made other than when we receive our first message
+        # from the peer xbee.
+        if self._xbee_remote_first_message:
+            self.connection_made(None)
+            self._xbee_remote_first_message = False
+
+        self._logger.info(f"Handling xbee data {data}")
+        self.data_received(data)
+
+    def connection_made(self, transport: Optional[asyncio.transports.BaseTransport]) -> None:
+        """
+        Invoked when a new connected is made from a client.
+        :param transport:   The transport object corresponding to this new connection.
+        """
+        self._logger.info(f"New connection")
+        self._callbacks.on_connection(self)
+
+    def data_received(self, data: bytes) -> None:
+        """
+        Invoked when data is received from the connected peer.
+        :param data:    The received data.
+        """
+        self._logger.info(f"-> {data}")
+        self._callbacks.on_receive(data)
+
+    def write(self, data: bytes) -> None:
+        """
+        Write bytes data to the peer.
+        :param data:    Bytes to write.
+        """
+        self._logger.info(f"Xbee <- {data}")
+        self._xbee.send_data_async(self._xbee_remote, data)
+
+    def connection_lost(self, exc: Optional[Exception]) -> None:
+        """
+        Invoked when the peer is lost.
+        :param exc: An Exception if any occurred.
+        """
+
+    def __hash__(self) -> int:
+        """
+        Hash function for getting a unique int representation of the factory for storing in dictionaries or sets.
+        """
+        # Hash the COM:Baud as these are unique to the xbee.
+        return hash(f"{self._com}:{self._baud}")
+
+
+class ProtocolFactorySocket(ProtocolFactoryBase):
+    def __init__(self, callbacks: ProtocolFactoryCallbacks, verbose: str) -> None:
         """
         Initialise the asyncio Protocol class.
         See https://docs.python.org/3/library/asyncio-protocol.html for details of asyncio protocol and transports.
-        :param async_on_connect:    An async function for invoking when a new connection is opened and returns any
-                                    bytes to send to the new client.
-        :param async_on_receive:    An async function for invoking when data is received and returns any bytes to send
-                                    back.
-        :param async_on_lost:       An async function for invoking when a connection is lost.
-        :param verbose:             Verbose level.
+        :param callbacks:   Event callbacks.
+        :param verbose:     Verbose level.
         """
         super().__init__()
         self._transport = None
         self._logger = None
         self._verbose = verbose
-        self._async_on_receive = async_on_receive
-        self._async_on_connect = async_on_connect
-        self._async_on_lost = async_on_lost
-
+        self._callbacks = callbacks
         self.peer_ip = ""
         self.peer_port = ""
-
-    def _on_async_connect_done(self, future: asyncio.Future) -> None:
-        """
-        Invoked once the async_receive_cb coroutine has finished and a result is available for any bytes to send back.
-        :param future:  The future that is done.
-        """
-        out = future.result()
-        self._logger.debug(f"Connect callback finished with outcome {out}")
-        if out is not None:
-            self._logger.info(f"<- {out}")
-            self._transport.write(out)
 
     def connection_made(self, transport: asyncio.transports.BaseTransport) -> None:
         """
@@ -70,18 +202,7 @@ class ProtocolFactory(asyncio.Protocol):
         self._logger = common.get_logger(f"{self.peer_ip}-{self.peer_port}", self._verbose)
         self._logger.info(f"New connection")
         self._transport = transport
-        asyncio.create_task(self._async_on_connect(self)).add_done_callback(self._on_async_connect_done)
-
-    def _on_async_receive_done(self, future: asyncio.Future) -> None:
-        """
-        Invoked once the async_receive_cb coroutine has finished and a result is available for any bytes to send back.
-        :param future:  The future that is done.
-        """
-        out = future.result()
-        self._logger.debug(f"Receive callback finished with outcome {out}")
-        if out is not None:
-            self._logger.info(f"<- {out}")
-            self._transport.write(out)
+        self._callbacks.on_connection(self)
 
     def data_received(self, data: bytes) -> None:
         """
@@ -89,8 +210,7 @@ class ProtocolFactory(asyncio.Protocol):
         :param data:    The received data.
         """
         self._logger.info(f"-> {data}")
-        asyncio.create_task(self._async_on_receive(self, data)).add_done_callback(
-            self._on_async_receive_done)
+        self._callbacks.on_receive(data)
 
     def write(self, data: bytes) -> None:
         """
@@ -106,7 +226,7 @@ class ProtocolFactory(asyncio.Protocol):
         :param exc: An Exception if any occurred.
         """
         self._logger.warning("Lost connection")
-        asyncio.create_task(self._async_on_lost(self, exc))
+        self._callbacks.on_lost(exc)
 
     def __hash__(self) -> int:
         """

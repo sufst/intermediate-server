@@ -19,18 +19,14 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import datetime
 from typing import Optional
-
-from digi.xbee import devices as xbee_devices
-from digi.xbee.models import message as xbee_message
 
 import common
 import protocol
-import protocol_factory
 
 _SW_VERSION = 10000
 SOCKET, XBEE = list(range(2))
+_CLIENT_NAME = "CAR-EMULATOR"
 
 
 class CarEmulator:
@@ -46,30 +42,50 @@ class CarEmulator:
         else:
             self._emu_type = SOCKET
         self._verbose = verbose
-
-        self._event_loop = None
-        self._transport = None
-        self._factory = None
         self._protocol = None
-        self._on_con_lost = None
-        self._on_methods = {protocol.AIPDU: self._on_aipdu, protocol.ACPDU: self._on_acpdu,
-                            protocol.AAPDU: self._on_aapdu, protocol.ADPDU: self._on_adpdu,
-                            protocol.APPDU: self._on_appdu, protocol.ASPDU: self.on_aspdu,
-                            protocol.AMPDU: self.on_aspdu}
+        self._protocol_callbacks = protocol.ProtocolCallbacks()
+        self._protocol_callbacks.on_connection = self._on_connection
+        self._protocol_callbacks.on_lost = self._on_lost
+        self._protocol_callbacks.on_aipdu = self._on_aipdu
+        self._protocol_callbacks.on_acpdu = self._on_acpdu
+        self._protocol_callbacks.on_aapdu = self._on_aapdu
+        self._protocol_callbacks.on_adpdu = self._on_adpdu
+        self._protocol_callbacks.on_appdu = self._on_appdu
+        self._protocol_callbacks.on_aspdu = self._on_aspdu
+        self._protocol_callbacks.on_ampdu = self._on_ampdu
 
-        self.aipdu = protocol.ProtocolAIPDU()
-        self.acpdu = protocol.ProtocolACPDU()
-        self.aapdu = protocol.ProtocolAAPDU()
-        self.adpdu = protocol.ProtocolADPDU()
-        self.appdu = protocol.ProtocolAPPDU()
-        self.aspdu = protocol.ProtocolASPDU()
-        self.ampdu = protocol.ProtocolAMPDU()
-        self._seq_num = 0
-
-        if self._emu_type == XBEE:
-            self._xbee = xbee_devices.XBeeDevice(com, baud)
-            self._xbee_remote = xbee_devices.RemoteXBeeDevice(self._xbee, xbee_devices.XBee64BitAddress.from_hex_string(
-                xbee_mac))
+        self._rpm = 0
+        self._water_temp = 0
+        self._tps_perc = 0
+        self._battery_mv = 0
+        self._external_5v_mv = 0
+        self._fuel_flow = 0
+        self._lambda_val = 0
+        self._speed_kph = 0
+        self._evo_scanner1 = 0
+        self._evo_scanner2 = 0
+        self._evo_scanner3 = 0
+        self._evo_scanner4 = 0
+        self._evo_scanner5 = 0
+        self._evo_scanner6 = 0
+        self._evo_scanner7 = 0
+        self._ecu_status = 0
+        self._engine_status = 0
+        self._battery_status = 0
+        self._car_logging_status = 0
+        self._injection_time = 0
+        self._injection_duty_cycle = 0
+        self._lambda_pid_adjust = 0
+        self._lambda_pid_target = 0
+        self._advance = 0
+        self._ride_height_fl_cm = 0
+        self._ride_height_fr_cm = 0
+        self._ride_height_flw_cm = 0
+        self._ride_height_rear_cm = 0
+        self._lap_timer_s = 0
+        self._accel_fl_x_mg = 0
+        self._accel_fl_y_mg = 0
+        self._accel_fl_z_mg = 0
 
     def __enter__(self) -> CarEmulator:
         """
@@ -81,42 +97,9 @@ class CarEmulator:
         """
         Run the client asyncio loop
         """
-        asyncio.run(self._loop())
+        asyncio.run(self._run())
 
-    async def _on_socket_receive(self, factory: protocol_factory.ProtocolFactory, data: bytes) -> Optional[bytes]:
-        """
-        Invoked when a socket receive occurs
-        :param factory: The protocol factory corresponding to the receive.
-        :param data:    The received data
-        """
-        self._logger.info(f"Handling {data} from factory {factory.__hash__()}")
-        out = await self.handle_receive(data)
-
-        return out
-
-    async def _on_socket_connection_made(self, factory: protocol_factory.ProtocolFactory) -> Optional[bytes]:
-        """
-        Invoked when a socket connection occurs
-        :param factory: The protocol factory corresponding to the connection.
-        """
-        self._factory = factory
-        self._logger.info(f"New connection with factory {factory.__hash__()}")
-
-        return self._get_aipdu_raw()
-
-    async def _on_socket_connection_lost(self, factory: protocol_factory.ProtocolFactory, exc: Optional[Exception]) \
-            -> None:
-        """
-        Invoked when a socket connection lost occurs
-        :param factory: The protocol factory corresponding to the connection lost.
-        """
-        self._logger.info(f"Connection lost with factory {factory.__hash__()}")
-        if exc is not None:
-            self._logger.error(repr(exc))
-
-        self._on_con_lost.set_result(False)
-
-    async def _loop(self) -> None:
+    async def _run(self) -> None:
         """
         The asyncio event loop for the client.
         """
@@ -126,313 +109,118 @@ class CarEmulator:
 
         if self._emu_type == SOCKET:
             self._logger.info(f"Creating client {self._ip}:{self._port}")
-
-            self._transport, self._protocol = await self._event_loop.create_connection(
-                lambda: protocol_factory.ProtocolFactory(self._on_socket_connection_made,
-                                                         self._on_socket_receive, self._on_socket_connection_lost,
-                                                         self._verbose), self._ip, self._port)
-
-            self._logger.info("Client created")
-
+            self._protocol = protocol.ProtocolClient(ip=self._ip, port=self._port, callbacks=self._protocol_callbacks,
+                                                     client_type=protocol.CAR_EMULATOR, sw_ver=_SW_VERSION,
+                                                     client_name=_CLIENT_NAME, event_loop=self._event_loop,
+                                                     verbose=self._verbose)
+            self._protocol.run()
             try:
                 await self._on_con_lost
             finally:
-                self._transport.close()
+                pass
         else:
             self._logger.info(f"Creating client for XBee link: {self._mac}")
 
-            self._xbee.open()
-            self._xbee.add_data_received_callback(self._xbee_data_receive)
-
-            out = self._get_aipdu_raw()
-            self._write(out)
-            try:
-                await self._on_con_lost
-            finally:
-                self._xbee.close()
         self._logger.info("Stopped")
 
-    def _write(self, buffer: bytes) -> None:
-        """
-        Handles writing the buffer to either the socket transport or the Xbee depending on the type of emulator
-        we are carrying out.
-        :param buffer:  Buffer of bytes to write to the intermediate server.
-        """
-        if self._emu_type == SOCKET:
-            self._logger.info(f"socket <- {buffer}")
-            self._factory.write(buffer)
-        else:
-            self._logger.info(f"xbee <- {buffer}")
-            self._xbee.send_data_async(self._xbee_remote, buffer)
+    def _on_connection(self, protocol_client: protocol.ProtocolClient) -> None:
+        self._logger.info(f"Handling connection ")
 
-    async def periodic_pdu_transmit(self) -> None:
+    def _on_lost(self, protocol_client: protocol.ProtocolClient, exc: Optional[Exception]) -> None:
+        self._logger.info("Handling lost")
+        self._on_con_lost.set_result(False)
+
+    def _on_aipdu(self, protocol_client: protocol.ProtocolClient, header: protocol.ProtocolHeader, client_type: int,
+                  sw_ver: int, client_name: str) -> None:
+        self._logger.info("Handling AIPDU")
+        asyncio.create_task(self.periodic_pdu_transmit(protocol_client))
+
+    def _on_acpdu(self, protocol_client: protocol.ProtocolClient, header: protocol.ProtocolHeader, rpm: int,
+                  water_temp_c: int, tps_perc: int, battery_mv: int, external_5v_mv: int, fuel_flow: int,
+                  lambda_value: int, speed_kph: int) -> None:
+        self._logger.info("Handling ACPDU")
+
+    def _on_aapdu(self, protocol_client: protocol.ProtocolClient, header: protocol.ProtocolHeader, evo_scanner1: int,
+                  evo_scanner2: int, evo_scanner3: int, evo_scanner4: int, evo_scanner5: int, evo_scanner6: int,
+                  evo_scanner7: int) -> None:
+        self._logger.info("Handling AAPDU")
+
+    def _on_adpdu(self, protocol_client: protocol.ProtocolClient, header: protocol.ProtocolHeader, ecu_status: int,
+                  engine_status: int, battery_status: int, car_logging_status: int) -> None:
+        self._logger.info("Handling ADPDU")
+
+    def _on_appdu(self, protocol_client: protocol.ProtocolClient, header: protocol.ProtocolHeader, injection_time: int,
+                  injection_duty_cycle: int, lambda_pid_adjust: int, lambda_pid_target: int, advance: int) -> None:
+        self._logger.info("Handling APPDU")
+
+    def _on_aspdu(self, protocol_client: protocol.ProtocolClient, header: protocol.ProtocolHeader,
+                  ride_height_fl_cm: int,
+                  ride_height_fr_cm: int, ride_height_flw_cm: int, ride_height_rear_cm: int) -> None:
+        self._logger.info("Handling ASPDU")
+
+    def _on_ampdu(self, protocol_client: protocol.ProtocolClient, header: protocol.ProtocolHeader, lap_timer_s: int,
+                  accel_fl_x_mg: int, accel_fl_y_mg: int, accel_fl_z_mg: int) -> None:
+        self._logger.info("Handling AMPDU")
+
+    async def periodic_pdu_transmit(self, client: protocol.ProtocolClient) -> None:
         """
         A recursive function which periodically goes through each frame and writes it.
         """
         await asyncio.sleep(1)
-        out = self._get_acpdu_raw()
-        self._write(out)
+        client.write_acpdu(self._rpm, self._water_temp, self._tps_perc, self._battery_mv, self._external_5v_mv,
+                           self._fuel_flow, self._lambda_val, self._speed_kph)
+        self._rpm += 1
+        self._water_temp += 1
+        self._tps_perc += 1
+        self._battery_mv += 1
+        self._external_5v_mv += 1
+        self._fuel_flow += 1
+        self._lambda_val += 1
+        self._speed_kph += 1
 
         await asyncio.sleep(1)
-        out = self._get_aapdu_raw()
-        self._write(out)
+        client.write_aapdu(self._evo_scanner1, self._evo_scanner2, self._evo_scanner3, self._evo_scanner4,
+                           self._evo_scanner5, self._evo_scanner6, self._evo_scanner7)
+        self._evo_scanner1 += 1
+        self._evo_scanner2 += 1
+        self._evo_scanner3 += 1
+        self._evo_scanner4 += 1
+        self._evo_scanner5 += 1
+        self._evo_scanner6 += 1
+        self._evo_scanner7 += 1
 
         await asyncio.sleep(1)
-        out = self._get_adpdu_raw()
-        self._write(out)
+        client.write_adpdu(self._ecu_status, self._engine_status, self._battery_status, self._car_logging_status)
+        self._ecu_status = protocol.ECU_STATUS_CONNECTED
+        self._engine_status = protocol.ENGINE_STATUS_IDLE
+        self._battery_status = protocol.BATTERY_STATUS_HEALTHY
+        self._car_logging_status = protocol.CAR_LOGGING_STATUS_OFF
 
         await asyncio.sleep(1)
-        out = self._get_appdu_raw()
-        self._write(out)
+        client.write_appdu(self._injection_time, self._injection_duty_cycle, self._lambda_pid_adjust,
+                           self._lambda_pid_target, self._advance)
+        self._injection_time += 1
+        self._injection_duty_cycle += 1
+        self._lambda_pid_adjust += 1
+        self._lambda_pid_target += 1
+        self._advance += 1
 
         await asyncio.sleep(1)
-        out = self._get_aspdu_raw()
-        self._write(out)
+        client.write_aspdu(self._ride_height_fl_cm, self._ride_height_fr_cm, self._ride_height_flw_cm,
+                           self._ride_height_rear_cm)
+        self._ride_height_fl_cm += 1
+        self._ride_height_fr_cm += 1
+        self._ride_height_flw_cm += 1
+        self._ride_height_rear_cm += 1
 
         await asyncio.sleep(1)
-        out = self._get_ampdu_raw()
-        self._write(out)
+        client.write_ampdu(self._lap_timer_s, self._accel_fl_x_mg, self._accel_fl_y_mg, self._accel_fl_z_mg)
+        self._lap_timer_s += 1
+        self._accel_fl_x_mg += 1
+        self._accel_fl_y_mg += 1
+        self._accel_fl_z_mg += 1
 
-        asyncio.create_task(self.periodic_pdu_transmit())
-
-    def _get_aipdu_raw(self) -> bytes:
-        """
-        Get an AIPDU frame in raw format.
-        """
-        self.aipdu.header.seq_num = self._seq_num
-        self._seq_num += 1
-        now = datetime.datetime.now()
-        self.aipdu.header.epoch = int(
-            (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
-
-        self.aipdu.client_type = protocol.CAR_EMULATOR
-        self.aipdu.sw_ver = _SW_VERSION
-        self.aipdu.client_name = "emulator"
-
-        out = self.aipdu.pack_raw()
-        self._logger.info(f"{str(self.aipdu)}")
-
-        return out
-
-    def _get_acpdu_raw(self) -> bytes:
-        """
-        Get an ACPDU frame in raw format.
-        """
-        self.acpdu.header.seq_num = self._seq_num
-        self._seq_num += 1
-        now = datetime.datetime.now()
-        self.acpdu.header.epoch = int(
-            (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
-        self.acpdu.rpm += 1
-        self.acpdu.water_temp += 1
-        self.acpdu.tps_perc += 1
-        self.acpdu.battery_mv += 1
-        self.acpdu.external_5v_mv += 1
-        self.acpdu.fuel_flow += 1
-        self.acpdu.lambda_val += 1
-        self.acpdu.speed_kph += 1
-
-        out = self.acpdu.pack_raw()
-        self._logger.info(f"{str(self.acpdu)}")
-
-        return out
-
-    def _get_aapdu_raw(self) -> bytes:
-        """
-        Get an AAPDU frame in raw format.
-        """
-        self.aapdu.header.seq_num = self._seq_num
-        self._seq_num += 1
-        now = datetime.datetime.now()
-        self.aapdu.header.epoch = int(
-            (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
-        self.aapdu.evo_scanner1 += 1
-        self.aapdu.evo_scanner2 += 1
-        self.aapdu.evo_scanner3 += 1
-        self.aapdu.evo_scanner4 += 1
-        self.aapdu.evo_scanner5 += 1
-        self.aapdu.evo_scanner6 += 1
-        self.aapdu.evo_scanner7 += 1
-
-        out = self.aapdu.pack_raw()
-        self._logger.info(f"{str(self.aapdu)}")
-
-        return out
-
-    def _get_adpdu_raw(self) -> bytes:
-        """
-        Get an ADPDU frame in raw format.
-        """
-        self.adpdu.header.seq_num = self._seq_num
-        self._seq_num += 1
-        now = datetime.datetime.now()
-        self.adpdu.header.epoch = int(
-            (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
-        self.adpdu.ecu_status = protocol.ECU_STATUS_CONNECTED
-        self.adpdu.engine_status = protocol.ENGINE_STATUS_IDLE
-        self.adpdu.battery_status = protocol.BATTERY_STATUS_HEALTHY
-        self.adpdu.car_logging_status = protocol.CAR_LOGGING_STATUS_OFF
-
-        out = self.adpdu.pack_raw()
-        self._logger.info(f"{str(self.adpdu)}")
-
-        return out
-
-    def _get_appdu_raw(self) -> bytes:
-        """
-        Get an APPDU frame in raw format.
-        """
-        self.appdu.header.seq_num = self._seq_num
-        self._seq_num += 1
-        now = datetime.datetime.now()
-        self.appdu.header.epoch = int(
-            (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
-        self.appdu.injection_time += 1
-        self.appdu.injection_duty_cycle += 1
-        self.appdu.lambda_pid_adjust += 1
-        self.appdu.lambda_pid_target += 1
-
-        out = self.appdu.pack_raw()
-        self._logger.info(f"{str(self.appdu)}")
-
-        return out
-
-    def _get_aspdu_raw(self) -> bytes:
-        """
-        Get an ASPDU frame in raw format.
-        """
-        self.aspdu.header.seq_num = self._seq_num
-        self._seq_num += 1
-        now = datetime.datetime.now()
-        self.aspdu.header.epoch = int(
-            (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
-        self.aspdu.ride_height_fl_cm += 1
-        self.aspdu.ride_height_fr_cm += 1
-        self.aspdu.ride_height_flw_cm += 1
-        self.aspdu.ride_height_rear_cm += 1
-
-        out = self.aspdu.pack_raw()
-        self._logger.info(f"{str(self.aspdu)}")
-
-        return out
-
-    def _get_ampdu_raw(self) -> bytes:
-        """
-        Get an AMPDU frame in raw format.
-        """
-        self.ampdu.header.seq_num = self._seq_num
-        self._seq_num += 1
-        now = datetime.datetime.now()
-        self.ampdu.header.epoch = int(
-            (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
-        self.ampdu.lap_timer_s += 1
-        self.ampdu.accel_fl_x_mg += 1
-        self.ampdu.accel_fl_y_mg += 1
-        self.ampdu.accel_fl_z_mg += 1
-
-        out = self.ampdu.pack_raw()
-        self._logger.info(f"{str(self.ampdu)}")
-
-        return out
-
-    def _on_async_xbee_data_handle_done(self, future: asyncio.Future) -> None:
-        """
-        Invoked once the handle_receive has finished as a result of an xbee received message.
-        Used to handle sending any response back to the XBee.
-        :param future:  The done future.
-        """
-        out = future.result()
-        self._logger.info(f"XBee message handle done with outcome {out}")
-        if out is not None:
-            self._write(out)
-
-    def _xbee_data_receive(self, message: xbee_message.XBeeMessage) -> None:
-        """
-        XBee call back function for when xbee data is received.
-        NOTE: This is called from an XBee library thread and not the server thread.
-        :param message: The received message.
-        """
-        data = bytes(message.data)
-        self._logger.info(f"XBee -> {data}")
-
-        asyncio.run_coroutine_threadsafe(self.handle_receive(data), self._event_loop).add_done_callback(
-            self._on_async_xbee_data_handle_done)
-
-    async def handle_receive(self, frame: bytes) -> Optional[bytes]:
-        """
-        Handle an XBee or socket received frame asynchronously.
-        :param frame: The received frame.
-        """
-        self._logger.info(f"Handling raw frame: {frame}")
-
-        pdu = protocol.get_frame_from_buffer(frame)
-        if pdu is not None:
-            self._logger.info(str(pdu))
-            if pdu.header.frame_type in self._on_methods:
-                return self._on_methods[pdu.header.frame_type](pdu)
-        else:
-            self._logger.error("Failed to decode frame from buffer")
-
-    def _on_aipdu(self, aipdu: protocol.ProtocolAIPDU) -> Optional[bytes]:
-        """
-        Handle a received AIPDU frame.
-        :param aipdu:   The received AIPDU frame.
-        """
-        self._logger.info("Got frame AIPDU")
-        if aipdu == self.aipdu:
-            self._logger.info("AIPDU match")
-            asyncio.create_task(self.periodic_pdu_transmit())
-        else:
-            self._logger.error("AIPDU do not match")
-        return None
-
-    def _on_acpdu(self, acpdu: protocol.ProtocolACPDU) -> Optional[bytes]:
-        """
-        Handle a received ACPDU frame.
-        :param acpdu:   The received ACPDU frame.
-        """
-        self._logger.info("Got frame ACPDU")
-        return None
-
-    def _on_aapdu(self, aapdu: protocol.ProtocolAAPDU) -> Optional[bytes]:
-        """
-        Handle a received AAPDU frame.
-        :param aapdu:   The received AAPDU frame.
-        """
-        self._logger.info("Got frame AAPDU")
-        return None
-
-    def _on_adpdu(self, adpdu: protocol.ProtocolADPDU) -> Optional[bytes]:
-        """
-        Handle a received ADPDU frame.
-        :param adpdu:   The received ADPDU frame.
-        """
-        self._logger.info("Got frame ADPDU")
-        return None
-
-    def _on_appdu(self, appdu: protocol.ProtocolAPPDU) -> Optional[bytes]:
-        """
-        Handle a received APPDU frame.
-        :param appdu:   The received APPDU frame.
-        """
-        self._logger.info("Got frame APPDU")
-        return None
-
-    def on_aspdu(self, aspdu: protocol.ProtocolASPDU) -> Optional[bytes]:
-        """
-        Handle a received ASPDU frame.
-        :param aspdu:   The received ASPDU frame.
-        """
-        self._logger.info("Got frame ASPDU")
-        return None
-
-    def _on_ampdu(self, ampdu: protocol.ProtocolAMPDU) -> Optional[bytes]:
-        """
-        Handle a received AMPDU frame.
-        :param ampdu:   The received AMPDU frame.
-        """
-        self._logger.info("Got frame AMPDU")
-        return None
+        asyncio.create_task(self.periodic_pdu_transmit(client))
 
     def __exit__(self, exc_type: Optional[Exception], exc_val: Optional[Exception], exc_tb: Optional[Exception]) \
             -> None:
