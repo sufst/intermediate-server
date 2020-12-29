@@ -1,0 +1,8 @@
+Python Dependencies: 
+
+digi-xbee 
+serial 
+dash 
+
+Note that dash is only used for the GUI Emulation.  
+
