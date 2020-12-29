@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 from typing import Optional
+import math
 
 import common
 import protocol
@@ -55,6 +56,7 @@ class CarEmulator:
         self._protocol_callbacks.on_aspdu = self._on_aspdu
         self._protocol_callbacks.on_ampdu = self._on_ampdu
 
+        self._rpm_counter = 0
         self._rpm = 0
         self._water_temp = 0
         self._tps_perc = 0
@@ -214,10 +216,11 @@ class CarEmulator:
         """
         A recursive function which periodically goes through each frame and writes it.
         """
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.1)
         self._protocol.write_acpdu(factory, self._rpm, self._water_temp, self._tps_perc, self._battery_mv,
                                    self._external_5v_mv, self._fuel_flow, self._lambda_val, self._speed_kph)
-        self._rpm += 1
+        self._rpm_counter += 1
+        self._rpm = int(5000*math.sin(math.radians(self._rpm_counter*10))+5000)
         self._water_temp += 1
         self._tps_perc += 1
         self._battery_mv += 1
@@ -226,7 +229,7 @@ class CarEmulator:
         self._lambda_val += 1
         self._speed_kph += 1
 
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.1)
         self._protocol.write_aapdu(factory, self._evo_scanner1, self._evo_scanner2, self._evo_scanner3,
                                    self._evo_scanner4, self._evo_scanner5, self._evo_scanner6, self._evo_scanner7)
         self._evo_scanner1 += 1
@@ -237,7 +240,7 @@ class CarEmulator:
         self._evo_scanner6 += 1
         self._evo_scanner7 += 1
 
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.1)
         self._protocol.write_adpdu(factory, self._ecu_status, self._engine_status, self._battery_status,
                                    self._car_logging_status)
         self._ecu_status = protocol.ECU_STATUS_CONNECTED
@@ -245,7 +248,7 @@ class CarEmulator:
         self._battery_status = protocol.BATTERY_STATUS_HEALTHY
         self._car_logging_status = protocol.CAR_LOGGING_STATUS_OFF
 
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.1)
         self._protocol.write_appdu(factory, self._injection_time, self._injection_duty_cycle, self._lambda_pid_adjust,
                                    self._lambda_pid_target, self._advance)
         self._injection_time += 1
@@ -254,7 +257,7 @@ class CarEmulator:
         self._lambda_pid_target += 1
         self._advance += 1
 
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.1)
         self._protocol.write_aspdu(factory, self._ride_height_fl_cm, self._ride_height_fr_cm, self._ride_height_flw_cm,
                                    self._ride_height_rear_cm)
         self._ride_height_fl_cm += 1
@@ -262,7 +265,7 @@ class CarEmulator:
         self._ride_height_flw_cm += 1
         self._ride_height_rear_cm += 1
 
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.1)
         self._protocol.write_ampdu(factory, self._lap_timer_s, self._accel_fl_x_mg, self._accel_fl_y_mg,
                                    self._accel_fl_z_mg)
         self._lap_timer_s += 1
