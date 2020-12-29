@@ -48,168 +48,129 @@ class Server:
         self._baud = baud
         self._verbose = verbose
 
-        self._event_loop = None
-        self._on_methods = {protocol.AIPDU: self._on_aipdu, protocol.ACPDU: self._on_acpdu,
-                            protocol.AAPDU: self._on_aapdu, protocol.ADPDU: self._on_adpdu,
-                            protocol.APPDU: self._on_appdu, protocol.ASPDU: self._on_aspdu,
-                            protocol.AMPDU: self._on_ampdu}
+        self._protocol = None
+        self._protocol_callbacks = protocol.ProtocolCallbacks()
+        self._protocol_callbacks.on_connection = self._on_connection
+        self._protocol_callbacks.on_lost = self._on_lost
+        self._protocol_callbacks.on_aipdu = self._on_aipdu
+        self._protocol_callbacks.on_acpdu = self._on_acpdu
+        self._protocol_callbacks.on_aapdu = self._on_aapdu
+        self._protocol_callbacks.on_adpdu = self._on_adpdu
+        self._protocol_callbacks.on_appdu = self._on_appdu
+        self._protocol_callbacks.on_aspdu = self._on_aspdu
+        self._protocol_callbacks.on_ampdu = self._on_ampdu
 
-        self._xbee = xbee_devices.XBeeDevice(com, baud)
-        self._xbee_remote = xbee_devices.RemoteXBeeDevice(self._xbee, xbee_devices.XBee64BitAddress.from_hex_string(
-            xbee_mac))
+        self._event_loop = None
+        self._on_stop = None
 
     def __enter__(self) -> Server:
         """
         Enter for use with "with as"
         """
-        try:
-            self._xbee.open()
-            self._xbee.add_data_received_callback(self._xbee_data_receive_cb)
-        except serial.SerialException:
-            self._logger.warning(f"Unable to connect to Xbee device {self._com}:{self._baud}")
         return self
 
-    def _on_async_xbee_data_handle_done(self, future: asyncio.Future) -> None:
+    def _on_connection(self, factory: protocol_factory.ProtocolFactoryBase) -> None:
         """
-        Invoked once the _handle_receive has finished as a result of an xbee received message.
-        Used to handle sending any response back to the XBee.
-        :param future:  The done future.
+        Invoked when a factory has made a new connection.
+        :param factory: The factory that has a new connection.
         """
-        out = future.result()
-        self._logger.info(f"XBee message handle done with outcome {out}")
-        if out is not None:
-            self._logger.info(f"Xbee <- {out}")
-            self._xbee.send_data_async(self._xbee_remote, out)
+        self._logger.info(f"Handling connection from factory {factory.__hash__()}")
 
-    def _xbee_data_receive_cb(self, message: xbee_message.XBeeMessage) -> None:
+    def _on_lost(self, factory: protocol_factory.ProtocolFactoryBase, exc: Optional[Exception]) -> None:
         """
-        XBee call back function for when xbee data is received.
-        NOTE: This is called from an XBee library thread and not the server thread.
-        :param message: The received message.
+        Invoked when a factory has lost its connection.
+        :param factory: The factory that has lost its connection.
+        :param exc:     Any error that caused the lost.
         """
-        data = bytes(message.data)
-        self._logger.info(f"XBee -> {data}")
+        self._logger.info(f"Handling lost from factory {factory.__hash__()}")
 
-        asyncio.run_coroutine_threadsafe(self._handle_receive(data), self._event_loop).add_done_callback(
-            self._on_async_xbee_data_handle_done)
+    def _on_aipdu(self, factory: protocol_factory.ProtocolFactoryBase, header: protocol.ProtocolHeader,
+                  client_type: int, sw_ver: int, client_name: str) -> None:
+        """
+        Invoked when a factory has received a AIPDU frame.
+        :param factory: The factory that received the frame.
+        """
+        self._logger.info(f"Handling AIPDU from factory {factory.__hash__()}")
+        self._protocol.write_aipdu(factory, client_type, sw_ver, client_name)
 
-    def _on_aipdu(self, aipdu: protocol.ProtocolAIPDU) -> Optional[bytes]:
+    def _on_acpdu(self, factory: protocol_factory.ProtocolFactoryBase, header: protocol.ProtocolHeader, rpm: int,
+                  water_temp_c: int, tps_perc: int, battery_mv: int, external_5v_mv: int, fuel_flow: int,
+                  lambda_value: int, speed_kph: int) -> None:
         """
-        Handle a received AIPDU frame.
-        :param aipdu:   The received AIPDU frame.
+        Invoked when a factory has received a ACPDU frame.
+        :param factory: The factory that received the frame.
         """
-        self._logger.info("Got frame AIPDU")
-        return aipdu.pack_raw()
+        self._logger.info(f"Handling ACPDU from factory {factory.__hash__()}")
 
-    def _on_acpdu(self, acpdu: protocol.ProtocolACPDU) -> Optional[bytes]:
+    def _on_aapdu(self, factory: protocol_factory.ProtocolFactoryBase, header: protocol.ProtocolHeader,
+                  evo_scanner1: int,
+                  evo_scanner2: int, evo_scanner3: int, evo_scanner4: int, evo_scanner5: int, evo_scanner6: int,
+                  evo_scanner7: int) -> None:
         """
-        Handle a received ACPDU frame.
-        :param acpdu:   The received ACPDU frame.
+        Invoked when a factory has received a AAPDU frame.
+        :param factory: The factory that received the frame.
         """
-        self._logger.info("Got frame ACPDU")
-        return None
+        self._logger.info(f"Handling AAPDU from factory {factory.__hash__()}")
 
-    def _on_aapdu(self, aapdu: protocol.ProtocolAAPDU) -> Optional[bytes]:
+    def _on_adpdu(self, factory: protocol_factory.ProtocolFactoryBase, header: protocol.ProtocolHeader, ecu_status: int,
+                  engine_status: int, battery_status: int, car_logging_status: int) -> None:
         """
-        Handle a received AAPDU frame.
-        :param aapdu:   The received AAPDU frame.
+        Invoked when a factory has received a ADPDU frame.
+        :param factory: The factory that received the frame.
         """
-        self._logger.info("Got frame AAPDU")
-        return None
+        self._logger.info(f"Handling ADPDU from factory {factory.__hash__()}")
 
-    def _on_adpdu(self, adpdu: protocol.ProtocolADPDU) -> Optional[bytes]:
+    def _on_appdu(self, factory: protocol_factory.ProtocolFactoryBase, header: protocol.ProtocolHeader,
+                  injection_time: int,
+                  injection_duty_cycle: int, lambda_pid_adjust: int, lambda_pid_target: int, advance: int) -> None:
         """
-        Handle a received ADPDU frame.
-        :param adpdu:   The received ADPDU frame.
+        Invoked when a factory has received a APPDU frame.
+        :param factory: The factory that received the frame.
         """
-        self._logger.info("Got frame ADPDU")
-        return None
+        self._logger.info(f"Handling APPDU from factory {factory.__hash__()}")
 
-    def _on_appdu(self, appdu: protocol.ProtocolAPPDU) -> Optional[bytes]:
+    def _on_aspdu(self, factory: protocol_factory.ProtocolFactoryBase, header: protocol.ProtocolHeader,
+                  ride_height_fl_cm: int,
+                  ride_height_fr_cm: int, ride_height_flw_cm: int, ride_height_rear_cm: int) -> None:
         """
-        Handle a received APPDU frame.
-        :param appdu:   The received APPDU frame.
+        Invoked when a factory has received a ASPDU frame.
+        :param factory: The factory that received the frame.
         """
-        self._logger.info("Got frame APPDU")
-        return None
+        self._logger.info(f"Handling ASPDU from factory {factory.__hash__()}")
 
-    def _on_aspdu(self, aspdu: protocol.ProtocolASPDU) -> Optional[bytes]:
+    def _on_ampdu(self, factory: protocol_factory.ProtocolFactoryBase, header: protocol.ProtocolHeader,
+                  lap_timer_s: int, accel_fl_x_mg: int, accel_fl_y_mg: int, accel_fl_z_mg: int) -> None:
         """
-        Handle a received ASPDU frame.
-        :param aspdu:   The received ASPDU frame.
+        Invoked when a factory has received a AMPDU frame.
+        :param factory: The factory that received the frame.
         """
-        self._logger.info("Got frame ASPDU")
-        return None
-
-    def _on_ampdu(self, ampdu: protocol.ProtocolAMPDU) -> Optional[bytes]:
-        """
-        Handle a received AMPDU frame.
-        :param ampdu:   The received AMPDU frame.
-        """
-        self._logger.info("Got frame AMPDU")
-        return None
+        self._logger.info(f"Handling AMPDU from factory {factory.__hash__()}")
 
     def run(self) -> None:
         """
         Run the server asyncio loop
         """
-        asyncio.run(self._loop())
+        asyncio.run(self._run())
 
-    async def _handle_receive(self, factory: protocol_factory.ProtocolFactory, frame: bytes) -> Optional[bytes]:
-        """
-        Handle a received frame asynchronously. This could be from either the XBee receive callback or from the
-        server protocol factory.
-        :param frame: The received frame.
-        """
-        self._logger.info(f"Handling data {frame} from factory {factory.__hash__()}")
-
-        pdu = protocol.get_frame_from_buffer(frame)
-        if pdu is not None:
-            self._logger.info(str(pdu))
-            if pdu.header.frame_type in self._on_methods:
-                return self._on_methods[pdu.header.frame_type](pdu)
-        else:
-            self._logger.error("Failed to decode frame from buffer")
-
-    async def _handle_connection_made(self, factory: protocol_factory.ProtocolFactory) -> Optional[bytes]:
-        """
-        Invoked when the protocol factory has made a new connection.
-        :param factory: The factory corresponding to the new connection.
-        """
-        self._logger.info(f"Handling new connection with factory hash {factory.__hash__()}")
-
-        return None
-
-    async def _handle_connection_lost(self, factory: protocol_factory.ProtocolFactory, exc: Optional[Exception]) \
-            -> Optional[bytes]:
-        """
-        Invoked when the protocol factory has made a new connection.
-        :param exc:     Any exception that caused the connection lost.
-        :param factory: The factory corresponding to the new connection.
-        """
-        self._logger.info(f"Factory {factory.__hash__()} lost connection")
-        if exc is not None:
-            self._logger.info(repr(exc))
-
-        return None
-
-    async def _loop(self) -> None:
+    async def _run(self) -> asyncio.coroutine:
         """
         The asyncio event loop for the server.
         """
         self._logger.info("Running")
         self._event_loop = asyncio.get_running_loop()
+        self._on_stop = asyncio.Future()
 
-        self._logger.info(f"Creating server {self._ip}:{self._port}")
-        server_factory = await self._event_loop.create_server(
-            lambda: protocol_factory.ProtocolFactory(self._handle_connection_made, self._handle_receive,
-                                                     self._handle_connection_lost, self._verbose), self._ip, self._port)
+        self._logger.info(f"Creating Protocol {self._ip}:{self._port}")
+        self._protocol = protocol.Protocol(ip=self._ip, port=self._port, com="COM4", baud=115200,
+                                           mac="0013A20041559318", callbacks=self._protocol_callbacks,
+                                           protocol_type=protocol.SERVER, event_loop=self._event_loop,
+                                           verbose=self._verbose)
+        self._protocol.run()
 
-        self._logger.info(f"Server created")
-        async with server_factory:
-            await server_factory.serve_forever()
-
-        self._logger.info("Stopped")
+        try:
+            await self._on_stop
+        finally:
+            self._logger.info("Stopped")
 
     def __exit__(self, exc_type: Optional[Exception], exc_val: Optional[Exception], exc_tb: Optional[Exception]) \
             -> None:
@@ -221,9 +182,6 @@ class Server:
         """
         if exc_type is not None:
             self._logger.error(f"{exc_type}\n{exc_val}\n{exc_tb}")
-
-        if self._xbee.is_open():
-            self._xbee.close()
 
 
 if __name__ == '__main__':

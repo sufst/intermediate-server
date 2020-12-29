@@ -23,6 +23,7 @@ from typing import Optional
 
 import common
 import protocol
+import protocol_factory
 
 _SW_VERSION = 10000
 SOCKET, XBEE = list(range(2))
@@ -108,67 +109,114 @@ class CarEmulator:
         self._on_con_lost = self._event_loop.create_future()
 
         if self._emu_type == SOCKET:
-            self._logger.info(f"Creating client {self._ip}:{self._port}")
-            self._protocol = protocol.ProtocolClient(ip=self._ip, port=self._port, callbacks=self._protocol_callbacks,
-                                                     client_type=protocol.CAR_EMULATOR, sw_ver=_SW_VERSION,
-                                                     client_name=_CLIENT_NAME, event_loop=self._event_loop,
-                                                     verbose=self._verbose)
+            self._logger.info(f"Creating Protocol for host: {self._ip}:{self._port}")
+            self._protocol = protocol.Protocol(ip=self._ip, port=self._port, callbacks=self._protocol_callbacks,
+                                               protocol_type=protocol.SOCKET, event_loop=self._event_loop,
+                                               verbose=self._verbose, pdu_format=protocol_factory.RAW)
             self._protocol.run()
             try:
                 await self._on_con_lost
             finally:
                 pass
         else:
-            self._logger.info(f"Creating client for XBee link: {self._mac}")
+            self._logger.info(f"Creating Protocol for XBee link: {self._mac}")
+            self._protocol = protocol.Protocol(com=self._com, baud=self._baud, mac=self._mac,
+                                               callbacks=self._protocol_callbacks, protocol_type=protocol.XBEE,
+                                               event_loop=self._event_loop, verbose=self._verbose,
+                                               pdu_format=protocol_factory.RAW)
+            self._protocol.run()
+            try:
+                await self._on_con_lost
+            finally:
+                pass
 
         self._logger.info("Stopped")
 
-    def _on_connection(self, protocol_client: protocol.ProtocolClient) -> None:
-        self._logger.info(f"Handling connection ")
+    def _on_connection(self, factory: protocol_factory.ProtocolFactoryBase) -> None:
+        """
+        Invoked when a factory has made a new connection.
+        :param factory: The factory that has a new connection.
+        """
+        self._logger.info(f"Handling connection from factory {factory.__hash__()}")
+        self._protocol.write_aipdu(factory, protocol.CAR_EMULATOR, _SW_VERSION, _CLIENT_NAME)
 
-    def _on_lost(self, protocol_client: protocol.ProtocolClient, exc: Optional[Exception]) -> None:
-        self._logger.info("Handling lost")
+    def _on_lost(self, factory: protocol_factory.ProtocolFactoryBase, exc: Optional[Exception]) -> None:
+        """
+        Invoked when a factory has lost its connection.
+        :param factory: The factory that has lost its connection.
+        :param exc:     Any error that caused the lost.
+        """
+        self._logger.info(f"Handling lost from factory {factory.__hash__()}")
         self._on_con_lost.set_result(False)
 
-    def _on_aipdu(self, protocol_client: protocol.ProtocolClient, header: protocol.ProtocolHeader, client_type: int,
-                  sw_ver: int, client_name: str) -> None:
-        self._logger.info("Handling AIPDU")
-        asyncio.create_task(self.periodic_pdu_transmit(protocol_client))
+    def _on_aipdu(self, factory: protocol_factory.ProtocolFactoryBase, header: protocol.ProtocolHeader,
+                  client_type: int, sw_ver: int, client_name: str) -> None:
+        """
+        Invoked when a factory has received a AIPDU frame.
+        :param factory: The factory that received the frame.
+        """
+        self._logger.info(f"Handling AIPDU from factory {factory.__hash__()}")
+        asyncio.create_task(self.periodic_pdu_transmit(factory))
 
-    def _on_acpdu(self, protocol_client: protocol.ProtocolClient, header: protocol.ProtocolHeader, rpm: int,
+    def _on_acpdu(self, factory: protocol_factory.ProtocolFactoryBase, header: protocol.ProtocolHeader, rpm: int,
                   water_temp_c: int, tps_perc: int, battery_mv: int, external_5v_mv: int, fuel_flow: int,
                   lambda_value: int, speed_kph: int) -> None:
-        self._logger.info("Handling ACPDU")
+        """
+        Invoked when a factory has received a ACPDU frame.
+        :param factory: The factory that received the frame.
+        """
+        self._logger.info(f"Handling ACPDU from factory {factory.__hash__()}")
 
-    def _on_aapdu(self, protocol_client: protocol.ProtocolClient, header: protocol.ProtocolHeader, evo_scanner1: int,
-                  evo_scanner2: int, evo_scanner3: int, evo_scanner4: int, evo_scanner5: int, evo_scanner6: int,
-                  evo_scanner7: int) -> None:
-        self._logger.info("Handling AAPDU")
+    def _on_aapdu(self, factory: protocol_factory.ProtocolFactoryBase, header: protocol.ProtocolHeader,
+                  evo_scanner1: int, evo_scanner2: int, evo_scanner3: int, evo_scanner4: int, evo_scanner5: int,
+                  evo_scanner6: int, evo_scanner7: int) -> None:
+        """
+        Invoked when a factory has received a AAPDU frame.
+        :param factory: The factory that received the frame.
+        """
+        self._logger.info(f"Handling AAPDU from factory {factory.__hash__()}")
 
-    def _on_adpdu(self, protocol_client: protocol.ProtocolClient, header: protocol.ProtocolHeader, ecu_status: int,
+    def _on_adpdu(self, factory: protocol_factory.ProtocolFactoryBase, header: protocol.ProtocolHeader, ecu_status: int,
                   engine_status: int, battery_status: int, car_logging_status: int) -> None:
-        self._logger.info("Handling ADPDU")
+        """
+        Invoked when a factory has received a ADPDU frame.
+        :param factory: The factory that received the frame.
+        """
+        self._logger.info(f"Handling ADPDU from factory {factory.__hash__()}")
 
-    def _on_appdu(self, protocol_client: protocol.ProtocolClient, header: protocol.ProtocolHeader, injection_time: int,
-                  injection_duty_cycle: int, lambda_pid_adjust: int, lambda_pid_target: int, advance: int) -> None:
-        self._logger.info("Handling APPDU")
+    def _on_appdu(self, factory: protocol_factory.ProtocolFactoryBase, header: protocol.ProtocolHeader,
+                  injection_time: int, injection_duty_cycle: int, lambda_pid_adjust: int, lambda_pid_target: int,
+                  advance: int) -> None:
+        """
+        Invoked when a factory has received a APPDU frame.
+        :param factory: The factory that received the frame.
+        """
+        self._logger.info(f"Handling APPDU from factory {factory.__hash__()}")
 
-    def _on_aspdu(self, protocol_client: protocol.ProtocolClient, header: protocol.ProtocolHeader,
-                  ride_height_fl_cm: int,
-                  ride_height_fr_cm: int, ride_height_flw_cm: int, ride_height_rear_cm: int) -> None:
-        self._logger.info("Handling ASPDU")
+    def _on_aspdu(self, factory: protocol_factory.ProtocolFactoryBase, header: protocol.ProtocolHeader,
+                  ride_height_fl_cm: int, ride_height_fr_cm: int, ride_height_flw_cm: int, ride_height_rear_cm: int) \
+            -> None:
+        """
+        Invoked when a factory has received a ASPDU frame.
+        :param factory: The factory that received the frame.
+        """
+        self._logger.info(f"Handling ASPDU from factory {factory.__hash__()}")
 
-    def _on_ampdu(self, protocol_client: protocol.ProtocolClient, header: protocol.ProtocolHeader, lap_timer_s: int,
-                  accel_fl_x_mg: int, accel_fl_y_mg: int, accel_fl_z_mg: int) -> None:
-        self._logger.info("Handling AMPDU")
+    def _on_ampdu(self, factory: protocol_factory.ProtocolFactoryBase, header: protocol.ProtocolHeader,
+                  lap_timer_s: int, accel_fl_x_mg: int, accel_fl_y_mg: int, accel_fl_z_mg: int) -> None:
+        """
+        Invoked when a factory has received a AMPDU frame.
+        :param factory: The factory that received the frame.
+        """
+        self._logger.info(f"Handling AMPDU from factory {factory.__hash__()}")
 
-    async def periodic_pdu_transmit(self, client: protocol.ProtocolClient) -> None:
+    async def periodic_pdu_transmit(self, factory: protocol_factory.ProtocolFactoryBase) -> None:
         """
         A recursive function which periodically goes through each frame and writes it.
         """
         await asyncio.sleep(1)
-        client.write_acpdu(self._rpm, self._water_temp, self._tps_perc, self._battery_mv, self._external_5v_mv,
-                           self._fuel_flow, self._lambda_val, self._speed_kph)
+        self._protocol.write_acpdu(factory, self._rpm, self._water_temp, self._tps_perc, self._battery_mv,
+                                   self._external_5v_mv, self._fuel_flow, self._lambda_val, self._speed_kph)
         self._rpm += 1
         self._water_temp += 1
         self._tps_perc += 1
@@ -179,8 +227,8 @@ class CarEmulator:
         self._speed_kph += 1
 
         await asyncio.sleep(1)
-        client.write_aapdu(self._evo_scanner1, self._evo_scanner2, self._evo_scanner3, self._evo_scanner4,
-                           self._evo_scanner5, self._evo_scanner6, self._evo_scanner7)
+        self._protocol.write_aapdu(factory, self._evo_scanner1, self._evo_scanner2, self._evo_scanner3,
+                                   self._evo_scanner4, self._evo_scanner5, self._evo_scanner6, self._evo_scanner7)
         self._evo_scanner1 += 1
         self._evo_scanner2 += 1
         self._evo_scanner3 += 1
@@ -190,15 +238,16 @@ class CarEmulator:
         self._evo_scanner7 += 1
 
         await asyncio.sleep(1)
-        client.write_adpdu(self._ecu_status, self._engine_status, self._battery_status, self._car_logging_status)
+        self._protocol.write_adpdu(factory, self._ecu_status, self._engine_status, self._battery_status,
+                                   self._car_logging_status)
         self._ecu_status = protocol.ECU_STATUS_CONNECTED
         self._engine_status = protocol.ENGINE_STATUS_IDLE
         self._battery_status = protocol.BATTERY_STATUS_HEALTHY
         self._car_logging_status = protocol.CAR_LOGGING_STATUS_OFF
 
         await asyncio.sleep(1)
-        client.write_appdu(self._injection_time, self._injection_duty_cycle, self._lambda_pid_adjust,
-                           self._lambda_pid_target, self._advance)
+        self._protocol.write_appdu(factory, self._injection_time, self._injection_duty_cycle, self._lambda_pid_adjust,
+                                   self._lambda_pid_target, self._advance)
         self._injection_time += 1
         self._injection_duty_cycle += 1
         self._lambda_pid_adjust += 1
@@ -206,21 +255,22 @@ class CarEmulator:
         self._advance += 1
 
         await asyncio.sleep(1)
-        client.write_aspdu(self._ride_height_fl_cm, self._ride_height_fr_cm, self._ride_height_flw_cm,
-                           self._ride_height_rear_cm)
+        self._protocol.write_aspdu(factory, self._ride_height_fl_cm, self._ride_height_fr_cm, self._ride_height_flw_cm,
+                                   self._ride_height_rear_cm)
         self._ride_height_fl_cm += 1
         self._ride_height_fr_cm += 1
         self._ride_height_flw_cm += 1
         self._ride_height_rear_cm += 1
 
         await asyncio.sleep(1)
-        client.write_ampdu(self._lap_timer_s, self._accel_fl_x_mg, self._accel_fl_y_mg, self._accel_fl_z_mg)
+        self._protocol.write_ampdu(factory, self._lap_timer_s, self._accel_fl_x_mg, self._accel_fl_y_mg,
+                                   self._accel_fl_z_mg)
         self._lap_timer_s += 1
         self._accel_fl_x_mg += 1
         self._accel_fl_y_mg += 1
         self._accel_fl_z_mg += 1
 
-        asyncio.create_task(self.periodic_pdu_transmit(client))
+        asyncio.create_task(self.periodic_pdu_transmit(factory))
 
     def __exit__(self, exc_type: Optional[Exception], exc_val: Optional[Exception], exc_tb: Optional[Exception]) \
             -> None:

@@ -26,6 +26,8 @@ from digi.xbee.models import message as xbee_message
 
 import common
 
+RAW, JSON = list(range(2))
+
 
 async def create_client(ip: str, port: int, callbacks: ProtocolFactoryCallbacks, verbose: str,
                         event_loop: asyncio.AbstractEventLoop) -> asyncio.coroutine:
@@ -71,10 +73,10 @@ class ProtocolFactoryCallbacks:
     def on_connection(self, factory: ProtocolFactoryBase) -> None:
         raise NotImplementedError
 
-    def on_lost(self, exc: Optional[Exception]) -> None:
+    def on_lost(self, factory: ProtocolFactoryBase, exc: Optional[Exception]) -> None:
         raise NotImplementedError
 
-    def on_receive(self, data: bytes) -> None:
+    def on_receive(self, factory: ProtocolFactoryBase, data: bytes) -> None:
         raise NotImplementedError
 
 
@@ -91,10 +93,16 @@ class ProtocolFactoryBase(asyncio.Protocol):
     def connection_lost(self, exc: Optional[Exception]) -> None:
         raise NotImplementedError
 
+    def get_pdu_format_type(self) -> int:
+        raise NotImplementedError
+
+    def set_pdu_format_type(self, pdu_format: int) -> None:
+        raise NotImplementedError
+
 
 class ProtocolFactoryXBee(ProtocolFactoryBase):
     def __init__(self, com: str, baud: int, mac_peer: str, callbacks: ProtocolFactoryCallbacks,
-                 event_loop: asyncio.BaseEventLoop, verbose: str) -> None:
+                 event_loop: asyncio.AbstractEventLoop, verbose: str) -> None:
         self._com = com
         self._baud = baud
         self._mac_peer = mac_peer
@@ -103,6 +111,7 @@ class ProtocolFactoryXBee(ProtocolFactoryBase):
         self._verbose = verbose
         self._logger = common.get_logger(type(self).__name__, verbose)
 
+        self._pdu_format = RAW
         self._xbee_remote_first_message = True
         self._xbee = xbee_devices.XBeeDevice(self._com, self._baud)
         self._xbee_remote = xbee_devices.RemoteXBeeDevice(self._xbee, xbee_devices.XBee64BitAddress.from_hex_string(
@@ -110,6 +119,7 @@ class ProtocolFactoryXBee(ProtocolFactoryBase):
         try:
             self._xbee.open()
             self._xbee.add_data_received_callback(self.on_xbee_receive)
+            self.connection_made(None)
         except serial.SerialException:
             self._logger.warning(f"Unable to connect to Xbee device {self._com}:{self._baud}")
 
@@ -130,12 +140,6 @@ class ProtocolFactoryXBee(ProtocolFactoryBase):
         data_receive.
         :param data:
         """
-        # Currently there is no way to know when the connection is made other than when we receive our first message
-        # from the peer xbee.
-        if self._xbee_remote_first_message:
-            self.connection_made(None)
-            self._xbee_remote_first_message = False
-
         self._logger.info(f"Handling xbee data {data}")
         self.data_received(data)
 
@@ -153,7 +157,7 @@ class ProtocolFactoryXBee(ProtocolFactoryBase):
         :param data:    The received data.
         """
         self._logger.info(f"-> {data}")
-        self._callbacks.on_receive(data)
+        self._callbacks.on_receive(self, data)
 
     def write(self, data: bytes) -> None:
         """
@@ -168,6 +172,20 @@ class ProtocolFactoryXBee(ProtocolFactoryBase):
         Invoked when the peer is lost.
         :param exc: An Exception if any occurred.
         """
+        self._callbacks.on_lost(self, exc)
+
+    def get_pdu_format_type(self) -> int:
+        """
+        Get the PDU format this factory is operating with.
+        """
+        return self._pdu_format
+
+    def set_pdu_format_type(self, pdu_format: int) -> None:
+        """
+        Set the PDU format this factory is operating with.
+        :param pdu_format:  The pdu format.
+        """
+        self._pdu_format = pdu_format
 
     def __hash__(self) -> int:
         """
@@ -192,6 +210,7 @@ class ProtocolFactorySocket(ProtocolFactoryBase):
         self._callbacks = callbacks
         self.peer_ip = ""
         self.peer_port = ""
+        self._pdu_format = JSON
 
     def connection_made(self, transport: asyncio.transports.BaseTransport) -> None:
         """
@@ -210,7 +229,7 @@ class ProtocolFactorySocket(ProtocolFactoryBase):
         :param data:    The received data.
         """
         self._logger.info(f"-> {data}")
-        self._callbacks.on_receive(data)
+        self._callbacks.on_receive(self, data)
 
     def write(self, data: bytes) -> None:
         """
@@ -226,7 +245,20 @@ class ProtocolFactorySocket(ProtocolFactoryBase):
         :param exc: An Exception if any occurred.
         """
         self._logger.warning("Lost connection")
-        self._callbacks.on_lost(exc)
+        self._callbacks.on_lost(self, exc)
+
+    def get_pdu_format_type(self) -> int:
+        """
+        Get the PDU format this factory is operating with.
+        """
+        return self._pdu_format
+
+    def set_pdu_format_type(self, pdu_format: int) -> None:
+        """
+        Set the PDU format this factory is operating with.
+        :param pdu_format:  The pdu format.
+        """
+        self._pdu_format = pdu_format
 
     def __hash__(self) -> int:
         """

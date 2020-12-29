@@ -16,16 +16,17 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from __future__ import annotations
-from typing import Optional
-from typing import Callable
-from typing import Dict
-import json
-import struct
-import common
-import protocol_factory
+
 import asyncio
 import datetime
+import json
+import struct
+from typing import Optional
 
+import common
+import protocol_factory
+
+SERVER, SOCKET, XBEE = list(range(3))
 AIPDU, ACPDU, AAPDU, ADPDU, APPDU, ASPDU, AMPDU = list(range(1, 8))
 CAR, CAR_EMULATOR, GUI = list(range(1, 4))
 START_BYTE, FRAME_TYPE, SEQ_NUM, EPOCH, LENGTH = list(range(5))
@@ -43,74 +44,71 @@ LAP_TIMER_S, ACCEL_FL_X_MG, ACCEL_FL_Y_MG, ACCEL_FL_Z_MG = list(range(5, 9))
 
 
 class ProtocolCallbacks:
-    def on_connection(self, protocol_client: ProtocolClient) -> None:
+    def on_connection(self, factory: protocol_factory.ProtocolFactoryBase) -> None:
         raise NotImplementedError
 
-    def on_lost(self, protocol_client: ProtocolClient, exc: Optional[Exception]) -> None:
+    def on_lost(self, factory: protocol_factory.ProtocolFactoryBase, exc: Optional[Exception]) -> None:
         raise NotImplementedError
 
-    def on_aipdu(self, protocol_client: ProtocolClient, header: ProtocolHeader, client_type: int, sw_ver: int,
-                 client_name: str) -> None:
+    def on_aipdu(self, factory: protocol_factory.ProtocolFactoryBase, header: ProtocolHeader, client_type: int,
+                 sw_ver: int, client_name: str) -> None:
         raise NotImplementedError
 
-    def on_acpdu(self, protocol_client: ProtocolClient, header: ProtocolHeader, rpm: int, water_temp_c: int,
-                 tps_perc: int, battery_mv: int, external_5v_mv: int, fuel_flow: int, lambda_value: int,
-                 speed_kph: int) -> None:
+    def on_acpdu(self, factory: protocol_factory.ProtocolFactoryBase, header: ProtocolHeader, rpm: int,
+                 water_temp_c: int, tps_perc: int, battery_mv: int, external_5v_mv: int, fuel_flow: int,
+                 lambda_value: int, speed_kph: int) -> None:
         raise NotImplementedError
 
-    def on_aapdu(self, protocol_client: ProtocolClient, header: ProtocolHeader, evo_scanner1: int, evo_scanner2: int,
-                 evo_scanner3: int, evo_scanner4: int, evo_scanner5: int, evo_scanner6: int, evo_scanner7: int) -> None:
+    def on_aapdu(self, factory: protocol_factory.ProtocolFactoryBase, header: ProtocolHeader, evo_scanner1: int,
+                 evo_scanner2: int, evo_scanner3: int, evo_scanner4: int, evo_scanner5: int, evo_scanner6: int,
+                 evo_scanner7: int) -> None:
         raise NotImplementedError
 
-    def on_adpdu(self, protocol_client: ProtocolClient, header: ProtocolHeader, ecu_status: int, engine_status: int,
-                 battery_status: int, car_logging_status: int) -> None:
+    def on_adpdu(self, factory: protocol_factory.ProtocolFactoryBase, header: ProtocolHeader, ecu_status: int,
+                 engine_status: int, battery_status: int, car_logging_status: int) -> None:
         raise NotImplementedError
 
-    def on_appdu(self, protocol_client: ProtocolClient, header: ProtocolHeader, injection_time: int,
+    def on_appdu(self, factory: protocol_factory.ProtocolFactoryBase, header: ProtocolHeader, injection_time: int,
                  injection_duty_cycle: int, lambda_pid_adjust: int, lambda_pid_target: int, advance: int) -> None:
         raise NotImplementedError
 
-    def on_aspdu(self, protocol_client: ProtocolClient, header: ProtocolHeader, ride_height_fl_cm: int,
+    def on_aspdu(self, factory: protocol_factory.ProtocolFactoryBase, header: ProtocolHeader, ride_height_fl_cm: int,
                  ride_height_fr_cm: int, ride_height_flw_cm: int, ride_height_rear_cm: int) -> None:
         raise NotImplementedError
 
-    def on_ampdu(self, protocol_client: ProtocolClient, header: ProtocolHeader, lap_timer_s: int, accel_fl_x_mg: int,
-                 accel_fl_y_mg: int, accel_fl_z_mg: int) -> None:
+    def on_ampdu(self, factory: protocol_factory.ProtocolFactoryBase, header: ProtocolHeader, lap_timer_s: int,
+                 accel_fl_x_mg: int, accel_fl_y_mg: int, accel_fl_z_mg: int) -> None:
         raise NotImplementedError
 
 
-class ProtocolClient:
-    def __init__(self, callbacks: ProtocolCallbacks, client_type: int, client_name: str,
-                 sw_ver: int, event_loop: asyncio.AbstractEventLoop, ip: str = "", port: int = 0, com: str = "",
-                 baud: int = 0, mac: str = "", factory: protocol_factory.ProtocolFactoryBase = None,
-                 verbose: str = "WARN") -> None:
+class Protocol:
+    def __init__(self, callbacks: ProtocolCallbacks, protocol_type: int, event_loop: asyncio.AbstractEventLoop,
+                 ip: str = "", port: int = 0, com: str = "", baud: int = 0, mac: str = "", pdu_format: int = None,
+                 verbose: str = "WARN") \
+            -> None:
         self._logger = common.get_logger(type(self).__name__, verbose)
         self._ip = ip
         self._port = port
         self._com = com
         self._baud = baud
         self._peer_mac = mac
-        self._client_type = client_type
-        self._client_name = client_name
-        self._sw_ver = sw_ver
+        self._protocol_type = protocol_type
         self._event_loop = event_loop
         self._verbose = verbose
+        self._pdu_format = pdu_format
         self._callbacks = callbacks
         self._factory_callbacks = protocol_factory.ProtocolFactoryCallbacks()
         self._factory_callbacks.on_connection = self._on_connection
         self._factory_callbacks.on_receive = self._on_receive
         self._factory_callbacks.on_lost = self._on_connection_lost
-        self._frame_type_dict = {AIPDU: ProtocolAIPDU, ACPDU: ProtocolACPDU, AAPDU: ProtocolAAPDU, ADPDU: ProtocolADPDU,
-                                 APPDU: ProtocolAPPDU, ASPDU: ProtocolASPDU, AMPDU: ProtocolAMPDU}
+        self._frame_type_dict = {AIPDU: _ProtocolAIPDU, ACPDU: _ProtocolACPDU, AAPDU: _ProtocolAAPDU,
+                                 ADPDU: _ProtocolADPDU,
+                                 APPDU: _ProtocolAPPDU, ASPDU: _ProtocolASPDU, AMPDU: _ProtocolAMPDU}
         self._on_methods = {AIPDU: self._on_aipdu, ACPDU: self._on_acpdu, AAPDU: self._on_aapdu, ADPDU: self._on_adpdu,
-                            APPDU: self._on_appdu, ASPDU: self._on_aspdu, AMPDU: self._on_aspdu}
+                            APPDU: self._on_appdu, ASPDU: self._on_aspdu, AMPDU: self._on_ampdu}
         self._seq_num = 1
         self._on_con_lost = None
-        self._factory = factory
-        if self._client_type == CAR_EMULATOR:
-            self._get_frame = self._get_frame_from_raw
-        else:
-            self._get_frame = self._get_frame_from_json
+        self._server = None
 
     def run(self) -> None:
         """
@@ -118,25 +116,49 @@ class ProtocolClient:
         """
         asyncio.run_coroutine_threadsafe(self._run(), self._event_loop)
 
-    def _write_pdu(self, pdu: ProtocolBase) -> None:
+    def _write_pdu(self, factory: protocol_factory.ProtocolFactoryBase, pdu: _ProtocolBase) -> None:
         """
         Write a PDU to the under laying factory in the peers format.
         :param pdu: The PDU to write.
         """
-        if self._client_type == CAR or self._client_type == CAR_EMULATOR:
+
+        if self._pdu_format is not None:
+            if self._pdu_format == protocol_factory.RAW:
+                out = pdu.pack_raw()
+            else:
+                out = pdu.pack_json()
+        elif factory.get_pdu_format_type() == protocol_factory.RAW:
             out = pdu.pack_raw()
         else:
             out = pdu.pack_json()
 
-        self._logger.info(f"<- {out}")
-        self._factory.write(out)
+        self._logger.info(f"{factory.__hash__()} <- {pdu}")
+        factory.write(out)
 
-    def write_acpdu(self, rpm: int, water_temp_c: int, tps_perc: int, battery_mv: int, external_5v_mv: int,
+    def write_aipdu(self, factory: protocol_factory.ProtocolFactoryBase,
+                    client_type: int, sw_ver: str, client_name: str):
+        """
+        Write an AIPDU frame to the wanted factory.
+        """
+        pdu = _ProtocolAIPDU()
+        pdu.header.seq_num = self._seq_num
+        self._seq_num += 1
+        now = datetime.datetime.now()
+        pdu.header.epoch = int(
+            (now - now.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds())
+        pdu.client_type = client_type
+        pdu.sw_ver = sw_ver
+        pdu.client_name = client_name
+
+        self._write_pdu(factory, pdu)
+
+    def write_acpdu(self, factory: protocol_factory.ProtocolFactoryBase,
+                    rpm: int, water_temp_c: int, tps_perc: int, battery_mv: int, external_5v_mv: int,
                     fuel_flow: int, lambda_value: int, speed_kph: int) -> None:
         """
-        Write a ACPDU to the peer.
+        Write an ACPDU frame to the wanted factory.
         """
-        pdu = ProtocolACPDU()
+        pdu = _ProtocolACPDU()
         pdu.header.seq_num = self._seq_num
         self._seq_num += 1
         now = datetime.datetime.now()
@@ -151,15 +173,15 @@ class ProtocolClient:
         pdu.lambda_val = lambda_value
         pdu.speed_kph = speed_kph
 
-        self._logger.info(f"Created {pdu}")
-        self._write_pdu(pdu)
+        self._write_pdu(factory, pdu)
 
-    def write_aapdu(self, evo_scanner1: int, evo_scanner2: int, evo_scanner3: int, evo_scanner4: int, evo_scanner5: int,
+    def write_aapdu(self, factory: protocol_factory.ProtocolFactoryBase,
+                    evo_scanner1: int, evo_scanner2: int, evo_scanner3: int, evo_scanner4: int, evo_scanner5: int,
                     evo_scanner6: int, evo_scanner7: int) -> None:
         """
-        Write a AAPDU to the peer.
+        Write an AAPDU frame to the wanted factory.
         """
-        pdu = ProtocolAAPDU()
+        pdu = _ProtocolAAPDU()
         pdu.header.seq_num = self._seq_num
         self._seq_num += 1
         now = datetime.datetime.now()
@@ -173,14 +195,14 @@ class ProtocolClient:
         pdu.evo_scanner6 = evo_scanner6
         pdu.evo_scanner7 = evo_scanner7
 
-        self._logger.info(f"Created {pdu}")
-        self._write_pdu(pdu)
+        self._write_pdu(factory, pdu)
 
-    def write_adpdu(self, ecu_status: int, engine_status: int, battery_status: int, car_logging_status: int) -> None:
+    def write_adpdu(self, factory: protocol_factory.ProtocolFactoryBase,
+                    ecu_status: int, engine_status: int, battery_status: int, car_logging_status: int) -> None:
         """
-        Write a ADPDU to the peer.
+        Write an ADPDU frame to the wanted factory.
         """
-        pdu = ProtocolADPDU()
+        pdu = _ProtocolADPDU()
         pdu.header.seq_num = self._seq_num
         self._seq_num += 1
         now = datetime.datetime.now()
@@ -191,15 +213,15 @@ class ProtocolClient:
         pdu.battery_status = battery_status
         pdu.car_logging_status = car_logging_status
 
-        self._logger.info(f"Created {pdu}")
-        self._write_pdu(pdu)
+        self._write_pdu(factory, pdu)
 
-    def write_appdu(self, injection_time: int, injection_duty_cycle: int, lambda_pid_adjust: int,
+    def write_appdu(self, factory: protocol_factory.ProtocolFactoryBase,
+                    injection_time: int, injection_duty_cycle: int, lambda_pid_adjust: int,
                     lambda_pid_target: int, advance: int) -> None:
         """
-        Write a APPDU to the peer.
+        Write an APPDU frame to the wanted factory.
         """
-        pdu = ProtocolAPPDU()
+        pdu = _ProtocolAPPDU()
         pdu.header.seq_num = self._seq_num
         self._seq_num += 1
         now = datetime.datetime.now()
@@ -211,15 +233,15 @@ class ProtocolClient:
         pdu.lambda_pid_target = lambda_pid_target
         pdu.advance = advance
 
-        self._logger.info(f"Created {pdu}")
-        self._write_pdu(pdu)
+        self._write_pdu(factory, pdu)
 
-    def write_aspdu(self, ride_height_fl_cm: int, ride_height_fr_cm: int, ride_height_flw_cm: int,
+    def write_aspdu(self, factory: protocol_factory.ProtocolFactoryBase,
+                    ride_height_fl_cm: int, ride_height_fr_cm: int, ride_height_flw_cm: int,
                     ride_height_rear_cm: int) -> None:
         """
-        Write a ASPDU to the peer.
+        Write an ASPDU frame to the wanted factory.
         """
-        pdu = ProtocolASPDU()
+        pdu = _ProtocolASPDU()
         pdu.header.seq_num = self._seq_num
         self._seq_num += 1
         now = datetime.datetime.now()
@@ -230,14 +252,14 @@ class ProtocolClient:
         pdu.ride_height_flw_cm = ride_height_flw_cm
         pdu.ride_height_rear_cm = ride_height_rear_cm
 
-        self._logger.info(f"Created {pdu}")
-        self._write_pdu(pdu)
+        self._write_pdu(factory, pdu)
 
-    def write_ampdu(self, lap_timer_s: int, accel_fl_x_mg: int, accel_fl_y_mg: int, accel_fl_z_mg: int) -> None:
+    def write_ampdu(self, factory: protocol_factory.ProtocolFactoryBase,
+                    lap_timer_s: int, accel_fl_x_mg: int, accel_fl_y_mg: int, accel_fl_z_mg: int) -> None:
         """
-        Write a AMPDU to the peer.
+        Write an AMPDU frame to the wanted factory.
         """
-        pdu = ProtocolAMPDU()
+        pdu = _ProtocolAMPDU()
         pdu.header.seq_num = self._seq_num
         self._seq_num += 1
         now = datetime.datetime.now()
@@ -248,32 +270,57 @@ class ProtocolClient:
         pdu.accel_fl_y_mg = accel_fl_y_mg
         pdu.accel_fl_z_mg = accel_fl_z_mg
 
-        self._logger.info(f"Created {pdu}")
-        self._write_pdu(pdu)
+        self._write_pdu(factory, pdu)
 
     async def _run(self) -> asyncio.coroutine:
         """
         The protocol client main event loop.
         """
-        self._logger.info(f"Creating Protocol client {self._ip}:{self._port}")
         self._on_con_lost = self._event_loop.create_future()
 
-        if self._factory is None:
-            if self._client_type == CAR_EMULATOR or self._client_type == GUI:
-                _, self._factory = await protocol_factory.create_client(self._ip, self._port, self._factory_callbacks,
-                                                                     self._verbose, self._event_loop)
+        self._logger.info(f"Creating protocol for protocol type {self._protocol_type}")
 
-        self._logger.info("Protocol client Created")
+        if self._protocol_type == SOCKET:
+            self._logger.info(f"Creating factory socket client {self._ip}:{self._port}")
 
-        try:
-            await self._on_con_lost
-        finally:
-            pass
+            _, self._factory = await protocol_factory.create_client(self._ip, self._port, self._factory_callbacks,
+                                                                    self._verbose, self._event_loop)
+            self._logger.info(f"Socket client factory created with hash {self._factory.__hash__()}")
+
+            try:
+                await self._on_con_lost
+            finally:
+                pass
+        elif self._protocol_type == XBEE:
+            self._logger.info(f"Creating factory XBee client {self._com}:{self._baud} <-> {self._peer_mac}")
+
+            self._factory = await protocol_factory.create_xbee(self._com, self._baud, self._peer_mac,
+                                                               self._factory_callbacks, self._verbose, self._event_loop)
+            self._logger.info(f"XBee client factory created with hash {self._factory.__hash__()}")
+
+            try:
+                await self._on_con_lost
+            finally:
+                pass
+        elif self._protocol_type == SERVER:
+            self._logger.info("Creating server")
+            self._server = await protocol_factory.create_server(self._ip, self._port, self._factory_callbacks,
+                                                                self._verbose, self._event_loop)
+            self._logger.info(f"Server created")
+            self._logger.info(f"Creating factory XBee client {self._com}:{self._baud} <-> {self._peer_mac}")
+
+            self._factory = await protocol_factory.create_xbee(self._com, self._baud, self._peer_mac,
+                                                               self._factory_callbacks, self._verbose, self._event_loop)
+            self._logger.info(f"XBee client factory created with hash {self._factory.__hash__()}")
+
+            async with self._server:
+                await self._server.serve_forever()
 
         self._logger.warning("Stopped")
 
-    def _get_frame_from_raw(self, buffer: bytes) -> Optional[ProtocolAIPDU, ProtocolACPDU, ProtocolAAPDU, ProtocolADPDU,
-                                                             ProtocolAPPDU, ProtocolASPDU, ProtocolAMPDU]:
+    def _get_frame_from_raw(self, buffer: bytes) -> Optional[_ProtocolAIPDU, _ProtocolACPDU, _ProtocolAAPDU,
+                                                             _ProtocolADPDU, _ProtocolAPPDU, _ProtocolASPDU,
+                                                             _ProtocolAMPDU]:
         """
         Get a frame from a raw buffer (from car stream)
         :param buffer: The raw buffer.
@@ -288,9 +335,9 @@ class ProtocolClient:
 
         return None
 
-    def _get_frame_from_json(self, buffer: bytes) -> Optional[ProtocolAIPDU, ProtocolACPDU, ProtocolAAPDU,
-                                                              ProtocolADPDU, ProtocolAPPDU, ProtocolASPDU,
-                                                              ProtocolAMPDU]:
+    def _get_frame_from_json(self, buffer: bytes) -> Optional[_ProtocolAIPDU, _ProtocolACPDU, _ProtocolAAPDU,
+                                                              _ProtocolADPDU, _ProtocolAPPDU, _ProtocolASPDU,
+                                                              _ProtocolAMPDU]:
         """
         Get a frame from a JSON buffer (from intermediate server)
         :param buffer: The JSON buffer.
@@ -300,80 +347,113 @@ class ProtocolClient:
     def _on_connection(self, factory: protocol_factory.ProtocolFactoryBase) -> asyncio.coroutine:
         """
         Invoked once the protocol factory has made a connection.
-        A AIPDU frame is automatically sent upon connection made.
         :param factory: The factory that made a connection.
         """
         self._factory = factory
-        self._callbacks.on_connection(self)
-        pdu = ProtocolAIPDU()
-        pdu.header.seq_num = self._seq_num
-        self._seq_num += 1
-        pdu.header.epoch = datetime.datetime.now().today().second
-        pdu.client_type = self._client_type
-        pdu.sw_ver = self._sw_ver
-        pdu.client_name = self._client_name
+        self._callbacks.on_connection(factory)
 
-        self._factory.write(pdu.pack_raw())
-
-    def _on_receive(self, data: bytes) -> asyncio.coroutine:
+    def _on_receive(self, factory: protocol_factory.ProtocolFactoryBase, data: bytes) -> asyncio.coroutine:
         """
         Invoked once the protocol factory has received new data.
         :param data:    The received data.
         """
         self._logger.info(f"Handling {data}")
 
-        pdu = self._get_frame(data)
+        # If the first byte is 0x01 then the factory is operating on a RAW PDU format stream.
+        if data[0] == 1:
+            pdu = self._get_frame_from_raw(data)
+            factory.set_pdu_format_type(protocol_factory.RAW)
+        else:
+            pdu = self._get_frame_from_json(data)
+            factory.set_pdu_format_type(protocol_factory.JSON)
+
         if pdu is not None:
             self._logger.info(str(pdu))
             if pdu.header.frame_type in self._on_methods:
-                return self._on_methods[pdu.header.frame_type](pdu)
+                return self._on_methods[pdu.header.frame_type](factory, pdu)
         else:
             self._logger.error("Failed to decode frame from buffer")
 
-    def _on_connection_lost(self, exc: Optional[Exception]) \
+    def _on_connection_lost(self, factory: protocol_factory.ProtocolFactoryBase, exc: Optional[Exception]) \
             -> asyncio.coroutine:
         """
         Invoked once the protocol factory has lost connection.
         """
         self._logger.info("Lost connection to peer...")
-        self._callbacks.on_lost(self, exc)
+        self._callbacks.on_lost(factory, exc)
 
-    def _on_aipdu(self, pdu: ProtocolAIPDU) -> None:
+    def _on_aipdu(self, factory: protocol_factory.ProtocolFactoryBase, pdu: _ProtocolAIPDU) -> None:
+        """
+        Invoked when a factory has received an AIPDI frame.
+        :param factory: The factory that received the frame
+        :param pdu:     The frame.
+        """
         self._logger.info("Handling AIPDU frame")
-        self._callbacks.on_aipdu(self, pdu.header, pdu.client_type, pdu.sw_ver, pdu.client_name)
+        self._callbacks.on_aipdu(factory, pdu.header, pdu.client_type, pdu.sw_ver, pdu.client_name)
 
-    def _on_acpdu(self, pdu: ProtocolACPDU) -> None:
+    def _on_acpdu(self, factory: protocol_factory.ProtocolFactoryBase, pdu: _ProtocolACPDU) -> None:
+        """
+        Invoked when a factory has received an ACPDI frame.
+        :param factory: The factory that received the frame
+        :param pdu:     The frame.
+        """
         self._logger.info("Handling ACPDU frame")
-        self._callbacks.on_acpdu(self, pdu.header, pdu.rpm, pdu.water_temp, pdu.tps_perc, pdu.battery_mv,
+        self._callbacks.on_acpdu(factory, pdu.header, pdu.rpm, pdu.water_temp, pdu.tps_perc, pdu.battery_mv,
                                  pdu.external_5v_mv, pdu.fuel_flow, pdu.lambda_val, pdu.speed_kph)
 
-    def _on_aapdu(self, pdu: ProtocolAAPDU) -> None:
+    def _on_aapdu(self, factory: protocol_factory.ProtocolFactoryBase, pdu: _ProtocolAAPDU) -> None:
+        """
+        Invoked when a factory has received an AAPDI frame.
+        :param factory: The factory that received the frame
+        :param pdu:     The frame.
+        """
         self._logger.info("Handling AAPDU frame")
-        self._callbacks.on_aapdu(self, pdu.header, pdu.evo_scanner1, pdu.evo_scanner2, pdu.evo_scanner3,
+        self._callbacks.on_aapdu(factory, pdu.header, pdu.evo_scanner1, pdu.evo_scanner2, pdu.evo_scanner3,
                                  pdu.evo_scanner4, pdu.evo_scanner5, pdu.evo_scanner6, pdu.evo_scanner7)
 
-    def _on_adpdu(self, pdu: ProtocolADPDU) -> None:
+    def _on_adpdu(self, factory: protocol_factory.ProtocolFactoryBase, pdu: _ProtocolADPDU) -> None:
+        """
+        Invoked when a factory has received an ADPDI frame.
+        :param factory: The factory that received the frame
+        :param pdu:     The frame.
+        """
         self._logger.info("Handling ADPDU frame")
-        self._callbacks.on_adpdu(self, pdu.header, pdu.ecu_status, pdu.engine_status, pdu.battery_status,
+        self._callbacks.on_adpdu(factory, pdu.header, pdu.ecu_status, pdu.engine_status, pdu.battery_status,
                                  pdu.car_logging_status)
 
-    def _on_appdu(self, pdu: ProtocolAPPDU) -> None:
+    def _on_appdu(self, factory: protocol_factory.ProtocolFactoryBase, pdu: _ProtocolAPPDU) -> None:
+        """
+        Invoked when a factory has received an APPDI frame.
+        :param factory: The factory that received the frame
+        :param pdu:     The frame.
+        """
         self._logger.info("Handling APPDU frame")
-        self._callbacks.on_appdu(self, pdu.header, pdu.injection_time, pdu.injection_duty_cycle, pdu.lambda_pid_adjust,
+        self._callbacks.on_appdu(factory, pdu.header, pdu.injection_time, pdu.injection_duty_cycle,
+                                 pdu.lambda_pid_adjust,
                                  pdu.lambda_pid_target, pdu.advance)
 
-    def _on_aspdu(self, pdu: ProtocolASPDU) -> None:
+    def _on_aspdu(self, factory: protocol_factory.ProtocolFactoryBase, pdu: _ProtocolASPDU) -> None:
+        """
+        Invoked when a factory has received an ASPDI frame.
+        :param factory: The factory that received the frame
+        :param pdu:     The frame.
+        """
         self._logger.info("Handling ASPDU frame")
-        self._callbacks.on_aspdu(self, pdu.header, pdu.ride_height_fl_cm, pdu.ride_height_fr_cm, pdu.ride_height_flw_cm,
-                                 pdu.ride_height_rear_cm)
+        self._callbacks.on_aspdu(factory, pdu.header, pdu.ride_height_fl_cm, pdu.ride_height_fr_cm,
+                                 pdu.ride_height_flw_cm, pdu.ride_height_rear_cm)
 
-    def _on_ampdu(self, pdu: AMPDU) -> None:
+    def _on_ampdu(self, factory: protocol_factory.ProtocolFactoryBase, pdu: AMPDU) -> None:
+        """
+        Invoked when a factory has received an AMPDI frame.
+        :param factory: The factory that received the frame
+        :param pdu:     The frame.
+        """
         self._logger.info("Handling AMPDU frame")
-        self._callbacks.on_ampdu(self, pdu.header, pdu.lap_timer_s, pdu.accel_fl_x_mg, pdu.accel_fl_y_mg,
+        self._callbacks.on_ampdu(factory, pdu.header, pdu.lap_timer_s, pdu.accel_fl_x_mg, pdu.accel_fl_y_mg,
                                  pdu.accel_fl_z_mg)
 
 
-class ProtocolBase:
+class _ProtocolBase:
     def __init__(self) -> None:
         pass
 
@@ -392,11 +472,11 @@ class ProtocolBase:
     def __str__(self) -> str:
         raise NotImplementedError
 
-    def __eq__(self, other: ProtocolBase) -> bool:
+    def __eq__(self, other: _ProtocolBase) -> bool:
         raise NotImplementedError
 
 
-class ProtocolHeader(ProtocolBase):
+class ProtocolHeader(_ProtocolBase):
     def __init__(self) -> None:
         """
         Initialise a protocol HEADER instance
@@ -451,7 +531,7 @@ class ProtocolHeader(ProtocolBase):
                self.length == other.length
 
 
-class ProtocolAIPDU(ProtocolBase):
+class _ProtocolAIPDU(_ProtocolBase):
     def __init__(self) -> None:
         """
         Initialise a protocol AIPDU instance
@@ -508,12 +588,12 @@ class ProtocolAIPDU(ProtocolBase):
         return str(self.header) + str({"CLIENT_TYPE": self.client_type, "SW_VER": self.sw_ver,
                                        "CLIENT_NAME": self.client_name})
 
-    def __eq__(self, other: ProtocolAIPDU) -> bool:
+    def __eq__(self, other: _ProtocolAIPDU) -> bool:
         return self.header == other.header and self.client_type == other.client_type and \
                self.sw_ver == other.sw_ver and self.client_name == self.client_name
 
 
-class ProtocolACPDU(ProtocolBase):
+class _ProtocolACPDU(_ProtocolBase):
     def __init__(self) -> None:
         """
         Initialise a protocol ACPDU instance
@@ -547,7 +627,7 @@ class ProtocolACPDU(ProtocolBase):
         """
         self.header.unpack_raw(buffer[:12])
         self.rpm, self.water_temp, self.tps_perc, self.battery_mv, self.external_5v_mv, \
-        self.fuel_flow, self.lambda_val, self.speed_kph = struct.unpack("<HhHHHHhh", buffer[12:])
+            self.fuel_flow, self.lambda_val, self.speed_kph = struct.unpack("<HhHHHHhh", buffer[12:])
 
     def pack_json(self) -> str:
         """
@@ -585,7 +665,7 @@ class ProtocolACPDU(ProtocolBase):
                                        "EXTERNAL_5V_MV": self.external_5v_mv, "FUEL_FLOW": self.fuel_flow,
                                        "LAMBDA": self.lambda_val, "SPEED_KPH": self.speed_kph})
 
-    def __eq__(self, other: ProtocolACPDU) -> bool:
+    def __eq__(self, other: _ProtocolACPDU) -> bool:
         return self.header == other.header and self.rpm == other.rpm and \
                self.water_temp == other.water_temp and self.tps_perc == self.tps_perc and \
                self.battery_mv == other.battery_mv and self.external_5v_mv == self.external_5v_mv and \
@@ -593,7 +673,7 @@ class ProtocolACPDU(ProtocolBase):
                self.speed_kph == other.speed_kph
 
 
-class ProtocolAAPDU(ProtocolBase):
+class _ProtocolAAPDU(_ProtocolBase):
     def __init__(self) -> None:
         """
         Initialise a protocol AAPDU instance
@@ -626,7 +706,7 @@ class ProtocolAAPDU(ProtocolBase):
         """
         self.header.unpack_raw(buffer[:12])
         self.evo_scanner1, self.evo_scanner2, self.evo_scanner3, self.evo_scanner4, \
-        self.evo_scanner5, self.evo_scanner6, self.evo_scanner7 = struct.unpack("<HHHHHHH", buffer[12:])
+            self.evo_scanner5, self.evo_scanner6, self.evo_scanner7 = struct.unpack("<HHHHHHH", buffer[12:])
 
     def pack_json(self) -> str:
         """
@@ -663,14 +743,14 @@ class ProtocolAAPDU(ProtocolBase):
                                        "EVO_SCANNER5": self.evo_scanner5, "EVO_SCANNER6": self.evo_scanner6,
                                        "EVO_SCANNER7": self.evo_scanner7})
 
-    def __eq__(self, other: ProtocolAAPDU) -> bool:
+    def __eq__(self, other: _ProtocolAAPDU) -> bool:
         return self.header == other.header and self.evo_scanner1 == other.evo_scanner1 and \
                self.evo_scanner2 == other.evo_scanner2 and self.evo_scanner3 == other.evo_scanner3 and \
                self.evo_scanner4 == other.evo_scanner4 and self.evo_scanner5 == other.evo_scanner5 and \
                self.evo_scanner6 == other.evo_scanner6 and self.evo_scanner7 == other.evo_scanner7
 
 
-class ProtocolADPDU(ProtocolBase):
+class _ProtocolADPDU(_ProtocolBase):
     def __init__(self) -> None:
         """
         Initialise a protocol ADPDU instance
@@ -731,13 +811,13 @@ class ProtocolADPDU(ProtocolBase):
                                        "BATTERY_STATUS": self.battery_status,
                                        "CAR_LOGGING_STATUS": self.car_logging_status})
 
-    def __eq__(self, other: ProtocolADPDU) -> bool:
+    def __eq__(self, other: _ProtocolADPDU) -> bool:
         return self.header == other.header and self.ecu_status == other.ecu_status and \
                self.engine_status == other.engine_status and self.battery_status == other.battery_status and \
                self.car_logging_status == other.car_logging_status
 
 
-class ProtocolAPPDU(ProtocolBase):
+class _ProtocolAPPDU(_ProtocolBase):
     def __init__(self) -> None:
         """
         Initialise a protocol APPDU instance
@@ -802,14 +882,14 @@ class ProtocolAPPDU(ProtocolBase):
                                        "LAMBDA_PID_ADJUST": self.lambda_pid_adjust,
                                        "LAMBDA_PID_TARGET": self.lambda_pid_target})
 
-    def __eq__(self, other: ProtocolAPPDU) -> bool:
+    def __eq__(self, other: _ProtocolAPPDU) -> bool:
         return self.header == other.header and self.injection_time == other.injection_time and \
                self.injection_duty_cycle == other.injection_duty_cycle and \
                self.lambda_pid_adjust == other.lambda_pid_adjust and \
                self.lambda_pid_target == other.lambda_pid_target
 
 
-class ProtocolASPDU(ProtocolBase):
+class _ProtocolASPDU(_ProtocolBase):
     def __init__(self) -> None:
         """
         Initialise a protocol APPDU instance
@@ -873,14 +953,14 @@ class ProtocolASPDU(ProtocolBase):
                                        "RIDE_HEIGHT_FLW_CM": self.ride_height_flw_cm,
                                        "RIDE_HEIGHT_REAR_CM": self.ride_height_rear_cm})
 
-    def __eq__(self, other: ProtocolASPDU) -> bool:
+    def __eq__(self, other: _ProtocolASPDU) -> bool:
         return self.header == other.header and self.ride_height_fl_cm == other.ride_height_fl_cm and \
                self.ride_height_fr_cm == other.ride_height_fr_cm and \
                self.ride_height_flw_cm == other.ride_height_flw_cm and \
                self.ride_height_rear_cm == other.ride_height_rear_cm
 
 
-class ProtocolAMPDU(ProtocolBase):
+class _ProtocolAMPDU(_ProtocolBase):
     def __init__(self) -> None:
         """
         Initialise a protocol APMDU instance
@@ -941,7 +1021,7 @@ class ProtocolAMPDU(ProtocolBase):
         return str(self.header) + str({"LAP_TIMER_S": self.lap_timer_s, "ACCEL_FL_X_MG": self.accel_fl_x_mg,
                                        "ACCEL_FL_Y_MG": self.accel_fl_y_mg, "ACCEL_FL_Z_MG": self.accel_fl_z_mg})
 
-    def __eq__(self, other: ProtocolAMPDU) -> bool:
+    def __eq__(self, other: _ProtocolAMPDU) -> bool:
         return self.header == other.header and self.lap_timer_s == other.lap_timer_s and \
                self.accel_fl_x_mg == other.accel_fl_x_mg and \
                self.accel_fl_y_mg == other.accel_fl_y_mg and \
