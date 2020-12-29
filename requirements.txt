@@ -1,8 +1,28 @@
 ### Python Dependencies: 
 
-digi-xbee 
-serial 
-dash 
+
+Flask 
+Flask-Compress
+Jinja2
+Werkzeug
+MarkupSafe
+click
+dash
+digi-xbee
+serial
+future
+itsdangerous
+numpy
+pandas
+plotly
+pytz 
+python-dateutil
+retrying 
+srp
+wheel
+setuptools
+six
+
 
 ### Note that dash is only used for the GUI Emulation.  
-
+## Also note that most of these packages will be installed automatically as a dependency on top of others. There are included in this script just in case. 
