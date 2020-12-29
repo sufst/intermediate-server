@@ -19,6 +19,9 @@ from __future__ import annotations
 
 import math
 from typing import Optional
+from typing import List
+from typing import Dict
+from typing import Tuple
 import asyncio
 import protocol
 import protocol_factory
@@ -29,24 +32,55 @@ import argparse
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
+from dash.development.base_component import Component
 import plotly.graph_objects
+import plotly.subplots
 from dash.dependencies import Input, Output
 
 _SW_VERSION = 10000
 _CLIENT_NAME = "GUI-EMULATOR"
 
+_DROPDOWN_MENU_OPTIONS = [
+    {"label": "RPM", "value": protocol.RPM},
+    {"label": "TPS", "value": protocol.TPS_PERC},
+    {"label": "Water Temp C", "value": protocol.WATER_TEMP_C},
+    {"label": "Speed KPH", "value": protocol.SPEED_KPH}
+]
+
 
 class Shadow:
-    _values = [0]
+    _rpm = [0]
+    _tps = [0]
+    _water_temp = [0]
+    _speed = [0]
+    counter = 0
 
     def __init__(self) -> None:
         pass
 
-    def put_values(self, values: list) -> None:
-        self._values.extend(values)
+    def put_rpm(self, values: list) -> None:
+        self._rpm.extend(values)
 
-    def get_values(self, n: int) -> list:
-        return self._values[-n:]
+    def get_rpm(self, n: int) -> list:
+        return self._rpm[-n:]
+
+    def put_tps(self, values: list) -> None:
+        self._tps.extend(values)
+
+    def get_tps(self, n: int) -> list:
+        return self._tps[-n:]
+
+    def put_water_temp(self, values: list) -> None:
+        self._water_temp.extend(values)
+
+    def get_water_temp(self, n: int) -> list:
+        return self._water_temp[-n:]
+
+    def put_speed(self, values: list) -> None:
+        self._speed.extend(values)
+
+    def get_speed(self, n: int) -> list:
+        return self._speed[-n:]
 
 
 class Client(threading.Thread):
@@ -193,23 +227,86 @@ def build_footer() -> html.Div:
                              "This is free software, and you are welcome to redistribute it")])
 
 
-def build_interval(component_id: str, interval_ms: int) -> html.Div:
+def build_interval_div(component_id: str, interval_ms: int) -> html.Div:
     interval = dcc.Interval(id=component_id, interval=interval_ms, n_intervals=0, disabled=False)
 
     return html.Div([interval])
 
 
-def get_line_graph(x: list, y: list, title: str, yaxis_range: Optional[list] = None) \
+def get_line_graph_figure(x: list, y: list, title: str, yaxis_range: Optional[list] = None) \
         -> plotly.graph_objects.Figure:
     return plotly.graph_objects.Figure(data=plotly.graph_objects.Scatter(x=x, y=y),
                                        layout_yaxis_range=yaxis_range, layout_title=title)
 
 
-def build_line_graph(component_id: str, initial_x: list, initial_y: list, title: str,
-                     yaxis_range: Optional[list] = None) -> html.Div:
-    figure = get_line_graph(initial_x, initial_y, title, yaxis_range)
+def get_line_graph(x: list, y: list) -> plotly.graph_objects.Scatter:
+    return plotly.graph_objects.Scatter(x=x, y=y)
+
+
+def build_line_graph_div(component_id: str, initial_x: list, initial_y: list, title: str,
+                         yaxis_range: Optional[list] = None) -> html.Div:
+    figure = get_line_graph_figure(initial_x, initial_y, title, yaxis_range)
 
     return html.Div([(dcc.Graph(id=component_id, figure=figure))])
+
+
+def get_indicator(value: int, title: str) -> plotly.graph_objects.Figure:
+    return plotly.graph_objects.Figure(data=plotly.graph_objects.Indicator(mode="number", value=value, title=title),
+                                       layout_height=400)
+
+
+def build_indicator_div(component_id: str, value: int, title: str, class_name: Optional[str] = Component.UNDEFINED) \
+        -> html.Div:
+    figure = get_indicator(value, title)
+
+    return html.Div([(dcc.Graph(id=component_id, figure=figure))], className=class_name)
+
+
+def get_gauge(value: int, title: str, y_range: List[min, max]) -> plotly.graph_objects.Figure:
+    return plotly.graph_objects.Figure(data=plotly.graph_objects.Indicator(
+        mode="gauge+number", value=value,
+        title=title, gauge={"axis": {"range": y_range}}))
+
+
+def build_gauge_div(component_id: str, value: int, title: str, y_range: List[min, max],
+                    class_name: Optional[str] = Component.UNDEFINED) \
+        -> html.Div:
+    figure = get_gauge(value, title, y_range)
+
+    return html.Div([(dcc.Graph(id=component_id, figure=figure))], className=class_name)
+
+
+def build_dropdown_multi_menu_div(component_id: str, options: List[Dict[str: str]], default: str) -> html.Div:
+    return html.Div([
+        dcc.Dropdown(id=component_id, options=options, value=[default], multi=True)
+    ])
+
+
+def build_empty_subplots_div(component_id: str) -> html.Div:
+    return html.Div([
+        dcc.Graph(id=component_id)
+    ])
+
+
+def build_core_gauges_row_div() -> html.Div:
+    return html.Div([
+        build_gauge_div("RPM-gau", 0, "RPM", [0, 10000], class_name="three columns"),
+        build_gauge_div("TPS-gau", 0, "TPS %", [0, 100], class_name="three columns"),
+        build_gauge_div("Water-gau", 0, "Water C", [0, 160], class_name="three columns"),
+        build_gauge_div("Speed-gau", 0, "Speed KPH", [0, 60], class_name="three columns"),
+    ], className="row")
+
+
+def build_acpdu_div() -> html.Div:
+    return html.Div([
+        build_core_gauges_row_div()
+    ])
+
+
+def build_select_graph_div() -> html.Div:
+    return html.Div([
+        build_dropdown_multi_menu_div("graphs-drop", _DROPDOWN_MENU_OPTIONS, protocol.RPM)
+    ])
 
 
 def boot_strap(ip: str, port: int, verbose: str) -> None:
@@ -218,21 +315,68 @@ def boot_strap(ip: str, port: int, verbose: str) -> None:
 
     _app.layout = html.Div([
         build_header(),
-        build_interval("interval-1", 100),
-        build_line_graph("graph-1", [0], [0], "Example line graph"),
+        build_interval_div("interval-1", 100),
+        build_acpdu_div(),
+        build_select_graph_div(),
+        build_empty_subplots_div("multi-graphs"),
         build_footer()
     ])
 
 
 @_app.callback(
-    Output(component_id='graph-1', component_property="figure"),
+    Output(component_id='RPM-gau', component_property="figure"),
+    Output(component_id='TPS-gau', component_property="figure"),
+    Output(component_id='Water-gau', component_property="figure"),
+    Output(component_id='Speed-gau', component_property="figure"),
     Input(component_id='interval-1', component_property='n_intervals')
 )
-def update_graph(n_intervals: int) -> plotly.graph_objects.Figure:
-    y = _shadow.get_values(40)
-    x = list(range(-len(y), 0))
+def update_gauges(n_intervals: int) -> Tuple[plotly.graph_objects.Figure, plotly.graph_objects.Figure,
+                                             plotly.graph_objects.Figure, plotly.graph_objects.Figure]:
+    _shadow.put_rpm([5000 * math.sin(math.radians(_shadow.counter)) + 5000])
+    _shadow.put_tps([50 * math.sin(math.radians(_shadow.counter)) + 50])
+    _shadow.put_water_temp([80 * math.sin(math.radians(_shadow.counter)) + 80])
+    _shadow.put_speed([30 * math.sin(math.radians(_shadow.counter)) + 30])
+    _shadow.counter += 1
 
-    return get_line_graph(x, y, "Example line graph", [0, 10000])
+    rpm = get_gauge(_shadow.get_rpm(1)[0], "RPM", [0, 10000])
+    tps = get_gauge(_shadow.get_tps(1)[0], "TPS %", [0, 100])
+    water = get_gauge(_shadow.get_water_temp(1)[0], "Water C", [0, 160])
+    speed = get_gauge(_shadow.get_speed(1)[0], "Speed KPH", [0, 60])
+
+    return rpm, tps, water, speed
+
+
+@_app.callback(
+    Output(component_id='multi-graphs', component_property='figure'),
+    Input(component_id='graphs-drop', component_property='value'),
+    Input(component_id='interval-1', component_property='n_intervals')
+)
+def update_dropdown_multi(value: List, n_intervals: int) -> plotly.graph_objects.Figure:
+    graphs = []
+    titles = []
+
+    if protocol.RPM in value:
+        y = _shadow.get_rpm(40)
+        x = list(range(-len(y), 0))
+        graphs.append({"graph": get_line_graph(x, y), "ranges": [0, 10000]})
+        titles.append("RPM")
+
+    if protocol.WATER_TEMP_C in value:
+        y = _shadow.get_water_temp(40)
+        x = list(range(-len(y), 0))
+        graphs.append({"graph": get_line_graph(x, y), "ranges": [0, 160]})
+        titles.append("Water Temp C")
+
+    figure = plotly.subplots.make_subplots(rows=len(value), cols=1, subplot_titles=tuple(titles))
+
+    row = 1
+    for graph in graphs:
+        figure.add_trace(graph["graph"], row=row, col=1)
+        figure.update_yaxes(range=graph["ranges"], row=row, col=1)
+        row += 1
+
+    figure.update_layout(height=500*len(value))
+    return figure
 
 
 if __name__ == '__main__':
@@ -240,7 +384,7 @@ if __name__ == '__main__':
 
     parser.add_argument("--port", type=int, default=19900, help="The port to host the server on.")
     parser.add_argument("--ip", type=str, default="127.0.0.1", help="The IP address to host the server on.")
-    parser.add_argument("--verbose", type=str, default="INFO",
+    parser.add_argument("--verbose", type=str, default="WARN",
                         help="The verbose level of the server: DEBUG, INFO, WARN, ERROR")
 
     print(f"Car Emulator build {_SW_VERSION} Copyright (C) 2020 Nathan Rowley-Smith\n" +
