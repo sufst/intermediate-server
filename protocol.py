@@ -136,7 +136,7 @@ class Protocol:
         factory.write(out)
 
     def write_aipdu(self, factory: protocol_factory.ProtocolFactoryBase,
-                    client_type: int, sw_ver: str, client_name: str):
+                    client_type: int, sw_ver: int, client_name: str):
         """
         Write an AIPDU frame to the wanted factory.
         """
@@ -342,7 +342,15 @@ class Protocol:
         Get a frame from a JSON buffer (from intermediate server)
         :param buffer: The JSON buffer.
         """
-        raise NotImplementedError
+        if len(buffer) > 12:
+            header = ProtocolHeader()
+            header.unpack_json(buffer)
+            if header.frame_type in self._frame_type_dict:
+                frame = self._frame_type_dict[header.frame_type]()
+                frame.unpack_json(buffer)
+                return frame
+
+        return None
 
     def _on_connection(self, factory: protocol_factory.ProtocolFactoryBase) -> asyncio.coroutine:
         """
@@ -359,8 +367,15 @@ class Protocol:
         """
         self._logger.info(f"Handling {data}")
 
+        if self._pdu_format is not None:
+            if self._pdu_format == protocol_factory.RAW:
+                pdu = self._get_frame_from_raw(data)
+                factory.set_pdu_format_type(protocol_factory.RAW)
+            else:
+                pdu = self._get_frame_from_json(data)
+                factory.set_pdu_format_type(protocol_factory.JSON)
         # If the first byte is 0x01 then the factory is operating on a RAW PDU format stream.
-        if data[0] == 1:
+        elif data[0] == 1:
             pdu = self._get_frame_from_raw(data)
             factory.set_pdu_format_type(protocol_factory.RAW)
         else:
@@ -463,10 +478,10 @@ class _ProtocolBase:
     def unpack_raw(self, buffer: bytes) -> None:
         raise NotImplementedError
 
-    def pack_json(self) -> str:
+    def pack_json(self) -> bytes:
         raise NotImplementedError
 
-    def unpack_json(self, buffer: str) -> None:
+    def unpack_json(self, buffer: bytes) -> None:
         raise NotImplementedError
 
     def __str__(self) -> str:
@@ -502,22 +517,22 @@ class ProtocolHeader(_ProtocolBase):
         """
         self.start_byte, self.frame_type, self.seq_num, self.epoch, self.length = struct.unpack("<BBIIH", buffer)
 
-    def pack_json(self) -> str:
+    def pack_json(self) -> bytes:
         """
         Pack self to a JSON string.
         """
         return json.dumps({FRAME_TYPE: self.frame_type, SEQ_NUM: self.seq_num,
-                           EPOCH: self.epoch})
+                           EPOCH: self.epoch}).encode()
 
-    def unpack_json(self, buffer: str) -> None:
+    def unpack_json(self, buffer: bytes) -> None:
         """
         Unpack a JSON string into self.
         :param buffer:  The JSON string.
         """
-        temp = json.loads(buffer)
-        self.frame_type = temp[FRAME_TYPE]
-        self.seq_num = temp[SEQ_NUM]
-        self.epoch = temp[EPOCH]
+        temp = json.loads(buffer.decode())
+        self.frame_type = temp[str(FRAME_TYPE)]
+        self.seq_num = temp[str(SEQ_NUM)]
+        self.epoch = temp[str(EPOCH)]
 
     def __str__(self) -> str:
         """
@@ -561,25 +576,24 @@ class _ProtocolAIPDU(_ProtocolBase):
         self.client_type, self.sw_ver = struct.unpack("<BI", buffer[12:17])
         self.client_name = buffer[17:].decode()
 
-    def pack_json(self) -> str:
+    def pack_json(self) -> bytes:
         """
         Pack self to a JSON string.
         """
-        return self.header.pack_json() + json.dumps({CLIENT_TYPE: self.client_type, SW_VER: self.sw_ver,
-                                                     CLIENT_NAME: self.client_name})
+        temp = json.dumps({FRAME_TYPE: self.header.frame_type, SEQ_NUM: self.header.seq_num, EPOCH: self.header.epoch,
+                           CLIENT_TYPE: self.client_type, SW_VER: self.sw_ver, CLIENT_NAME: self.client_name})
+        return temp.encode()
 
-    def unpack_json(self, buffer: str) -> None:
+    def unpack_json(self, buffer: bytes) -> None:
         """
         Unpack a JSON string into self.
         :param buffer:  The JSON string.
         """
-        temp = json.loads(buffer)
-        self.header.frame_type = temp[FRAME_TYPE]
-        self.header.seq_num = temp[SEQ_NUM]
-        self.header.epoch = temp[EPOCH]
-        self.client_type = temp[CLIENT_TYPE]
-        self.sw_ver = temp[SW_VER]
-        self.client_name = temp[CLIENT_NAME]
+        self.header.unpack_json(buffer)
+        temp = json.loads(buffer.decode())
+        self.client_type = temp[str(CLIENT_TYPE)]
+        self.sw_ver = temp[str(SW_VER)]
+        self.client_name = temp[str(CLIENT_NAME)]
 
     def __str__(self) -> str:
         """
@@ -627,34 +641,33 @@ class _ProtocolACPDU(_ProtocolBase):
         """
         self.header.unpack_raw(buffer[:12])
         self.rpm, self.water_temp, self.tps_perc, self.battery_mv, self.external_5v_mv, \
-            self.fuel_flow, self.lambda_val, self.speed_kph = struct.unpack("<HhHHHHhh", buffer[12:])
+        self.fuel_flow, self.lambda_val, self.speed_kph = struct.unpack("<HhHHHHhh", buffer[12:])
 
-    def pack_json(self) -> str:
+    def pack_json(self) -> bytes:
         """
         Pack self to a JSON string.
         """
-        return self.header.pack_json() + json.dumps({RPM: self.rpm, WATER_TEMP_C: self.water_temp,
-                                                     TPS_PERC: self.tps_perc, BATTERY_MV: self.battery_mv,
-                                                     EXTERNAL_5V_MV: self.external_5v_mv, FUEL_FLOW: self.fuel_flow,
-                                                     LAMBDA: self.lambda_val, SPEED_KPH: self.speed_kph})
+        temp = json.dumps({FRAME_TYPE: self.header.frame_type, SEQ_NUM: self.header.seq_num, EPOCH: self.header.epoch,
+                           RPM: self.rpm, WATER_TEMP_C: self.water_temp, TPS_PERC: self.tps_perc,
+                           BATTERY_MV: self.battery_mv, EXTERNAL_5V_MV: self.external_5v_mv, FUEL_FLOW: self.fuel_flow,
+                           LAMBDA: self.lambda_val, SPEED_KPH: self.speed_kph})
+        return temp.encode()
 
-    def unpack_json(self, buffer: str) -> None:
+    def unpack_json(self, buffer: bytes) -> None:
         """
         Unpack a JSON string into self.
         :param buffer:  The JSON string.
         """
-        temp = json.loads(buffer)
-        self.header.frame_type = temp[FRAME_TYPE]
-        self.header.seq_num = temp[SEQ_NUM]
-        self.header.epoch = temp[EPOCH]
-        self.rpm = temp[RPM]
-        self.water_temp = temp[WATER_TEMP_C]
-        self.tps_perc = temp[TPS_PERC]
-        self.battery_mv = temp[BATTERY_MV]
-        self.external_5v_mv = temp[EXTERNAL_5V_MV]
-        self.fuel_flow = temp[FUEL_FLOW]
-        self.lambda_val = temp[LAMBDA]
-        self.speed_kph = temp[SPEED_KPH]
+        self.header.unpack_json(buffer)
+        temp = json.loads(buffer.decode())
+        self.rpm = temp[str(RPM)]
+        self.water_temp = temp[str(WATER_TEMP_C)]
+        self.tps_perc = temp[str(TPS_PERC)]
+        self.battery_mv = temp[str(BATTERY_MV)]
+        self.external_5v_mv = temp[str(EXTERNAL_5V_MV)]
+        self.fuel_flow = temp[str(FUEL_FLOW)]
+        self.lambda_val = temp[str(LAMBDA)]
+        self.speed_kph = temp[str(SPEED_KPH)]
 
     def __str__(self) -> str:
         """
@@ -706,33 +719,33 @@ class _ProtocolAAPDU(_ProtocolBase):
         """
         self.header.unpack_raw(buffer[:12])
         self.evo_scanner1, self.evo_scanner2, self.evo_scanner3, self.evo_scanner4, \
-            self.evo_scanner5, self.evo_scanner6, self.evo_scanner7 = struct.unpack("<HHHHHHH", buffer[12:])
+        self.evo_scanner5, self.evo_scanner6, self.evo_scanner7 = struct.unpack("<HHHHHHH", buffer[12:])
 
-    def pack_json(self) -> str:
+    def pack_json(self) -> bytes:
         """
         Pack self to a JSON string.
         """
-        return self.header.pack_json() + json.dumps({EVO_SCANNER1: self.evo_scanner1, EVO_SCANNER2: self.evo_scanner2,
-                                                     EVO_SCANNER3: self.evo_scanner3, EVO_SCANNER4: self.evo_scanner4,
-                                                     EVO_SCANNER5: self.evo_scanner5, EVO_SCANNER6: self.evo_scanner6,
-                                                     EVO_SCANNER7: self.evo_scanner7})
+        temp = json.dumps({FRAME_TYPE: self.header.frame_type, SEQ_NUM: self.header.seq_num, EPOCH: self.header.epoch,
+                           EVO_SCANNER1: self.evo_scanner1, EVO_SCANNER2: self.evo_scanner2,
+                           EVO_SCANNER3: self.evo_scanner3, EVO_SCANNER4: self.evo_scanner4,
+                           EVO_SCANNER5: self.evo_scanner5, EVO_SCANNER6: self.evo_scanner6,
+                           EVO_SCANNER7: self.evo_scanner7})
+        return temp.encode()
 
-    def unpack_json(self, buffer: str) -> None:
+    def unpack_json(self, buffer: bytes) -> None:
         """
         Unpack a JSON string into self.
         :param buffer:  The JSON string.
         """
-        temp = json.loads(buffer)
-        self.header.frame_type = temp[FRAME_TYPE]
-        self.header.seq_num = temp[SEQ_NUM]
-        self.header.epoch = temp[EPOCH]
-        self.evo_scanner1 = temp[EVO_SCANNER1]
-        self.evo_scanner2 = temp[EVO_SCANNER2]
-        self.evo_scanner3 = temp[EVO_SCANNER3]
-        self.evo_scanner4 = temp[EVO_SCANNER4]
-        self.evo_scanner5 = temp[EVO_SCANNER5]
-        self.evo_scanner6 = temp[EVO_SCANNER6]
-        self.evo_scanner7 = temp[EVO_SCANNER7]
+        self.header.unpack_json(buffer)
+        temp = json.loads(buffer.decode())
+        self.evo_scanner1 = temp[str(EVO_SCANNER1)]
+        self.evo_scanner2 = temp[str(EVO_SCANNER2)]
+        self.evo_scanner3 = temp[str(EVO_SCANNER3)]
+        self.evo_scanner4 = temp[str(EVO_SCANNER4)]
+        self.evo_scanner5 = temp[str(EVO_SCANNER5)]
+        self.evo_scanner6 = temp[str(EVO_SCANNER6)]
+        self.evo_scanner7 = temp[str(EVO_SCANNER7)]
 
     def __str__(self) -> str:
         """
@@ -781,27 +794,26 @@ class _ProtocolADPDU(_ProtocolBase):
         self.ecu_status, self.engine_status, self.battery_status, self.car_logging_status \
             = struct.unpack("<BBBB", buffer[12:])
 
-    def pack_json(self) -> str:
+    def pack_json(self) -> bytes:
         """
         Pack self to a JSON string.
         """
-        return self.header.pack_json() + json.dumps({ECU_STATUS: self.ecu_status, ENGINE_STATUS: self.engine_status,
-                                                     BATTERY_STATUS: self.battery_status,
-                                                     CAR_LOGGING_STATUS: self.car_logging_status})
+        temp = json.dumps({FRAME_TYPE: self.header.frame_type, SEQ_NUM: self.header.seq_num, EPOCH: self.header.epoch,
+                           ECU_STATUS: self.ecu_status, ENGINE_STATUS: self.engine_status,
+                           BATTERY_STATUS: self.battery_status, CAR_LOGGING_STATUS: self.car_logging_status})
+        return temp.encode()
 
-    def unpack_json(self, buffer: str) -> None:
+    def unpack_json(self, buffer: bytes) -> None:
         """
         Unpack a JSON string into self.
         :param buffer:  The JSON string.
         """
-        temp = json.loads(buffer)
-        self.header.frame_type = temp[FRAME_TYPE]
-        self.header.seq_num = temp[SEQ_NUM]
-        self.header.epoch = temp[EPOCH]
-        self.ecu_status = temp[ECU_STATUS]
-        self.engine_status = temp[ENGINE_STATUS]
-        self.battery_status = temp[BATTERY_STATUS]
-        self.car_logging_status = temp[CAR_LOGGING_STATUS]
+        self.header.unpack_json(buffer)
+        temp = json.loads(buffer.decode())
+        self.ecu_status = temp[str(ECU_STATUS)]
+        self.engine_status = temp[str(ENGINE_STATUS)]
+        self.battery_status = temp[str(BATTERY_STATUS)]
+        self.car_logging_status = temp[str(CAR_LOGGING_STATUS)]
 
     def __str__(self) -> str:
         """
@@ -850,28 +862,26 @@ class _ProtocolAPPDU(_ProtocolBase):
         self.injection_time, self.injection_duty_cycle, self.lambda_pid_adjust, self.lambda_pid_target = \
             struct.unpack("<HHHH", buffer[12:])
 
-    def pack_json(self) -> str:
+    def pack_json(self) -> bytes:
         """
         Pack self to a JSON string.
         """
-        return self.header.pack_json() + json.dumps({INJECTION_TIME: self.injection_time,
-                                                     INJECTION_DUTY_CYCLE: self.injection_duty_cycle,
-                                                     LAMBDA_PID_ADJUST: self.lambda_pid_adjust,
-                                                     LAMBDA_PID_TARGET: self.lambda_pid_target})
+        temp = json.dumps({FRAME_TYPE: self.header.frame_type, SEQ_NUM: self.header.seq_num, EPOCH: self.header.epoch,
+                           INJECTION_TIME: self.injection_time, INJECTION_DUTY_CYCLE: self.injection_duty_cycle,
+                           LAMBDA_PID_ADJUST: self.lambda_pid_adjust, LAMBDA_PID_TARGET: self.lambda_pid_target})
+        return temp.encode()
 
-    def unpack_json(self, buffer: str) -> None:
+    def unpack_json(self, buffer: bytes) -> None:
         """
         Unpack a JSON string into self.
         :param buffer:  The JSON string.
         """
-        temp = json.loads(buffer)
-        self.header.frame_type = temp[FRAME_TYPE]
-        self.header.seq_num = temp[SEQ_NUM]
-        self.header.epoch = temp[EPOCH]
-        self.injection_time = temp[INJECTION_TIME]
-        self.injection_duty_cycle = temp[INJECTION_DUTY_CYCLE]
-        self.lambda_pid_adjust = temp[LAMBDA_PID_ADJUST]
-        self.lambda_pid_target = temp[LAMBDA_PID_TARGET]
+        self.header.unpack_json(buffer)
+        temp = json.loads(buffer.decode())
+        self.injection_time = temp[str(INJECTION_TIME)]
+        self.injection_duty_cycle = temp[str(INJECTION_DUTY_CYCLE)]
+        self.lambda_pid_adjust = temp[str(LAMBDA_PID_ADJUST)]
+        self.lambda_pid_target = temp[str(LAMBDA_PID_TARGET)]
 
     def __str__(self) -> str:
         """
@@ -921,28 +931,26 @@ class _ProtocolASPDU(_ProtocolBase):
         self.ride_height_fl_cm, self.ride_height_fr_cm, self.ride_height_flw_cm, self.ride_height_rear_cm = \
             struct.unpack("<hhhh", buffer[12:])
 
-    def pack_json(self) -> str:
+    def pack_json(self) -> bytes:
         """
         Pack self to a JSON string.
         """
-        return self.header.pack_json() + json.dumps({RIDE_HEIGHT_FL_CM: self.ride_height_fl_cm,
-                                                     RIDE_HEIGHT_FR_CM: self.ride_height_fr_cm,
-                                                     RIDE_HEIGHT_FLW_CM: self.ride_height_flw_cm,
-                                                     RIDE_HEIGHT_REAR_CM: self.ride_height_rear_cm})
+        temp = json.dumps({FRAME_TYPE: self.header.frame_type, SEQ_NUM: self.header.seq_num, EPOCH: self.header.epoch,
+                           RIDE_HEIGHT_FL_CM: self.ride_height_fl_cm, RIDE_HEIGHT_FR_CM: self.ride_height_fr_cm,
+                           RIDE_HEIGHT_FLW_CM: self.ride_height_flw_cm, RIDE_HEIGHT_REAR_CM: self.ride_height_rear_cm})
+        return temp.encode()
 
-    def unpack_json(self, buffer: str) -> None:
+    def unpack_json(self, buffer: bytes) -> None:
         """
         Unpack a JSON string into self.
         :param buffer:  The JSON string.
         """
-        temp = json.loads(buffer)
-        self.header.frame_type = temp[FRAME_TYPE]
-        self.header.seq_num = temp[SEQ_NUM]
-        self.header.epoch = temp[EPOCH]
-        self.ride_height_fl_cm = temp[RIDE_HEIGHT_FL_CM]
-        self.ride_height_fr_cm = temp[RIDE_HEIGHT_FR_CM]
-        self.ride_height_flw_cm = temp[RIDE_HEIGHT_FLW_CM]
-        self.ride_height_rear_cm = temp[RIDE_HEIGHT_REAR_CM]
+        self.header.unpack_json(buffer)
+        temp = json.loads(buffer.decode())
+        self.ride_height_fl_cm = temp[str(RIDE_HEIGHT_FL_CM)]
+        self.ride_height_fr_cm = temp[str(RIDE_HEIGHT_FR_CM)]
+        self.ride_height_flw_cm = temp[str(RIDE_HEIGHT_FLW_CM)]
+        self.ride_height_rear_cm = temp[str(RIDE_HEIGHT_REAR_CM)]
 
     def __str__(self) -> str:
         """
@@ -992,27 +1000,26 @@ class _ProtocolAMPDU(_ProtocolBase):
         self.lap_timer_s, self.accel_fl_x_mg, self.accel_fl_y_mg, self.accel_fl_z_mg = \
             struct.unpack("<ihhh", buffer[12:])
 
-    def pack_json(self) -> str:
+    def pack_json(self) -> bytes:
         """
         Pack self to a JSON string.
         """
-        return self.header.pack_json() + json.dumps({LAP_TIMER_S: self.lap_timer_s, ACCEL_FL_X_MG: self.accel_fl_x_mg,
-                                                     ACCEL_FL_Y_MG: self.accel_fl_y_mg,
-                                                     ACCEL_FL_Z_MG: self.accel_fl_z_mg})
+        temp = json.dumps({FRAME_TYPE: self.header.frame_type, SEQ_NUM: self.header.seq_num, EPOCH: self.header.epoch,
+                           LAP_TIMER_S: self.lap_timer_s, ACCEL_FL_X_MG: self.accel_fl_x_mg,
+                           ACCEL_FL_Y_MG: self.accel_fl_y_mg, ACCEL_FL_Z_MG: self.accel_fl_z_mg})
+        return temp.encode()
 
-    def unpack_json(self, buffer: str) -> None:
+    def unpack_json(self, buffer: bytes) -> None:
         """
         Unpack a JSON string into self.
         :param buffer:  The JSON string.
         """
-        temp = json.loads(buffer)
-        self.header.frame_type = temp[FRAME_TYPE]
-        self.header.seq_num = temp[SEQ_NUM]
-        self.header.epoch = temp[EPOCH]
-        self.lap_timer_s = temp[RIDE_HEIGHT_FL_CM]
-        self.accel_fl_x_mg = temp[RIDE_HEIGHT_FR_CM]
-        self.accel_fl_y_mg = temp[RIDE_HEIGHT_FLW_CM]
-        self.accel_fl_z_mg = temp[RIDE_HEIGHT_REAR_CM]
+        self.header.unpack_json(buffer)
+        temp = json.loads(buffer.decode())
+        self.lap_timer_s = temp[str(RIDE_HEIGHT_FL_CM)]
+        self.accel_fl_x_mg = temp[str(RIDE_HEIGHT_FR_CM)]
+        self.accel_fl_y_mg = temp[str(RIDE_HEIGHT_FLW_CM)]
+        self.accel_fl_z_mg = temp[str(RIDE_HEIGHT_REAR_CM)]
 
     def __str__(self) -> str:
         """
