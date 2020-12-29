@@ -22,6 +22,8 @@ import datetime
 import json
 import struct
 from typing import Optional
+from typing import List
+import re
 
 import common
 import protocol_factory
@@ -41,6 +43,7 @@ ECU_STATUS, ENGINE_STATUS, BATTERY_STATUS, CAR_LOGGING_STATUS = list(range(5, 9)
 INJECTION_TIME, INJECTION_DUTY_CYCLE, LAMBDA_PID_ADJUST, LAMBDA_PID_TARGET, ADVANCE = list(range(5, 10))
 RIDE_HEIGHT_FL_CM, RIDE_HEIGHT_FR_CM, RIDE_HEIGHT_FLW_CM, RIDE_HEIGHT_REAR_CM = list(range(5, 9))
 LAP_TIMER_S, ACCEL_FL_X_MG, ACCEL_FL_Y_MG, ACCEL_FL_Z_MG = list(range(5, 9))
+HEADER_LENGTH = 12
 
 
 class ProtocolCallbacks:
@@ -318,39 +321,48 @@ class Protocol:
 
         self._logger.warning("Stopped")
 
-    def _get_frame_from_raw(self, buffer: bytes) -> Optional[_ProtocolAIPDU, _ProtocolACPDU, _ProtocolAAPDU,
-                                                             _ProtocolADPDU, _ProtocolAPPDU, _ProtocolASPDU,
-                                                             _ProtocolAMPDU]:
+    def _get_frames_from_raw(self, buffer: bytes) -> List[Optional[_ProtocolAIPDU, _ProtocolACPDU, _ProtocolAAPDU,
+                                                                   _ProtocolADPDU, _ProtocolAPPDU, _ProtocolASPDU,
+                                                                   _ProtocolAMPDU]]:
         """
-        Get a frame from a raw buffer (from car stream)
+        Get all frames from a raw buffer (from car stream)
         :param buffer: The raw buffer.
         """
-        if len(buffer) > 12:
+        frames = []
+
+        while len(buffer) > HEADER_LENGTH:
             header = ProtocolHeader()
-            header.unpack_raw(buffer[:12])
+            header.unpack_raw(buffer[:HEADER_LENGTH])
             if header.start_byte == 1 and not header.length == 0 and header.frame_type in self._frame_type_dict:
                 frame = self._frame_type_dict[header.frame_type]()
-                frame.unpack_raw(buffer)
-                return frame
+                length = header.length
+                frame.unpack_raw(buffer[:(HEADER_LENGTH + length)])
 
-        return None
+                frames.append(frame)
+                buffer = buffer[(HEADER_LENGTH + length):]
 
-    def _get_frame_from_json(self, buffer: bytes) -> Optional[_ProtocolAIPDU, _ProtocolACPDU, _ProtocolAAPDU,
-                                                              _ProtocolADPDU, _ProtocolAPPDU, _ProtocolASPDU,
-                                                              _ProtocolAMPDU]:
+        return frames
+
+    def _get_frames_from_json(self, buffer: bytes) -> List[Optional[_ProtocolAIPDU, _ProtocolACPDU, _ProtocolAAPDU,
+                                                                    _ProtocolADPDU, _ProtocolAPPDU, _ProtocolASPDU,
+                                                                    _ProtocolAMPDU]]:
         """
-        Get a frame from a JSON buffer (from intermediate server)
+        Get all frames from a JSON buffer (from intermediate server)
         :param buffer: The JSON buffer.
         """
-        if len(buffer) > 12:
+        # Below is a bit dumb as we have to decode the buffer to get each json frame but then we encode them again so
+        # the unpack API is able to then decode it again internally...
+        frames = []
+        json_frames = re.findall(r"{.*?}", buffer.decode())
+        for json_frame in json_frames:
             header = ProtocolHeader()
-            header.unpack_json(buffer)
+            header.unpack_json(json_frame.encode())
             if header.frame_type in self._frame_type_dict:
                 frame = self._frame_type_dict[header.frame_type]()
-                frame.unpack_json(buffer)
-                return frame
+                frame.unpack_json(json_frame.encode())
+                frames.append(frame)
 
-        return None
+        return frames
 
     def _on_connection(self, factory: protocol_factory.ProtocolFactoryBase) -> asyncio.coroutine:
         """
@@ -366,28 +378,31 @@ class Protocol:
         :param data:    The received data.
         """
         self._logger.info(f"Handling {data}")
+        pdus = []
 
         if self._pdu_format is not None:
             if self._pdu_format == protocol_factory.RAW:
-                pdu = self._get_frame_from_raw(data)
+                pdus = self._get_frames_from_raw(data)
                 factory.set_pdu_format_type(protocol_factory.RAW)
             else:
-                pdu = self._get_frame_from_json(data)
+                pdus = self._get_frames_from_json(data)
                 factory.set_pdu_format_type(protocol_factory.JSON)
         # If the first byte is 0x01 then the factory is operating on a RAW PDU format stream.
         elif data[0] == 1:
-            pdu = self._get_frame_from_raw(data)
+            pdus = self._get_frames_from_raw(data)
             factory.set_pdu_format_type(protocol_factory.RAW)
         else:
-            pdu = self._get_frame_from_json(data)
+            pdus = self._get_frames_from_json(data)
             factory.set_pdu_format_type(protocol_factory.JSON)
 
-        if pdu is not None:
-            self._logger.info(str(pdu))
-            if pdu.header.frame_type in self._on_methods:
-                return self._on_methods[pdu.header.frame_type](factory, pdu)
+        if len(pdus) > 0:
+            self._logger.info(f"Found {len(pdus)} PDUs in buffer")
+            for pdu in pdus:
+                self._logger.info(str(pdu))
+                if pdu.header.frame_type in self._on_methods:
+                    self._on_methods[pdu.header.frame_type](factory, pdu)
         else:
-            self._logger.error("Failed to decode frame from buffer")
+            self._logger.warning("Error decoding frames")
 
     def _on_connection_lost(self, factory: protocol_factory.ProtocolFactoryBase, exc: Optional[Exception]) \
             -> asyncio.coroutine:
