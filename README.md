@@ -20,7 +20,7 @@ It should be if Python is already installed - check its version with `pip --vers
 
 4. Run `pip install -r requirements.txt` from the root of the repository. 
 
-For macOS installations you in case the above doesn't work use `pip3 install -r requirements.txt`
+For macOS installations in case the above doesn't work use `pip3 install -r requirements.txt`
 
 #### Running Source Files: 
 
