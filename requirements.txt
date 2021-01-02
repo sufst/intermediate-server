@@ -1,27 +1,28 @@
 ### Python Dependencies: 
 
 
-Flask 
-Flask-Compress
-Jinja2
-Werkzeug
-MarkupSafe
-click
-dash
-digi-xbee
-serial
-future
-itsdangerous
-numpy
-pandas
-plotly
-pytz 
-python-dateutil
-retrying 
-srp
+Flask==1.1.2
+Flask-Compress==1.8.0
+Jinja2==2.11.2
+Werkzeug==1.0.1
+MarkupSafe==1.1.1
+click==7.1.2
+dash==1.18.1
+digi-xbee==1.3.0
+serial==0.0.97
+future==0.18.2
+itsdangerous==1.1.0
+numpy==1.19.4
+pandas==1.2.0
+plotly==4.14.1
+pytz==2020.5
+python-dateutil==2.8.1
+retrying==1.3.3
+srp==1.0.16
+six==1.15.0
+pyserial==3.5
 wheel
 setuptools
-six
 
 
 ### Note that dash is only used for the GUI Emulation.  
