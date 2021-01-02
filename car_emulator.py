@@ -21,6 +21,7 @@ import argparse
 import asyncio
 from typing import Optional
 import math
+import random
 
 import common
 import protocol
@@ -221,13 +222,13 @@ class CarEmulator:
                                    self._external_5v_mv, self._fuel_flow, self._lambda_val, self._speed_kph)
         self._rpm_counter += 1
         self._rpm = int(5000*math.sin(math.radians(self._rpm_counter*10))+5000)
-        self._water_temp += 1
-        self._tps_perc += 1
-        self._battery_mv += 1
-        self._external_5v_mv += 1
+        self._water_temp = random.randint(80,100)
+        self._tps_perc = int(50*math.sin(math.radians(self._rpm_counter*10))+50)
+        self._battery_mv = random.randint(11900,12100)
+        self._external_5v_mv = random.randint(4900,5100)
         self._fuel_flow += 1
         self._lambda_val += 1
-        self._speed_kph += 1
+        self._speed_kph = int(150*math.sin(math.radians(self._rpm_counter*10))+150)
 
         await asyncio.sleep(0.1)
         self._protocol.write_aapdu(factory, self._evo_scanner1, self._evo_scanner2, self._evo_scanner3,
