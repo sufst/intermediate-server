@@ -252,11 +252,11 @@ class CarEmulator:
         await asyncio.sleep(0.1)
         self._protocol.write_appdu(factory, self._injection_time, self._injection_duty_cycle, self._lambda_pid_adjust,
                                    self._lambda_pid_target, self._advance)
-        self._injection_time += 1
-        self._injection_duty_cycle += 1
-        self._lambda_pid_adjust += 1
-        self._lambda_pid_target += 1
-        self._advance += 1
+        self._injection_time = random.randint(6,10)
+        self._injection_duty_cycle = random.randint(70,80)
+        self._lambda_pid_adjust = random.randint(10,20)
+        self._lambda_pid_target = random.randint(95,105)
+        self._advance = random.randint(0,5)
 
         await asyncio.sleep(0.1)
         self._protocol.write_aspdu(factory, self._ride_height_fl_cm, self._ride_height_fr_cm, self._ride_height_flw_cm,
