@@ -226,20 +226,20 @@ class CarEmulator:
         self._tps_perc = int(50*math.sin(math.radians(self._rpm_counter*10))+50)
         self._battery_mv = random.randint(11900,12100)
         self._external_5v_mv = random.randint(4900,5100) 
-        self._fuel_flow += 1
-        self._lambda_val += 1
+        self._fuel_flow = int(25*math.sin(math.radians(self._rpm_counter*10))+25)
+        self._lambda_val = int(25*math.sin(math.radians(self._rpm_counter*10))+50)
         self._speed_kph = int(150*math.sin(math.radians(self._rpm_counter*10))+150)
 
         await asyncio.sleep(0.1)
         self._protocol.write_aapdu(factory, self._evo_scanner1, self._evo_scanner2, self._evo_scanner3,
                                    self._evo_scanner4, self._evo_scanner5, self._evo_scanner6, self._evo_scanner7)
-        self._evo_scanner1 += 1
-        self._evo_scanner2 += 1
-        self._evo_scanner3 += 1
-        self._evo_scanner4 += 1
-        self._evo_scanner5 += 1
-        self._evo_scanner6 += 1
-        self._evo_scanner7 += 1
+        self._evo_scanner1 = int(10*math.sin(math.radians(self._rpm_counter*10))+10)
+        self._evo_scanner2 = int(15*math.sin(math.radians(self._rpm_counter*10))+15)
+        self._evo_scanner3 = int(10*math.sin(math.radians(self._rpm_counter*10))+30)
+        self._evo_scanner4 = int(20*math.sin(math.radians(self._rpm_counter*10))+20)
+        self._evo_scanner5 = int(10*math.sin(math.radians(self._rpm_counter*10))+20)
+        self._evo_scanner6 = int(25*math.sin(math.radians(self._rpm_counter*10))+25)
+        self._evo_scanner7 = int(30*math.sin(math.radians(self._rpm_counter*10))+35)
 
         await asyncio.sleep(0.1)
         self._protocol.write_adpdu(factory, self._ecu_status, self._engine_status, self._battery_status,
@@ -261,18 +261,18 @@ class CarEmulator:
         await asyncio.sleep(0.1)
         self._protocol.write_aspdu(factory, self._ride_height_fl_cm, self._ride_height_fr_cm, self._ride_height_flw_cm,
                                    self._ride_height_rear_cm)
-        self._ride_height_fl_cm += 1
-        self._ride_height_fr_cm += 1
-        self._ride_height_flw_cm += 1
-        self._ride_height_rear_cm += 1
+        self._ride_height_fl_cm = int(5*math.cos(math.radians(self._rpm_counter*15))+8)
+        self._ride_height_fr_cm = int(5*math.sin(math.radians(self._rpm_counter*15))+8)
+        self._ride_height_flw_cm = int(5*math.cos(math.radians(self._rpm_counter*5))+8)
+        self._ride_height_rear_cm = int(5*math.sin(math.radians(self._rpm_counter*5))+8)
 
         await asyncio.sleep(0.1)
         self._protocol.write_ampdu(factory, self._lap_timer_s, self._accel_fl_x_mg, self._accel_fl_y_mg,
                                    self._accel_fl_z_mg)
         self._lap_timer_s += 1
-        self._accel_fl_x_mg += 1
-        self._accel_fl_y_mg += 1
-        self._accel_fl_z_mg += 1
+        self._accel_fl_x_mg = int(500*math.sin(math.radians(self._rpm_counter*10+1))+1000)
+        self._accel_fl_y_mg = int(500*math.sin(math.radians(self._rpm_counter*10+0.5))+1000)
+        self._accel_fl_z_mg = int(500*math.sin(math.radians(self._rpm_counter*10))+1000)
 
         asyncio.create_task(self.periodic_pdu_transmit(factory))
 
