@@ -16,17 +16,16 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from __future__ import annotations
+
 import argparse
+import asyncio
+import time
 from typing import Optional
-from typing import Callable
-import serial
 
 import common
-from digi.xbee import devices as xbee_devices
-from digi.xbee.models import message as xbee_message
-import asyncio
 import protocol
 import protocol_factory
+import serverdatabase
 
 _SW_VERSION = 10000
 
@@ -72,8 +71,39 @@ class Server:
         self._event_loop = None
         self._on_stop = None
 
+        self._database = serverdatabase.ServerDatabase("staging")
+        self._initialise_database()
+
         self._car_clients = {}
         self._gui_clients = {}
+
+    def _initialise_database(self) -> None:
+        """
+        Initialise the staging database.
+        """
+        sensors = ["rpm", "water_temp_c", "tps_perc", "battery_mv", "ext_5v_mv",
+                   "fuel_flow", "lambda", "speed_kph", "evo_scan_1", "evo_scan_2",
+                   "evo_scan_3", "evo_scan_4", "evo_scan_5", "evo_scan_6", "evo_scan_7",
+                   "status_ecu_connected", "status_engine", "status_battery", "status_logging",
+                   "inj_time", "inj_duty_cycle", "lambda_pid_adj", "lambda_pid_target",
+                   "advance", "ride_height_fl_cm", "ride_height_fr_cm", "ride_height_flw_cm",
+                   "ride_height_rear_cm", "lap_time_s", "accel_fl_x_mg", "accel_fl_y_mg",
+                   "accel_fl_z_mg"]
+
+        for sensor in sensors:
+            self._database.create_sensor_table(sensor, ["value"])
+
+    def _save_sensor_data_to_database(self, sensor_data: list) -> None:
+        """
+        Save a list of sensor data to the staging database.
+        :param sensor_data: The list of sensor data. (name, time, values).
+        """
+        # Insert the data into database.
+        for sensor in sensor_data:
+            name, time_ms, value = sensor
+            self._database.insert_sensor_data(name, time_ms, (value,))
+
+        self._database.commit()
 
     def __enter__(self) -> Server:
         """
@@ -127,6 +157,16 @@ class Server:
         :param factory: The factory that received the frame.
         """
         self._logger.info(f"Handling ACPDU from factory {factory.__hash__()}")
+
+        time_ms = int(time.time() * 1000)
+        sensor_data = [("rpm", time_ms, rpm), ("water_temp_c", time_ms, water_temp_c),
+                       ("tps_perc", time_ms, tps_perc), ("battery_mv", time_ms, battery_mv),
+                       ("ext_5v_mv", time_ms, external_5v_mv), ("fuel_flow", time_ms, fuel_flow),
+                       ("lambda", time_ms, lambda_value), ("speed_kph", time_ms, speed_kph)]
+
+        # Insert the data into database.
+        self._save_sensor_data_to_database(sensor_data)
+
         for _, client in self._gui_clients.items():
             self._logger.info(
                 f"Routing ACPDU to client {client.client_name} through factory {client.factory.__hash__()}")
@@ -141,6 +181,16 @@ class Server:
         :param factory: The factory that received the frame.
         """
         self._logger.info(f"Handling AAPDU from factory {factory.__hash__()}")
+
+        time_ms = int(time.time() * 1000)
+        sensor_data = [("evo_scan_1", time_ms, evo_scanner1), ("evo_scan_2", time_ms, evo_scanner2),
+                       ("evo_scan_3", time_ms, evo_scanner3), ("evo_scan_4", time_ms, evo_scanner4),
+                       ("evo_scan_5", time_ms, evo_scanner5), ("evo_scan_6", time_ms, evo_scanner6),
+                       ("evo_scan_7", time_ms, evo_scanner7)]
+
+        # Insert the data into database.
+        self._save_sensor_data_to_database(sensor_data)
+
         for _, client in self._gui_clients.items():
             self._logger.info(
                 f"Routing AAPDU to client {client.client_name} through factory {client.factory.__hash__()}")
@@ -154,6 +204,16 @@ class Server:
         :param factory: The factory that received the frame.
         """
         self._logger.info(f"Handling ADPDU from factory {factory.__hash__()}")
+
+        time_ms = int(time.time() * 1000)
+        sensor_data = [("status_ecu_connected", time_ms, ecu_status),
+                       ("status_engine", time_ms, engine_status),
+                       ("status_battery", time_ms, battery_status),
+                       ("status_logging", time_ms, car_logging_status)]
+
+        # Insert the data into database.
+        self._save_sensor_data_to_database(sensor_data)
+
         for _, client in self._gui_clients.items():
             self._logger.info(
                 f"Routing ADPDU to client {client.client_name} through factory {client.factory.__hash__()}")
@@ -167,6 +227,17 @@ class Server:
         :param factory: The factory that received the frame.
         """
         self._logger.info(f"Handling APPDU from factory {factory.__hash__()}")
+
+        time_ms = int(time.time() * 1000)
+        sensor_data = [("inj_time", time_ms, injection_time),
+                       ("inj_duty_cycle", time_ms, injection_duty_cycle),
+                       ("lambda_pid_adj", time_ms, lambda_pid_adjust),
+                       ("lambda_pid_target", time_ms, lambda_pid_target),
+                       ("advance", time_ms, advance)]
+
+        # Insert the data into database.
+        self._save_sensor_data_to_database(sensor_data)
+
         for _, client in self._gui_clients.items():
             self._logger.info(
                 f"Routing APPDU to client {client.client_name} through factory {client.factory.__hash__()}")
@@ -181,6 +252,16 @@ class Server:
         :param factory: The factory that received the frame.
         """
         self._logger.info(f"Handling ASPDU from factory {factory.__hash__()}")
+
+        time_ms = int(time.time() * 1000)
+        sensor_data = [("ride_height_fl_cm", time_ms, ride_height_fl_cm),
+                       ("ride_height_fr_cm", time_ms, ride_height_fr_cm),
+                       ("ride_height_flw_cm", time_ms, ride_height_flw_cm),
+                       ("ride_height_rear_cm", time_ms, ride_height_rear_cm)]
+
+        # Insert the data into database.
+        self._save_sensor_data_to_database(sensor_data)
+
         for _, client in self._gui_clients.items():
             self._logger.info(
                 f"Routing ASPDU to client {client.client_name} through factory {client.factory.__hash__()}")
@@ -194,6 +275,16 @@ class Server:
         :param factory: The factory that received the frame.
         """
         self._logger.info(f"Handling AMPDU from factory {factory.__hash__()}")
+
+        time_ms = int(time.time() * 1000)
+        sensor_data = [("lap_time_s", time_ms, lap_timer_s),
+                       ("accel_fl_x_mg", time_ms, accel_fl_x_mg),
+                       ("accel_fl_y_mg", time_ms, accel_fl_y_mg),
+                       ("accel_fl_z_mg", time_ms, accel_fl_z_mg)]
+
+        # Insert the data into database.
+        self._save_sensor_data_to_database(sensor_data)
+
         for _, client in self._gui_clients.items():
             self._logger.info(
                 f"Routing AMPDU to client {client.client_name} through factory {client.factory.__hash__()}")
