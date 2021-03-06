@@ -319,6 +319,10 @@ class Server:
             self._logger.info("Stopped")
 
     async def _restful_serve(self, request: restful.RestfulRequest):
+        """
+        Serve a RESTful request.
+        :param request: The RESTful request.
+        """
         sensors = ["rpm", "water_temp_c", "tps_perc", "battery_mv", "ext_5v_mv",
                    "fuel_flow", "lambda", "speed_kph", "evo_scan_1", "evo_scan_2",
                    "evo_scan_3", "evo_scan_4", "evo_scan_5", "evo_scan_6", "evo_scan_7",
