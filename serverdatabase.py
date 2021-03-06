@@ -44,7 +44,7 @@ class ServerDatabase:
         # Create the table if they do not exist already.
         cur.execute(f"CREATE TABLE IF NOT EXISTS {sensor} (time,{_get_comma_separated_entry(columns)})")
 
-    def insert_sensor_data(self, sensor: str, time: int, data: tuple) -> None:
+    def insert_sensor_data(self, sensor: str, time: float, data: tuple) -> None:
         """
         Insert sensor data in the database.
         :param time: The timestamp of the data in the format of Epoch.
@@ -69,6 +69,21 @@ class ServerDatabase:
         cur = self._con.cursor()
 
         for row in cur.execute(f"SELECT * FROM {sensor} WHERE time BETWEEN {times[0]} AND {times[1]}"):
+            data.append(row)
+
+        return data
+
+    def select_sensor_data_top_n_entries(self, sensor: str, n: int) -> list:
+        """
+        Get top n sensor data points from the sensor table (time column included)
+        :param sensor: The sensor to select from.
+        :param n The maximum number of rows to return.
+        :return A list of sensor data tuples for up to the last n points.
+        """
+        data = []
+        cur = self._con.cursor()
+
+        for row in cur.execute(f"SELECT * FROM {sensor} ORDER BY time DESC LIMIT {n}"):
             data.append(row)
 
         return data

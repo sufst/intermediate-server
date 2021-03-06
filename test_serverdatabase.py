@@ -20,11 +20,36 @@ class TestServerDatabase(unittest.TestCase):
 
             database.create_sensor_table(sensor, ["value"])
 
-            time_s = int(time.time())
+            time_s = time.time()
             database.insert_sensor_data(sensor, time_s, (value,))
 
             sensor_data = database.select_sensor_data_between_times(sensor, [time_s - 5, time_s])
             sensor_time, sensor_val = sensor_data[0]
+            self.assertEqual(sensor_val, value)
+
+    def test_sensors_n_points(self):
+        test_vectors_in = [("sense0", 1234), ("sense0", 4320),
+                           ("sense0", 6789), ("sense0", 9876)]
+        test_vectors_out = [("sense0", 9876), ("sense0", 6789)]
+
+        database = serverdatabase.ServerDatabase("test_database")
+
+        for vec in test_vectors_in:
+            sensor, value = vec
+
+            database.create_sensor_table(sensor, ["value"])
+
+            time_s = time.time()
+            database.insert_sensor_data(sensor, time_s, (value,))
+
+        sensor_data = database.select_sensor_data_top_n_entries("sense0", len(test_vectors_out))
+
+        self.assertTrue(len(sensor_data) == len(test_vectors_out))
+
+        for row, vec in zip(sensor_data, test_vectors_out):
+            sensor_time, sensor_val = row
+            sensor, value = vec
+
             self.assertEqual(sensor_val, value)
 
     def test_commit(self):
@@ -32,7 +57,7 @@ class TestServerDatabase(unittest.TestCase):
 
         database = serverdatabase.ServerDatabase("test_database")
 
-        time_s = int(time.time())
+        time_s = time.time()
 
         for vec in test_vectors:
             sensor, value = vec
