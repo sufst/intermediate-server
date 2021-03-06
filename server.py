@@ -319,13 +319,39 @@ class Server:
             self._logger.info("Stopped")
 
     async def _restful_serve(self, request: restful.RestfulRequest):
+        sensors = ["rpm", "water_temp_c", "tps_perc", "battery_mv", "ext_5v_mv",
+                   "fuel_flow", "lambda", "speed_kph", "evo_scan_1", "evo_scan_2",
+                   "evo_scan_3", "evo_scan_4", "evo_scan_5", "evo_scan_6", "evo_scan_7",
+                   "status_ecu_connected", "status_engine", "status_battery", "status_logging",
+                   "inj_time", "inj_duty_cycle", "lambda_pid_adj", "lambda_pid_target",
+                   "advance", "ride_height_fl_cm", "ride_height_fr_cm", "ride_height_flw_cm",
+                   "ride_height_rear_cm", "lap_time_s", "accel_fl_x_mg", "accel_fl_y_mg",
+                   "accel_fl_z_mg"]
+
         self._logger.info(f"Serving: {request}")
 
+        response = {}
+        amount = 99
+        timesince = None
+
+        for fil in request.get_filters():
+            name, val = fil
+            if name == "amount":
+                amount = val
+            elif name == "timesince":
+                timesince = val
+
         if request.get_type() == "GET":
-            if request.get_dataset() == "/sensors":
-                for req_filter in request.get_filters():
-                    filter_name, filter_value = req_filter
-                    await request.respond({filter_name: int(filter_value)})
+            if request.get_datasets()[0] == "sensors":
+                if len(request.get_datasets()) == 1:
+                    # /sensors
+                    for sensor in sensors:
+                        sensor_data = self._database.select_sensor_data_top_n_entries(sensor, amount)
+                        response[sensor] = []
+                        for sensor_time, sensor_val in sensor_data:
+                            response[sensor].extend([{"time": sensor_time, "value": sensor_val}])
+
+        await request.respond(response)
 
     def __exit__(self, exc_type: Optional[Exception], exc_val: Optional[Exception], exc_tb: Optional[Exception]) \
             -> None:

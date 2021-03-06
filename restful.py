@@ -41,6 +41,7 @@ class RestfulRequest:
             self._type = split_space[0]
             split_question = split_space[1].split("?")
             self._dataset = split_question[0]
+            self._datasets = self._dataset.split("/")[1:]
             split_and = split_question[1].split("&")
 
             for fil in split_and:
@@ -54,13 +55,16 @@ class RestfulRequest:
         await self._websocket.send(json.dumps(response))
         await self._websocket.close()
 
-    def get_type(self):
+    def get_type(self) -> str:
         return self._type
 
-    def get_dataset(self):
+    def get_dataset(self) -> str:
         return self._dataset
 
-    def get_filters(self):
+    def get_datasets(self) -> list:
+        return self._datasets
+
+    def get_filters(self) -> list:
         return self._filters
 
     def __str__(self):

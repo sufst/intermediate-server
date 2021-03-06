@@ -39,7 +39,7 @@ async def _test_request():
 
 class TestRestfulConnect(unittest.TestCase):
     def test_connect(self):
-        restful.Restful("localhost", 8765).serve(_restful_serve)
+        # restful.Restful("localhost", 8765).serve(_restful_serve)
         asyncio.get_event_loop().run_until_complete(_test_connect())
 
     def test_request(self):
