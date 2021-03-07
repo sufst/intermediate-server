@@ -30,7 +30,17 @@ def _get_comma_separated_entry(entries: tuple or list) -> str:
 
 class ServerDatabase:
     def __init__(self, name: str):
-        self._con = sqlite3.connect(f"{name}.db")
+        """
+        The ServerDatabase provides helper functions for accessing the SQLite 3 database which is used as a staging
+        ground for sensor data between the sensor data producer (the car) and sensor data consumers (front-end).
+
+        :param name: The name of the database to use.
+        """
+        self._name = name
+        self._create_database()
+
+    def _create_database(self):
+        self._con = sqlite3.connect(f"{self._name}.db")
 
     def create_sensor_table(self, sensor: str, columns: list) -> None:
         """

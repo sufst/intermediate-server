@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <sensors>
+        <sensor name="rpm">int(5000 * math.sin(math.radians(x * 10)) + 5000)</sensor>
+        <sensor name="water_temp_c">random.randint(80,100)</sensor>
+        <sensor name="tps_perc">int(50*math.sin(math.radians(x*10))+50)</sensor>
+        <sensor name="battery_mv">random.randint(11900,12100)</sensor>
+        <sensor name="ext_5v_mv">random.randint(4900,5100) </sensor>
+        <sensor name="fuel_flow">int(25*math.sin(math.radians(x*10))+25)</sensor>
+        <sensor name="lambda">int(25*math.sin(math.radians(x*10))+50)</sensor>
+        <sensor name="speed_kph">int(150*math.sin(math.radians(x*10))+150)</sensor>
+        <sensor name="evo_scan_1">int(10*math.sin(math.radians(x*10))+10)</sensor>
+        <sensor name="evo_scan_2">int(15*math.sin(math.radians(x*10))+15)</sensor>
+        <sensor name="evo_scan_3">int(15*math.sin(math.radians(x*10))+20)</sensor>
+        <sensor name="evo_scan_4">int(15*math.sin(math.radians(x*10))+25)</sensor>
+        <sensor name="evo_scan_5">int(15*math.sin(math.radians(x*10))+30)</sensor>
+        <sensor name="evo_scan_6">int(15*math.sin(math.radians(x*10))+35)</sensor>
+        <sensor name="evo_scan_7">int(15*math.sin(math.radians(x*10))+40)</sensor>
+        <sensor name="status_ecu_connected">1</sensor>
+        <sensor name="status_engine">1</sensor>
+        <sensor name="status_battery">2</sensor>
+        <sensor name="status_logging">1</sensor>
+        <sensor name="inj_time">random.randint(6,10)</sensor>
+        <sensor name="inj_duty_cycle">random.randint(70,80)</sensor>
+        <sensor name="lambda_pid_adj">random.randint(10,20)</sensor>
+        <sensor name="lambda_pid_target">random.randint(95,105)</sensor>
+        <sensor name="advance">random.randint(0,5)</sensor>
+        <sensor name="ride_height_fl_cm">int(5*math.cos(math.radians(x*15))+8)</sensor>
+        <sensor name="ride_height_fr_cm">int(5*math.sin(math.radians(x*15))+8)</sensor>
+        <sensor name="ride_height_flw_cm">int(5*math.cos(math.radians(x*5))+8)</sensor>
+        <sensor name="ride_height_rear_cm">int(5*math.sin(math.radians(x*5))+8)</sensor>
+        <sensor name="lap_time_s">x</sensor>
+        <sensor name="accel_fl_x_mg">int(500*math.sin(math.radians(x*10+1))+1000)</sensor>
+        <sensor name="accel_fl_y_mg">int(500*math.sin(math.radians(x*10+0.5))+1000)</sensor>
+        <sensor name="accel_fl_z_mg">int(500*math.sin(math.radians(x*10))+1000)</sensor>
+    </sensors>
+    <parameters>
+        <delay>1</delay>
+    </parameters>
+</config>

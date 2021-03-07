@@ -33,6 +33,7 @@ if __name__ == '__main__':
     parser.add_argument("--baud", type=int, default=115200, help="Baud rate for the attached XBee.")
     parser.add_argument("--com", type=str, default="COM0", help="Com port for the attached XBee e.g. COM1")
     parser.add_argument("--mac", type=str, default="FFFFFFFFFFFFFFFF", help="MAC address of car XBee.")
+    parser.add_argument("--emulation", type=str, default=True, help="Enable or disable car emulation.")
 
     print(f"Intermediate Server build {_SW_VERSION} Copyright (C) 2020 Nathan Rowley-Smith\n" +
           "This program comes with ABSOLUTELY NO WARRANTY;\n" +
@@ -43,5 +44,5 @@ if __name__ == '__main__':
     logger = common.get_logger("root", "DEBUG")
     logger.info(args.__dict__)
 
-    with server.Server(args.ip, args.port, args.com, args.baud, args.mac, args.verbose) as server:
+    with server.Server(args.ip, args.port, args.com, args.baud, args.mac, args.verbose, args.emulation) as server:
         server.run()
