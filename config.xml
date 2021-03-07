@@ -14,7 +14,7 @@
         <config name="ip">127.0.0.1</config>
         <config name="port">19900</config>
         <config name="verbose">INFO</config>
-        <config name="emulation">True</config>
+        <config name="emulation">False</config>
         <config name="database">staging</config>
     </server>
     <emulation>

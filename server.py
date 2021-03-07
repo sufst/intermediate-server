@@ -97,7 +97,7 @@ class Server:
         assert("database" in self._config)
 
         self._config["port"] = int(self._config["port"])
-        self._config["emulation"] = bool(self._config["ip"])
+        self._config["emulation"] = self._config["emulation"] == "True"
         self._config["baud"] = int(self._config["baud"])
 
     def _initialise_database(self) -> None:
