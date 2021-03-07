@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <sensors>
+        <sensor name="rpm">int(5000 * math.sin(math.radians(x * 10)) + 5000)</sensor>
+        <sensor name="water_temp_c">random.randint(80,100)</sensor>
+    </sensors>
+    <parameters>
+        <delay>1</delay>
+    </parameters>
+</config>
