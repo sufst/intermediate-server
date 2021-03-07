@@ -21,6 +21,7 @@ import json
 import websockets
 
 import common
+import xml.etree.ElementTree
 
 
 class RestfulRequest:
@@ -100,17 +101,37 @@ class RestfulRequest:
 
 
 class Restful:
-    def __init__(self, url: str, port: int):
+    def __init__(self):
         """
         Initialise the RESTful server to handle RESTful requests over the websocket.
-        :param url: The URL to host the websocket at.
-        :param port: The port to host the websocket at.
+
+        The RESTful server will invoke the callable passed in def server with the request in the form
+        of the RestfulRequest sub class. The RestfulRequest sub class provides the type, datasets, and filters
+        the RESTful requests is made up with. A respond function is provided to allow the callable to respond back to
+        the request.
         """
-        self._url, self._port = url, port
-        self._server = websockets.serve(self._websocket_serve, self._url, self._port)
+        self._parse_configuration()
+
+        self._logger = common.get_logger("Restful", self._config["verbose"])
+
+        self._logger.info(f"Configuration: {self._config}")
+
+        self._server = websockets.serve(self._websocket_serve, self._config["url"], self._config["port"])
         self._request_callable = None
 
-        self._logger = common.get_logger("Restful", "DEBUG")
+    def _parse_configuration(self):
+        config_root = xml.etree.ElementTree.parse("config.xml").getroot()
+        self._config = {}
+
+        for field in config_root.iter("RESTful"):
+            for config in field.findall("config"):
+                self._config[config.attrib["name"]] = config.text
+
+        assert("url" in self._config)
+        assert("port" in self._config)
+        assert("verbose" in self._config)
+
+        self._config["port"] = int(self._config["port"])
 
     def serve(self, request_callable):
         """
@@ -120,7 +141,7 @@ class Restful:
         self._request_callable = request_callable
 
         asyncio.get_event_loop().run_until_complete(self._server)
-        self._logger.info(f"Serving on {self._url}:{self._port}")
+        self._logger.info(f"Serving on {self._config['url']}:{self._config['port']}")
 
     async def _websocket_serve(self, websocket, path: str):
         """

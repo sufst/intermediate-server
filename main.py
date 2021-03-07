@@ -16,33 +16,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import argparse
-
 import common
 import server
 
 _SW_VERSION = 10000
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Create an intermediate server.")
-
-    parser.add_argument("--port", type=int, default=19900, help="The port to host the server on.")
-    parser.add_argument("--ip", type=str, default="127.0.0.1", help="The IP address to host the server on.")
-    parser.add_argument("--verbose", type=str, default="INFO",
-                        help="The verbose level of the server: DEBUG, INFO, WARN, ERROR")
-    parser.add_argument("--baud", type=int, default=115200, help="Baud rate for the attached XBee.")
-    parser.add_argument("--com", type=str, default="COM0", help="Com port for the attached XBee e.g. COM1")
-    parser.add_argument("--mac", type=str, default="FFFFFFFFFFFFFFFF", help="MAC address of car XBee.")
-    parser.add_argument("--emulation", type=str, default=True, help="Enable or disable car emulation.")
-
     print(f"Intermediate Server build {_SW_VERSION} Copyright (C) 2020 Nathan Rowley-Smith\n" +
           "This program comes with ABSOLUTELY NO WARRANTY;\n" +
           "This is free software, and you are welcome to redistribute it")
 
-    args = parser.parse_args()
-
-    logger = common.get_logger("root", "DEBUG")
-    logger.info(args.__dict__)
-
-    with server.Server(args.ip, args.port, args.com, args.baud, args.mac, args.verbose, args.emulation) as server:
+    with server.Server() as server:
         server.run()
