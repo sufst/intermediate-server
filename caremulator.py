@@ -22,6 +22,8 @@ from xml.dom import minidom
 
 import common
 import serverdatabase
+import math
+import random
 
 
 class CarEmulator:

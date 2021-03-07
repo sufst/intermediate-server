@@ -27,6 +27,7 @@ import protocol
 import protocol_factory
 import restful
 import serverdatabase
+import caremulator
 
 
 class ServerClient:
@@ -38,7 +39,7 @@ class ServerClient:
 
 
 class Server:
-    def __init__(self, ip: str, port: int, com: str, baud: int, xbee_mac: str, verbose: str) -> None:
+    def __init__(self, ip: str, port: int, com: str, baud: int, xbee_mac: str, verbose: str, emulation: bool) -> None:
         """
         Initialise the Server singleton instance.
         :param ip:      IP to host the server on.
@@ -54,6 +55,7 @@ class Server:
         self._baud = baud
         self._mac_peer = xbee_mac
         self._verbose = verbose
+        self._emulation = emulation
 
         self._protocol = None
         self._protocol_callbacks = protocol.ProtocolCallbacks()
@@ -71,7 +73,10 @@ class Server:
         self._on_stop = None
 
         self._restful = restful.Restful("localhost", 8765)
-        self._database = serverdatabase.ServerDatabase("staging")
+        if self._emulation:
+            self._database = serverdatabase.ServerDatabase("emulation")
+        else:
+            self._database = serverdatabase.ServerDatabase("staging")
         self._initialise_database()
 
         self._car_clients = {}
@@ -295,7 +300,12 @@ class Server:
         Run the server asyncio loop
         """
         self._restful.serve(self._restful_serve)
-        asyncio.get_event_loop().run_until_complete(self._run())
+        if self._emulation:
+            emulator = caremulator.CarEmulator(self._database, 1)
+            emulator.serve()
+        else:
+            asyncio.get_event_loop().create_task(self._run())
+
         asyncio.get_event_loop().run_forever()
 
     async def _run(self) -> asyncio.coroutine:
@@ -351,9 +361,10 @@ class Server:
                     # /sensors
                     for sensor in sensors:
                         sensor_data = self._database.select_sensor_data_top_n_entries(sensor, amount)
-                        response[sensor] = []
-                        for sensor_time, sensor_val in sensor_data:
-                            response[sensor].extend([{"time": sensor_time, "value": sensor_val}])
+                        if len(sensor_data) > 0:
+                            response[sensor] = []
+                            for sensor_time, sensor_val in sensor_data:
+                                response[sensor].extend([{"time": sensor_time, "value": sensor_val}])
 
         await request.respond(response)
 
