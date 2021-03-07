@@ -28,6 +28,7 @@ import protocol_factory
 import restful
 import serverdatabase
 import caremulator
+import xml.etree.ElementTree
 
 
 class ServerClient:
@@ -39,23 +40,15 @@ class ServerClient:
 
 
 class Server:
-    def __init__(self, ip: str, port: int, com: str, baud: int, xbee_mac: str, verbose: str, emulation: bool) -> None:
+    def __init__(self):
         """
         Initialise the Server singleton instance.
-        :param ip:      IP to host the server on.
-        :param port:    Port to host the server on.
-        :param com:     Com port of the attached XBee device.
-        :param baud:    Baud rate of the attached XBee device.
-        :param verbose: Logger verbose level.
         """
-        self._logger = common.get_logger(type(self).__name__, verbose)
-        self._ip = ip
-        self._port = port
-        self._com = com
-        self._baud = baud
-        self._mac_peer = xbee_mac
-        self._verbose = verbose
-        self._emulation = emulation
+        self._parse_configuration()
+
+        self._logger = common.get_logger(type(self).__name__, self._config["verbose"])
+
+        self._logger.info(f"Configuration: {self._config}")
 
         self._protocol = None
         self._protocol_callbacks = protocol.ProtocolCallbacks()
@@ -72,15 +65,40 @@ class Server:
         self._event_loop = None
         self._on_stop = None
 
-        self._restful = restful.Restful("localhost", 8765)
-        if self._emulation:
+        self._restful = restful.Restful()
+        if self._config["emulation"]:
             self._database = serverdatabase.ServerDatabase("emulation")
         else:
-            self._database = serverdatabase.ServerDatabase("staging")
+            self._database = serverdatabase.ServerDatabase(self._config["database"])
         self._initialise_database()
 
         self._car_clients = {}
         self._gui_clients = {}
+
+    def _parse_configuration(self):
+        config_root = xml.etree.ElementTree.parse("config.xml").getroot()
+        self._config = {}
+
+        for field in config_root.iter("server"):
+            for config in field.findall("config"):
+                self._config[config.attrib["name"]] = config.text
+
+        for field in config_root.iter("XBee"):
+            for config in field.findall("config"):
+                self._config[config.attrib["name"]] = config.text
+
+        assert("ip" in self._config)
+        assert("port" in self._config)
+        assert("emulation" in self._config)
+        assert("baud" in self._config)
+        assert("com" in self._config)
+        assert("mac" in self._config)
+        assert("verbose" in self._config)
+        assert("database" in self._config)
+
+        self._config["port"] = int(self._config["port"])
+        self._config["emulation"] = self._config["emulation"] == "True"
+        self._config["baud"] = int(self._config["baud"])
 
     def _initialise_database(self) -> None:
         """
@@ -300,8 +318,8 @@ class Server:
         Run the server asyncio loop
         """
         self._restful.serve(self._restful_serve)
-        if self._emulation:
-            emulator = caremulator.CarEmulator(self._database, 1)
+        if self._config["emulation"]:
+            emulator = caremulator.CarEmulator(self._database)
             emulator.serve()
         else:
             asyncio.get_event_loop().create_task(self._run())
@@ -316,11 +334,11 @@ class Server:
         self._event_loop = asyncio.get_running_loop()
         self._on_stop = asyncio.Future()
 
-        self._logger.info(f"Creating Protocol {self._ip}:{self._port}")
-        self._protocol = protocol.Protocol(ip=self._ip, port=self._port, com=self._com, baud=self._baud,
-                                           mac=self._mac_peer, callbacks=self._protocol_callbacks,
-                                           protocol_type=protocol.SERVER, event_loop=self._event_loop,
-                                           verbose=self._verbose)
+        self._logger.info(f"Creating Protocol {self._config['ip']}:{self._config['port']}")
+        self._protocol = protocol.Protocol(ip=self._config["ip"], port=self._config["port"], com=self._config["com"],
+                                           baud=self._config["baud"], mac=self._config["mac"],
+                                           callbacks=self._protocol_callbacks, protocol_type=protocol.SERVER,
+                                           event_loop=self._event_loop, verbose=self._config["verbose"])
         self._protocol.run()
 
         try:

@@ -18,7 +18,7 @@
 
 import asyncio
 import time
-from xml.dom import minidom
+import xml.etree.ElementTree
 
 import common
 import serverdatabase
@@ -27,7 +27,7 @@ import random
 
 
 class CarEmulator:
-    def __init__(self, database: serverdatabase.ServerDatabase, delay_s: float):
+    def __init__(self, database: serverdatabase.ServerDatabase):
         """
         Initialise an instance of the car emulator.
 
@@ -38,31 +38,34 @@ class CarEmulator:
         The emulations are extracted from the config_file (xml file) for each wanted sensor.
 
         :param database: The database to insert into.
-        :param delay_s: The delay before inserting the dummy data in seconds (float).
         """
         self._database = database
-        self._delay_s = delay_s
         self._running = True
-        self._logger = common.get_logger("CarEmulator", "DEBUG")
 
-        self._emulation_config = minidom.parse("caremulator_config.xml")
-        self._sensors_config = self._emulation_config.getElementsByTagName("sensor")
-        self._parameters_config = self._emulation_config.getElementsByTagName("delay")
-        self._delay = int(self._parameters_config[0].firstChild.data)
+        self._parse_configuration()
 
-        self._sensor_emulators = {}
+        self._logger = common.get_logger("CarEmulator", self._config["verbose"])
+        self._logger.info(f"Configuration: {self._config}")
 
-        for sensor in self._sensors_config:
-            self._sensor_emulators[sensor.attributes["name"].value] = sensor.firstChild.data
+    def _parse_configuration(self):
+        config_root = xml.etree.ElementTree.parse("config.xml").getroot()
+        self._config = {}
 
-        for name, emulator in self._sensor_emulators.items():
-            # We can assume the database for emulation is based in memory rather than a file database.
-            # Either way, create the sensor tables in case they don't already exist.
-            self._database.create_sensor_table(name, ["value"])
+        for field in config_root.iter("emulation"):
+            for config in field.findall("config"):
+                if config.attrib["name"] == "sensors":
+                    self._config[config.attrib["name"]] = {}
+                    for sensor in config.findall("sensor"):
+                        self._config[config.attrib["name"]][sensor.attrib["name"]] = sensor.text
+                else:
+                    self._config[config.attrib["name"]] = config.text
 
-        self._logger.info("Configuration: "
-                          f"\n\tdelay <- {self._delay}"
-                          f"\n\tsensors <- {self._sensor_emulators}")
+        assert("sensors" in self._config)
+        assert(len(self._config["sensors"]) > 0)
+        assert("delay" in self._config)
+        assert("verbose" in self._config)
+
+        self._config["delay"] = int(self._config["delay"])
 
     def serve(self):
         """
@@ -78,13 +81,13 @@ class CarEmulator:
         x = 0
 
         while True:
-            await asyncio.sleep(self._delay)
+            await asyncio.sleep(self._config["delay"])
 
             epoch = time.time()
 
             # Get all the emulator for each sensor and then eval (runs the emulator string as Python code) the emulator
             # formula.
-            for name, emulator in self._sensor_emulators.items():
+            for name, emulator in self._config["sensors"].items():
                 value = eval(emulator)
                 self._logger.debug(f"{name} <- {value}")
                 self._database.insert_sensor_data(name, epoch, (value,))
