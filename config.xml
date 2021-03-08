@@ -4,6 +4,7 @@
         <config name="url">localhost</config>
         <config name="port">8765</config>
         <config name="verbose">INFO</config>
+        <config name="keep_alive">True</config>
     </RESTful>
     <XBee>
         <config name="baud">115200</config>
@@ -14,7 +15,7 @@
         <config name="ip">127.0.0.1</config>
         <config name="port">19900</config>
         <config name="verbose">INFO</config>
-        <config name="emulation">False</config>
+        <config name="emulation">True</config>
         <config name="database">staging</config>
     </server>
     <emulation>
@@ -53,6 +54,6 @@
             <sensor name="accel_fl_z_mg">int(500*math.sin(math.radians(x*10))+1000)</sensor>
         </config>
         <config name="delay">1</config>
-        <config name="verbose">DEBUG</config>
+        <config name="verbose">INFO</config>
     </emulation>
 </config>

@@ -25,18 +25,14 @@ import xml.etree.ElementTree
 
 
 class RestfulRequest:
-    def __init__(self, websocket, request_str: str):
+    def __init__(self, request_str: str):
         """
         Sub class for encapsulating a RESTful request and response.
-        :param websocket: The websocket socket object the request came from
         :param request_str: The RESTful request string received.
         """
         self._request_str = request_str
-        self._websocket = websocket
 
         self._dataset, self._filters, self._type = None, [], None
-
-        self._logger = common.get_logger("Restful", "DEBUG")
 
         self._decode_request()
 
@@ -45,28 +41,15 @@ class RestfulRequest:
         Decode the RESTful request string to determine the type, dataset, and filters wanted.
         """
         # Decode GET /sensors/RPM?timesince=<epoch>&amount=<n>
-        try:
-            split_space = self._request_str.split(" ")
-            self._type = split_space[0]
-            split_question = split_space[1].split("?")
-            self._dataset = split_question[0]
-            self._datasets = self._dataset.split("/")[1:]
-            split_and = split_question[1].split("&")
+        split_space = self._request_str.split(" ")
+        self._type = split_space[0]
+        split_question = split_space[1].split("?")
+        self._dataset = split_question[0]
+        self._datasets = self._dataset.split("/")[1:]
+        split_and = split_question[1].split("&")
 
-            for fil in split_and:
-                self._filters.extend([tuple(fil.split("="))])
-        except Exception as error:
-            self._logger.error(repr(error))
-            self._websocket.send({"ERROR": [{"type": repr(error)}]})
-            self._websocket.close()
-
-    async def respond(self, response: dict) -> None:
-        """
-        Respond to the client with a response.
-        :param response: The response to respond with (is turned into JSON).
-        """
-        await self._websocket.send(json.dumps(response))
-        await self._websocket.close()
+        for fil in split_and:
+            self._filters.extend([tuple(fil.split("="))])
 
     def get_type(self) -> str:
         """
@@ -107,8 +90,8 @@ class Restful:
 
         The RESTful server will invoke the callable passed in def server with the request in the form
         of the RestfulRequest sub class. The RestfulRequest sub class provides the type, datasets, and filters
-        the RESTful requests is made up with. A respond function is provided to allow the callable to respond back to
-        the request.
+        the RESTful requests is made up with. A response can be sent back to the client by returning a Dict
+        in the callable function.
         """
         self._parse_configuration()
 
@@ -130,8 +113,10 @@ class Restful:
         assert("url" in self._config)
         assert("port" in self._config)
         assert("verbose" in self._config)
+        assert("keep_alive" in self._config)
 
         self._config["port"] = int(self._config["port"])
+        self._config["keep_alive"] = self._config["keep_alive"] == "True"
 
     def serve(self, request_callable):
         """
@@ -150,11 +135,23 @@ class Restful:
         :param path: The accessed path from the client.
         """
         try:
-            request = await websocket.recv()
-            self._logger.info(f"Got request: {request}")
+            while self._config["keep_alive"]:
+                request = await websocket.recv()
+                self._logger.info(f"Got request: {request}")
 
-            request = RestfulRequest(websocket, request)
+                try:
+                    request = RestfulRequest(request)
+                except Exception as error:
+                    self._logger.error(error)
+                    response = {"ERROR": "503"}
+                else:
+                    response = self._request_callable(request)
 
-            await self._request_callable(request)
+                self._logger.info(f"Response <- {response}")
+                await websocket.send(json.dumps(response))
+
+            websocket.close()
         except websockets.ConnectionClosedOK:
+            pass
+        except websockets.ConnectionClosedError:
             pass
