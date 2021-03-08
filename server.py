@@ -87,6 +87,16 @@ class Server:
             for config in field.findall("config"):
                 self._config[config.attrib["name"]] = config.text
 
+        for field in config_root.iter("sensors"):
+            self._config["sensors"] = {}
+            for sensor in field.findall("sensor"):
+                self._config["sensors"][sensor.attrib["name"]] = {}
+                for config in sensor.findall("config"):
+                    self._config["sensors"][sensor.attrib["name"]][config.attrib["name"]] = config.text
+                    if config.attrib["name"] == "enable":
+                        self._config["sensors"][sensor.attrib["name"]][config.attrib["name"]] = \
+                            self._config["sensors"][sensor.attrib["name"]][config.attrib["name"]] == "True"
+
         assert("ip" in self._config)
         assert("port" in self._config)
         assert("emulation" in self._config)
@@ -95,6 +105,7 @@ class Server:
         assert("mac" in self._config)
         assert("verbose" in self._config)
         assert("database" in self._config)
+        assert("sensors" in self._config)
 
         self._config["port"] = int(self._config["port"])
         self._config["emulation"] = self._config["emulation"] == "True"
@@ -104,16 +115,7 @@ class Server:
         """
         Initialise the staging database.
         """
-        sensors = ["rpm", "water_temp_c", "tps_perc", "battery_mv", "ext_5v_mv",
-                   "fuel_flow", "lambda", "speed_kph", "evo_scan_1", "evo_scan_2",
-                   "evo_scan_3", "evo_scan_4", "evo_scan_5", "evo_scan_6", "evo_scan_7",
-                   "status_ecu_connected", "status_engine", "status_battery", "status_logging",
-                   "inj_time", "inj_duty_cycle", "lambda_pid_adj", "lambda_pid_target",
-                   "advance", "ride_height_fl_cm", "ride_height_fr_cm", "ride_height_flw_cm",
-                   "ride_height_rear_cm", "lap_time_s", "accel_fl_x_mg", "accel_fl_y_mg",
-                   "accel_fl_z_mg"]
-
-        for sensor in sensors:
+        for sensor, config in self._config["sensors"].items():
             self._database.create_sensor_table(sensor, ["value"])
 
     def _save_sensor_data_to_database(self, sensor_data: list) -> None:
@@ -351,15 +353,6 @@ class Server:
         Serve a RESTful request.
         :param request: The RESTful request.
         """
-        sensors = ["rpm", "water_temp_c", "tps_perc", "battery_mv", "ext_5v_mv",
-                   "fuel_flow", "lambda", "speed_kph", "evo_scan_1", "evo_scan_2",
-                   "evo_scan_3", "evo_scan_4", "evo_scan_5", "evo_scan_6", "evo_scan_7",
-                   "status_ecu_connected", "status_engine", "status_battery", "status_logging",
-                   "inj_time", "inj_duty_cycle", "lambda_pid_adj", "lambda_pid_target",
-                   "advance", "ride_height_fl_cm", "ride_height_fr_cm", "ride_height_flw_cm",
-                   "ride_height_rear_cm", "lap_time_s", "accel_fl_x_mg", "accel_fl_y_mg",
-                   "accel_fl_z_mg"]
-
         self._logger.info(f"Serving: {request}")
 
         response = {}
@@ -377,7 +370,7 @@ class Server:
             if request.get_datasets()[0] == "sensors":
                 if len(request.get_datasets()) == 1:
                     # /sensors
-                    for sensor in sensors:
+                    for sensor, config in self._config["sensors"].items():
                         sensor_data = self._database.select_sensor_data_top_n_entries(sensor, amount)
                         if len(sensor_data) > 0:
                             response[sensor] = []
