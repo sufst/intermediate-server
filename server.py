@@ -346,7 +346,7 @@ class Server:
         finally:
             self._logger.info("Stopped")
 
-    async def _restful_serve(self, request: restful.RestfulRequest):
+    def _restful_serve(self, request: restful.RestfulRequest) -> dict:
         """
         Serve a RESTful request.
         :param request: The RESTful request.
@@ -384,7 +384,7 @@ class Server:
                             for sensor_time, sensor_val in sensor_data:
                                 response[sensor].extend([{"time": sensor_time, "value": sensor_val}])
 
-        await request.respond(response)
+        return response
 
     def __exit__(self, exc_type: Optional[Exception], exc_val: Optional[Exception], exc_tb: Optional[Exception]) \
             -> None:
