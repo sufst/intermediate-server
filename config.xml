@@ -18,13 +18,143 @@
         <config name="emulation">True</config>
         <config name="database">staging</config>
     </server>
+    <sensors>
+        <sensor name="rpm">
+            <config name="enable">True</config>
+            <config name="group">Core</config>
+        </sensor>
+        <sensor name="water_temp_c">
+            <config name="enable">True</config>
+            <config name="group">Core</config>
+        </sensor>
+        <sensor name="tps_perc">
+            <config name="enable">True</config>
+            <config name="group">Core</config>
+        </sensor>
+        <sensor name="battery_mv">
+            <config name="enable">True</config>
+            <config name="group">Core</config>
+        </sensor>
+        <sensor name="ext_5v_mv">
+            <config name="enable">True</config>
+            <config name="group">Core</config>
+        </sensor>
+        <sensor name="fuel_flow">
+            <config name="enable">True</config>
+            <config name="group">Core</config>
+        </sensor>
+        <sensor name="lambda">
+            <config name="enable">True</config>
+            <config name="group">Core</config>
+        </sensor>
+        <sensor name="speed_kph">
+            <config name="enable">True</config>
+            <config name="group">Core</config>
+        </sensor>
+        <sensor name="evo_scan_1">
+            <config name="enable">True</config>
+            <config name="group">Aero</config>
+        </sensor>
+        <sensor name="evo_scan_2">
+            <config name="enable">True</config>
+            <config name="group">Aero</config>
+        </sensor>
+        <sensor name="evo_scan_3">
+            <config name="enable">True</config>
+            <config name="group">Aero</config>
+        </sensor>
+        <sensor name="evo_scan_4">
+            <config name="enable">True</config>
+            <config name="group">Aero</config>
+        </sensor>
+        <sensor name="evo_scan_5">
+            <config name="enable">True</config>
+            <config name="group">Aero</config>
+        </sensor>
+        <sensor name="evo_scan_6">
+            <config name="enable">True</config>
+            <config name="group">Aero</config>
+        </sensor>
+        <sensor name="evo_scan_7">
+            <config name="enable">True</config>
+            <config name="group">Aero</config>
+        </sensor>
+        <sensor name="status_ecu_connected">
+            <config name="enable">True</config>
+            <config name="group">Diagnostic</config>
+        </sensor>
+        <sensor name="status_engine">
+            <config name="enable">True</config>
+            <config name="group">Diagnostic</config>
+        </sensor>
+        <sensor name="status_battery">
+            <config name="enable">True</config>
+            <config name="group">Diagnostic</config>
+        </sensor>
+        <sensor name="status_logging">
+            <config name="enable">True</config>
+            <config name="group">Diagnostic</config>
+        </sensor>
+        <sensor name="inj_time">Power
+            <config name="enable">True</config>
+            <config name="group">Diagnostic</config>
+        </sensor>
+        <sensor name="inj_duty_cycle">
+            <config name="enable">True</config>
+            <config name="group">Power Train</config>
+        </sensor>
+        <sensor name="lambda_pid_adj">
+            <config name="enable">True</config>
+            <config name="group">Power Train</config>
+        </sensor>
+        <sensor name="lambda_pid_target">
+            <config name="enable">True</config>
+            <config name="group">Power Train</config>
+        </sensor>
+        <sensor name="advance">
+            <config name="enable">True</config>
+            <config name="group">Power Train</config>
+        </sensor>
+        <sensor name="ride_height_fl_cm">
+            <config name="enable">True</config>
+            <config name="group">Suspension</config>
+        </sensor>
+        <sensor name="ride_height_fr_cm">
+            <config name="enable">True</config>
+            <config name="group">Suspension</config>
+        </sensor>
+        <sensor name="ride_height_flw_cm">
+            <config name="enable">True</config>
+            <config name="group">Suspension</config>
+        </sensor>
+        <sensor name="ride_height_rear_cm">
+            <config name="enable">True</config>
+            <config name="group">Suspension</config>
+        </sensor>
+        <sensor name="lap_time_s">
+            <config name="enable">True</config>
+            <config name="group">Misc</config>
+        </sensor>
+        <sensor name="accel_fl_x_mg">
+            <config name="enable">True</config>
+            <config name="group">Misc</config>
+        </sensor>
+        <sensor name="accel_fl_y_mg">
+            <config name="enable">True</config>
+            <config name="group">Misc</config>
+        </sensor>
+        <sensor name="accel_fl_z_mg">
+            <config name="enable">True</config>
+            <config name="group">Misc</config>
+        </sensor>
+    </sensors>
     <emulation>
         <config name="sensors">
             <sensor name="rpm">int(5000 * math.sin(math.radians(x * 10)) + 5000)</sensor>
             <sensor name="water_temp_c">random.randint(80,100)</sensor>
             <sensor name="tps_perc">int(50*math.sin(math.radians(x*10))+50)</sensor>
             <sensor name="battery_mv">random.randint(11900,12100)</sensor>
-            <sensor name="ext_5v_mv">random.randint(4900,5100) </sensor>
+            <sensor name="ext_5v_mv">random.randint(4900,5100)</sensor>
             <sensor name="fuel_flow">int(25*math.sin(math.radians(x*10))+25)</sensor>
             <sensor name="lambda">int(25*math.sin(math.radians(x*10))+50)</sensor>
             <sensor name="speed_kph">int(150*math.sin(math.radians(x*10))+150)</sensor>
