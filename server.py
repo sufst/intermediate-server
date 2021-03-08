@@ -371,11 +371,15 @@ class Server:
                 if len(request.get_datasets()) == 1:
                     # /sensors
                     for sensor, config in self._config["sensors"].items():
-                        sensor_data = self._database.select_sensor_data_top_n_entries(sensor, amount)
-                        if len(sensor_data) > 0:
-                            response[sensor] = []
-                            for sensor_time, sensor_val in sensor_data:
-                                response[sensor].extend([{"time": sensor_time, "value": sensor_val}])
+                        if config["group"] not in response:
+                            response[config["group"]] = {}
+                        if config["enable"]:
+                            sensor_data = self._database.select_sensor_data_top_n_entries(sensor, amount)
+                            if len(sensor_data) > 0:
+                                response[config["group"]][sensor] = []
+                                for sensor_time, sensor_val in sensor_data:
+                                    response[config["group"]][sensor].extend(
+                                        [{"time": sensor_time, "value": sensor_val}])
 
         return response
 
