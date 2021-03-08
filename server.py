@@ -349,39 +349,62 @@ class Server:
             self._logger.info("Stopped")
 
     def _restful_serve(self, request: restful.RestfulRequest) -> dict:
-        """
-        Serve a RESTful request.
-        :param request: The RESTful request.
-        """
         self._logger.info(f"Serving: {request}")
 
+        filters = {"amount": 99}
         response = {}
-        amount = 99
-        timesince = None
 
         for fil in request.get_filters():
             name, val = fil
             if name == "amount":
-                amount = val
+                filters["amount"] = val
             elif name == "timesince":
-                timesince = val
+                filters["timesince"] = val
 
         if request.get_type() == "GET":
             if request.get_datasets()[0] == "sensors":
-                if len(request.get_datasets()) == 1:
-                    # /sensors
-                    for sensor, config in self._config["sensors"].items():
-                        if config["group"] not in response:
-                            response[config["group"]] = {}
-                        if config["enable"]:
-                            sensor_data = self._database.select_sensor_data_top_n_entries(sensor, amount)
-                            if len(sensor_data) > 0:
-                                response[config["group"]][sensor] = []
-                                for sensor_time, sensor_val in sensor_data:
-                                    response[config["group"]][sensor].extend(
-                                        [{"time": sensor_time, "value": sensor_val}])
+                response = self._restful_serve_sensors(request, filters)
 
         return response
+
+    def _restful_serve_sensors(self, request: restful.RestfulRequest, filters: dict) -> dict:
+        response = {}
+
+        if len(request.get_datasets()) == 1:
+            # /sensors
+            for sensor, config in self._config["sensors"].items():
+                if config["enable"]:
+                    if config["group"] not in response:
+                        response[config["group"]] = {}
+                    response[config["group"]][sensor] = self._restful_serve_sensor_get_data(sensor, filters)
+        elif len(request.get_datasets()) == 2:
+            # e.g. /sensors/core
+            response[request.get_datasets()[1]] = {}
+
+            for sensor, config in self._config["sensors"].items():
+                if config["enable"]:
+                    if config["group"] == request.get_datasets()[1]:
+                        response[config["group"]][sensor] = self._restful_serve_sensor_get_data(sensor, filters)
+
+        return response
+
+    def _restful_serve_sensor_get_data(self, sensor: str, filters: dict) -> list:
+        data = []
+        if "amount" in filters and not "timesince" in filters:
+            data_raw = self._database.select_sensor_data_top_n_entries(sensor, filters["amount"])
+        elif "amount" not in filters and "timesince" in filters:
+            data_raw = self._database.select_sensor_data_between_times(
+                sensor, [filters["timesince"], time.time()])
+        elif "amount" in filters and "timesince" in filters:
+            data_raw = self._database.select_sensor_data_top_n_entries_and_between_times(
+                sensor, filters["amount"], [filters["timesince"], time.time()])
+        else:
+            data_raw = []
+
+        for sensor_time, sensor_val in data_raw:
+            data.extend([{"time": sensor_time, "value": sensor_val}])
+
+        return data
 
     def __exit__(self, exc_type: Optional[Exception], exc_val: Optional[Exception], exc_tb: Optional[Exception]) \
             -> None:
