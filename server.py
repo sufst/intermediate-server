@@ -87,6 +87,16 @@ class Server:
             for config in field.findall("config"):
                 self._config[config.attrib["name"]] = config.text
 
+        for field in config_root.iter("sensors"):
+            self._config["sensors"] = {}
+            for sensor in field.findall("sensor"):
+                self._config["sensors"][sensor.attrib["name"]] = {}
+                for config in sensor.findall("config"):
+                    self._config["sensors"][sensor.attrib["name"]][config.attrib["name"]] = config.text
+                    if config.attrib["name"] == "enable":
+                        self._config["sensors"][sensor.attrib["name"]][config.attrib["name"]] = \
+                            self._config["sensors"][sensor.attrib["name"]][config.attrib["name"]] == "True"
+
         assert("ip" in self._config)
         assert("port" in self._config)
         assert("emulation" in self._config)
@@ -95,6 +105,7 @@ class Server:
         assert("mac" in self._config)
         assert("verbose" in self._config)
         assert("database" in self._config)
+        assert("sensors" in self._config)
 
         self._config["port"] = int(self._config["port"])
         self._config["emulation"] = self._config["emulation"] == "True"
@@ -104,16 +115,7 @@ class Server:
         """
         Initialise the staging database.
         """
-        sensors = ["rpm", "water_temp_c", "tps_perc", "battery_mv", "ext_5v_mv",
-                   "fuel_flow", "lambda", "speed_kph", "evo_scan_1", "evo_scan_2",
-                   "evo_scan_3", "evo_scan_4", "evo_scan_5", "evo_scan_6", "evo_scan_7",
-                   "status_ecu_connected", "status_engine", "status_battery", "status_logging",
-                   "inj_time", "inj_duty_cycle", "lambda_pid_adj", "lambda_pid_target",
-                   "advance", "ride_height_fl_cm", "ride_height_fr_cm", "ride_height_flw_cm",
-                   "ride_height_rear_cm", "lap_time_s", "accel_fl_x_mg", "accel_fl_y_mg",
-                   "accel_fl_z_mg"]
-
-        for sensor in sensors:
+        for sensor, config in self._config["sensors"].items():
             self._database.create_sensor_table(sensor, ["value"])
 
     def _save_sensor_data_to_database(self, sensor_data: list) -> None:
@@ -347,44 +349,62 @@ class Server:
             self._logger.info("Stopped")
 
     def _restful_serve(self, request: restful.RestfulRequest) -> dict:
-        """
-        Serve a RESTful request.
-        :param request: The RESTful request.
-        """
-        sensors = ["rpm", "water_temp_c", "tps_perc", "battery_mv", "ext_5v_mv",
-                   "fuel_flow", "lambda", "speed_kph", "evo_scan_1", "evo_scan_2",
-                   "evo_scan_3", "evo_scan_4", "evo_scan_5", "evo_scan_6", "evo_scan_7",
-                   "status_ecu_connected", "status_engine", "status_battery", "status_logging",
-                   "inj_time", "inj_duty_cycle", "lambda_pid_adj", "lambda_pid_target",
-                   "advance", "ride_height_fl_cm", "ride_height_fr_cm", "ride_height_flw_cm",
-                   "ride_height_rear_cm", "lap_time_s", "accel_fl_x_mg", "accel_fl_y_mg",
-                   "accel_fl_z_mg"]
-
         self._logger.info(f"Serving: {request}")
 
+        filters = {"amount": 99}
         response = {}
-        amount = 99
-        timesince = None
 
         for fil in request.get_filters():
             name, val = fil
             if name == "amount":
-                amount = val
+                filters["amount"] = val
             elif name == "timesince":
-                timesince = val
+                filters["timesince"] = val
 
         if request.get_type() == "GET":
             if request.get_datasets()[0] == "sensors":
-                if len(request.get_datasets()) == 1:
-                    # /sensors
-                    for sensor in sensors:
-                        sensor_data = self._database.select_sensor_data_top_n_entries(sensor, amount)
-                        if len(sensor_data) > 0:
-                            response[sensor] = []
-                            for sensor_time, sensor_val in sensor_data:
-                                response[sensor].extend([{"time": sensor_time, "value": sensor_val}])
+                response = self._restful_serve_sensors(request, filters)
 
         return response
+
+    def _restful_serve_sensors(self, request: restful.RestfulRequest, filters: dict) -> dict:
+        response = {}
+
+        if len(request.get_datasets()) == 1:
+            # /sensors
+            for sensor, config in self._config["sensors"].items():
+                if config["enable"]:
+                    if config["group"] not in response:
+                        response[config["group"]] = {}
+                    response[config["group"]][sensor] = self._restful_serve_sensor_get_data(sensor, filters)
+        elif len(request.get_datasets()) == 2:
+            # e.g. /sensors/core
+            response[request.get_datasets()[1]] = {}
+
+            for sensor, config in self._config["sensors"].items():
+                if config["enable"]:
+                    if config["group"] == request.get_datasets()[1]:
+                        response[config["group"]][sensor] = self._restful_serve_sensor_get_data(sensor, filters)
+
+        return response
+
+    def _restful_serve_sensor_get_data(self, sensor: str, filters: dict) -> list:
+        data = []
+        if "amount" in filters and not "timesince" in filters:
+            data_raw = self._database.select_sensor_data_top_n_entries(sensor, filters["amount"])
+        elif "amount" not in filters and "timesince" in filters:
+            data_raw = self._database.select_sensor_data_between_times(
+                sensor, [filters["timesince"], time.time()])
+        elif "amount" in filters and "timesince" in filters:
+            data_raw = self._database.select_sensor_data_top_n_entries_and_between_times(
+                sensor, filters["amount"], [filters["timesince"], time.time()])
+        else:
+            data_raw = []
+
+        for sensor_time, sensor_val in data_raw:
+            data.extend([{"time": sensor_time, "value": sensor_val}])
+
+        return data
 
     def __exit__(self, exc_type: Optional[Exception], exc_val: Optional[Exception], exc_tb: Optional[Exception]) \
             -> None:

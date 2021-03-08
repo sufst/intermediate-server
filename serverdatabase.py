@@ -98,6 +98,23 @@ class ServerDatabase:
 
         return data
 
+    def select_sensor_data_top_n_entries_and_between_times(self, sensor: str, n: int, times: list) -> list:
+        """
+        Get top n sensor data points from the sensor table between time times (time column included)
+        :param sensor: The sensor to select from.
+        :param n The maximum number of rows to return.
+        :param times The times between to select from.
+        :return A list of sensor data tuples for up to the last n points.
+        """
+        data = []
+        cur = self._con.cursor()
+
+        for row in cur.execute(
+                f"SELECT * FROM {sensor} WHERE time BETWEEN {times[0]} AND {times[1]} ORDER BY time DESC LIMIT {n}"):
+            data.append(row)
+
+        return data
+
     def commit(self):
         """
         Commit the database to file.
