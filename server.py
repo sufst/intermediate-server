@@ -337,11 +337,6 @@ class Server:
         self._on_stop = asyncio.Future()
 
         self._logger.info(f"Creating Protocol {self._config['ip']}:{self._config['port']}")
-        self._protocol = protocol.Protocol(ip=self._config["ip"], port=self._config["port"], com=self._config["com"],
-                                           baud=self._config["baud"], mac=self._config["mac"],
-                                           callbacks=self._protocol_callbacks, protocol_type=protocol.SERVER,
-                                           event_loop=self._event_loop, verbose=self._config["verbose"])
-        self._protocol.run()
 
         try:
             await self._on_stop
