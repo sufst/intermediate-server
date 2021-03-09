@@ -17,9 +17,35 @@
 """
 import unittest
 import protocol
+import struct
+
+
+def _serve_pdu_fields(fields: dict):
+    print(fields)
 
 
 class TestProtocol(unittest.TestCase):
     def test_initialise(self):
         proto = protocol.Protocol()
 
+    def test_decode(self):
+        proto = protocol.Protocol()
+
+        core_pdu_stream = struct.pack("<BBHHHHHHHH", 1, 0, 1, 2, 3, 4, 5, 6, 7, 8)
+        core_pdu_stream_2 = struct.pack("<BBHHHHHHHH", 1, 0, 9, 10, 11, 12, 13, 14, 15, 16)
+
+        test_streams = [core_pdu_stream, core_pdu_stream_2, core_pdu_stream + core_pdu_stream_2]
+
+        for stream in test_streams:
+            proto.decode_to(stream, _serve_pdu_fields)
+
+    def test_decode_corrupt(self):
+        proto = protocol.Protocol()
+
+        core_pdu_stream = struct.pack("<BBHHHHHHHH", 1, 1, 1, 2, 3, 4, 5, 6, 7, 8)
+        core_pdu_stream_2 = struct.pack("<BBHHHHHHHH", 5, 0, 9, 10, 11, 12, 13, 14, 15, 16)
+
+        test_streams = [core_pdu_stream, core_pdu_stream_2, core_pdu_stream + core_pdu_stream_2]
+
+        for stream in test_streams:
+            self.assertRaises(Exception, proto.decode_to(stream, _serve_pdu_fields))
