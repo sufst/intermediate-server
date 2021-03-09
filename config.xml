@@ -186,4 +186,51 @@
         <config name="delay">1</config>
         <config name="verbose">INFO</config>
     </emulation>
+    <schema>
+        <header name="header">
+            <field name="start_byte">
+                <property name="C_type">B</property>
+                <property name="const">1</property>
+            </field>
+            <field name="frame_id">
+                <property name="C_type">B</property>
+            </field>
+            <field name="epoch">
+                <property name="C_type">I</property>
+            </field>
+        </header>
+        <pdu name = "Core">
+            <property name="frame_id">0</property>
+            <property name="enable">True</property>
+            <property name="header">True</property>
+            <field name="rpm">
+                <property name="C_type">H</property>
+            </field>
+            <field name="rpm">
+                <property name="C_type">H</property>
+            </field>
+            <field name="water_temp_c">
+                <property name="C_type">H</property>
+            </field>
+            <field name="tps_perc">
+                <property name="C_type">H</property>
+            </field>
+            <field name="battery_mv">
+                <property name="C_type">H</property>
+            </field>
+            <field name="ext_5v_mv">
+                <property name="C_type">H</property>
+            </field>
+            <field name="fuel_flow">
+                <property name="C_type">H</property>
+            </field>
+            <field name="lambda">
+                <property name="C_type">H</property>
+            </field>
+            <field name="speed_kph">
+                <property name="C_type">H</property>
+            </field>
+        </pdu>
+        <config name="verbose">DEBUG</config>
+    </schema>
 </config>
