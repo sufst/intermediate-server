@@ -189,7 +189,7 @@
     <schema>
         <config name="verbose">DEBUG</config>
         <config name="start_byte">1</config>
-        <pdu name = "Core" id="0">
+        <pdu name = "core" id="0">
             <field name="rpm">
                 <property name="C_type">H</property>
             </field>
@@ -212,6 +212,91 @@
                 <property name="C_type">H</property>
             </field>
             <field name="speed_kph">
+                <property name="C_type">H</property>
+            </field>
+        </pdu>
+        <pdu name = "aero" id="1">
+            <field name="evo_scan_1">
+                <property name="C_type">H</property>
+            </field>
+            <field name="evo_scan_2">
+                <property name="C_type">H</property>
+            </field>
+            <field name="evo_scan_3">
+                <property name="C_type">H</property>
+            </field>
+            <field name="evo_scan_3">
+                <property name="C_type">H</property>
+            </field>
+            <field name="evo_scan_4">
+                <property name="C_type">H</property>
+            </field>
+            <field name="evo_scan_5">
+                <property name="C_type">H</property>
+            </field>
+            <field name="evo_scan_6">
+                <property name="C_type">H</property>
+            </field>
+            <field name="evo_scan_7">
+                <property name="C_type">H</property>
+            </field>
+        </pdu>
+        <pdu name = "diagnostic" id="2">
+            <field name="status_ecu_connected">
+                <property name="C_type">H</property>
+            </field>
+            <field name="status_engine">
+                <property name="C_type">H</property>
+            </field>
+            <field name="status_battery">
+                <property name="C_type">H</property>
+            </field>
+            <field name="status_logging">
+                <property name="C_type">H</property>
+            </field>
+        </pdu>
+        <pdu name = "power_train" id="3">
+            <field name="inj_time">
+                <property name="C_type">H</property>
+            </field>
+            <field name="inj_duty_cycle">
+                <property name="C_type">H</property>
+            </field>
+            <field name="lambda_pid_adj">
+                <property name="C_type">H</property>
+            </field>
+            <field name="lambda_pid_target">
+                <property name="C_type">H</property>
+            </field>
+            <field name="advance">
+                <property name="C_type">H</property>
+            </field>
+        </pdu>
+        <pdu name = "suspension" id="4">
+            <field name="ride_height_fl_cm">
+                <property name="C_type">H</property>
+            </field>
+            <field name="ride_height_fr_cm">
+                <property name="C_type">H</property>
+            </field>
+            <field name="ride_height_flw_cm">
+                <property name="C_type">H</property>
+            </field>
+            <field name="ride_height_rear_cm">
+                <property name="C_type">H</property>
+            </field>
+        </pdu>
+        <pdu name = "misc" id="5">
+            <field name="lap_time_s">
+                <property name="C_type">H</property>
+            </field>
+            <field name="accel_fl_x_mg">
+                <property name="C_type">H</property>
+            </field>
+            <field name="accel_fl_y_mg">
+                <property name="C_type">H</property>
+            </field>
+            <field name="accel_fl_z_mg">
                 <property name="C_type">H</property>
             </field>
         </pdu>

@@ -31,10 +31,18 @@ class TestProtocol(unittest.TestCase):
     def test_decode(self):
         proto = protocol.Protocol()
 
-        core_pdu_stream = struct.pack("<BBHHHHHHHH", 1, 0, 1, 2, 3, 4, 5, 6, 7, 8)
-        core_pdu_stream_2 = struct.pack("<BBHHHHHHHH", 1, 0, 9, 10, 11, 12, 13, 14, 15, 16)
+        core_pdu_stream_core = struct.pack("<BBHHHHHHHH", 1, 0, 1, 2, 3, 4, 5, 6, 7, 8)
+        core_pdu_stream_core_2 = struct.pack("<BBHHHHHHHH", 1, 0, 9, 10, 11, 12, 13, 14, 15, 16)
+        core_pdu_stream_aero = struct.pack("<BBHHHHHHH", 1, 1, 1, 2, 3, 4, 5, 6, 7)
+        core_pdu_stream_diag = struct.pack("<BBHHHH", 1, 2, 1, 0, 1, 1)
+        core_pdu_stream_power = struct.pack("<BBHHHHH", 1, 3, 1, 2, 3, 4, 5)
+        core_pdu_stream_sus = struct.pack("<BBHHHH", 1, 4, 1, 2, 3, 4)
+        core_pdu_stream_misc = struct.pack("<BBHHHH", 1, 5, 1, 2, 3, 4)
 
-        test_streams = [core_pdu_stream, core_pdu_stream_2, core_pdu_stream + core_pdu_stream_2]
+        test_streams = [core_pdu_stream_core,
+                        core_pdu_stream_core_2,
+                        core_pdu_stream_aero + core_pdu_stream_diag,
+                        core_pdu_stream_power + core_pdu_stream_sus + core_pdu_stream_misc]
 
         for stream in test_streams:
             proto.decode_to(stream, _serve_pdu_fields)
