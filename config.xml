@@ -1,24 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
+    <server>
+        <config name="emulation">False</config>
+        <config name="verbose">DEBUG</config>
+    </server>
     <RESTful>
         <config name="url">localhost</config>
         <config name="port">8765</config>
         <config name="verbose">INFO</config>
         <config name="keep_alive">True</config>
     </RESTful>
-    <XBee>
-        <config name="baud">115200</config>
-        <config name="com">COM8</config>
-        <config name="mac">0013A200410AC922</config>
-    </XBee>
-    <server>
-        <config name="ip">127.0.0.1</config>
-        <config name="port">19900</config>
+    <factory>
+        <!--Valid factory are XBee or socket-->
+        <config name="client">socket</config>
+        <client name="XBee">
+            <config name="baud">115200</config>
+            <config name="com">COM8</config>
+            <config name="mac">0013A200410AC922</config>
+        </client>
+        <client name="socket">
+            <config name="ip">127.0.0.1</config>
+            <config name="port">19900</config>
+        </client>
         <config name="verbose">INFO</config>
-        <config name="emulation">True</config>
-        <config name="database">staging</config>
-    </server>
+    </factory>
+    <database>
+        <config name="name">test_me_daddy</config>
+    </database>
     <sensors>
+        <!--The sensor names must match with the emulator and schema names-->
         <sensor name="rpm">
             <config name="enable">True</config>
             <config name="group">Core</config>
@@ -147,9 +157,15 @@
             <config name="enable">True</config>
             <config name="group">Misc</config>
         </sensor>
+        <sensor name="beans">
+            <config name="enable">True</config>
+            <config name="group">Bean</config>
+        </sensor>
     </sensors>
     <emulation>
         <config name="sensors">
+            <!--The variable x is an incremental value each time the emulators are ran-->
+            <!--The sensor names must match with the sensor names in the sensor section-->
             <sensor name="rpm">int(5000 * math.sin(math.radians(x * 10)) + 5000)</sensor>
             <sensor name="water_temp_c">random.randint(80,100)</sensor>
             <sensor name="tps_perc">int(50*math.sin(math.radians(x*10))+50)</sensor>
@@ -182,13 +198,17 @@
             <sensor name="accel_fl_x_mg">int(500*math.sin(math.radians(x*10+1))+1000)</sensor>
             <sensor name="accel_fl_y_mg">int(500*math.sin(math.radians(x*10+0.5))+1000)</sensor>
             <sensor name="accel_fl_z_mg">int(500*math.sin(math.radians(x*10))+1000)</sensor>
+            <sensor name="beans">int(x)</sensor>
         </config>
+        <!--Delay in seconds (can be a float)-->
         <config name="delay">1</config>
         <config name="verbose">INFO</config>
     </emulation>
     <schema>
+        <!--The sensor names must match with the sensor names in the sensor section-->
         <config name="verbose">DEBUG</config>
         <config name="start_byte">1</config>
+        <!--See https://docs.python.org/3/library/struct.html#format-characters for C type sizes-->
         <pdu name = "core" id="0">
             <field name="epoch">
                 <property name="C_type">d</property>
@@ -315,6 +335,15 @@
                 <property name="C_type">H</property>
             </field>
             <field name="accel_fl_z_mg">
+                <property name="C_type">H</property>
+            </field>
+        </pdu>
+        <!--Test PDU-->
+        <pdu name="bean" id="6">
+            <field name="epoch">
+                <property name="C_type">d</property>
+            </field>
+            <field name="beans">
                 <property name="C_type">H</property>
             </field>
         </pdu>
