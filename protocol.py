@@ -51,6 +51,9 @@ class ProtocolPDU:
                     self._length += c_type_lengths[prop_value]
                     self._struct_format += prop_value
 
+        # Remove the valid_bitfield field.
+        self._fields_names = self._fields_names[1:]
+
     def get_length(self) -> int:
         """
         Get the length (in bytes) of the PDU.
@@ -64,8 +67,20 @@ class ProtocolPDU:
         """
         values = iter(struct.unpack(self._struct_format, bytes_in))
 
+        # The first value should be the valid bitfield.
+        valid_bitfield = next(values)
+
+        # Create an array of valid fields in the PDU
+        valid_fields = []
+        for i in range(0, len(self._fields_names)):
+            if (valid_bitfield >> i) & 1:
+                valid_fields.extend([self._fields_names[i]])
+
         for field in self._fields_names:
-            self._fields[field] = next(values)
+            if field in valid_fields:
+                self._fields[field] = next(values)
+            else:
+                next(values)
 
     def get_fields_values(self) -> dict:
         """
@@ -119,6 +134,8 @@ class Protocol:
             self._config["start_byte"] = int(self._config["start_byte"])
 
             for pdu in field.findall("pdu"):
+                assert("id" in pdu.attrib)
+
                 self._schema[pdu.attrib["name"]] = {"id": int(pdu.attrib["id"]), "fields": {}}
 
                 for entry in pdu.findall("field"):
@@ -127,6 +144,8 @@ class Protocol:
                         self._schema[pdu.attrib["name"]]["fields"][entry.attrib["name"]][prop.attrib["name"]] = prop.text
 
                     assert("C_type" in self._schema[pdu.attrib["name"]]["fields"][entry.attrib["name"]])
+
+                assert("valid_bitfield" in self._schema[pdu.attrib["name"]]["fields"])
 
     def decode_to(self, stream: bytes, handler: callable) -> None:
         """

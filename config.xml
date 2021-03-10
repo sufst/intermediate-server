@@ -210,6 +210,9 @@
         <config name="start_byte">1</config>
         <!--See https://docs.python.org/3/library/struct.html#format-characters for C type sizes-->
         <pdu name = "core" id="0">
+            <field name="valid_bitfield">
+                <property name="C_type">H</property>
+            </field>
             <field name="epoch">
                 <property name="C_type">d</property>
             </field>
@@ -239,6 +242,9 @@
             </field>
         </pdu>
         <pdu name = "aero" id="1">
+            <field name="valid_bitfield">
+                <property name="C_type">H</property>
+            </field>
             <field name="epoch">
                 <property name="C_type">d</property>
             </field>
@@ -268,6 +274,9 @@
             </field>
         </pdu>
         <pdu name = "diagnostic" id="2">
+            <field name="valid_bitfield">
+                <property name="C_type">H</property>
+            </field>
             <field name="epoch">
                 <property name="C_type">d</property>
             </field>
@@ -285,6 +294,9 @@
             </field>
         </pdu>
         <pdu name = "power_train" id="3">
+            <field name="valid_bitfield">
+                <property name="C_type">H</property>
+            </field>
             <field name="epoch">
                 <property name="C_type">d</property>
             </field>
@@ -305,6 +317,9 @@
             </field>
         </pdu>
         <pdu name = "suspension" id="4">
+            <field name="valid_bitfield">
+                <property name="C_type">H</property>
+            </field>
             <field name="epoch">
                 <property name="C_type">d</property>
             </field>
@@ -322,6 +337,9 @@
             </field>
         </pdu>
         <pdu name = "misc" id="5">
+            <field name="valid_bitfield">
+                <property name="C_type">H</property>
+            </field>
             <field name="epoch">
                 <property name="C_type">d</property>
             </field>
@@ -340,6 +358,9 @@
         </pdu>
         <!--Test PDU-->
         <pdu name="bean" id="6">
+            <field name="valid_bitfield">
+                <property name="C_type">H</property>
+            </field>
             <field name="epoch">
                 <property name="C_type">d</property>
             </field>
