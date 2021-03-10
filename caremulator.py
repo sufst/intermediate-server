@@ -92,6 +92,6 @@ class CarEmulator:
                 self._logger.debug(f"{name} <- {value}")
                 self._database.insert_sensor_data(name, epoch, (value,))
 
-            self._database.commit()
-
             x += 1
+
+

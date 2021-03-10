@@ -66,8 +66,6 @@ class ServerDatabase:
 
         cur.execute(f"INSERT INTO {sensor} VALUES ({time},{_get_comma_separated_entry(data)})")
 
-        self._con.commit()
-
     def select_sensor_data_between_times(self, sensor: str, times: list) -> list:
         """
         Get sensor data between two times points from the sensor table (time column included)

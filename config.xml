@@ -25,7 +25,9 @@
         <config name="verbose">INFO</config>
     </factory>
     <database>
-        <config name="name">test_me_daddy</config>
+        <config name="name">staging</config>
+        <!--The interval in seconds to commit the database periodically at-->
+        <config name="interval">1</config>
     </database>
     <sensors>
         <!--The sensor names must match with the emulator and schema names-->

@@ -86,8 +86,10 @@ class Server:
         assert("verbose" in self._config)
 
         assert("name" in self._db_config)
+        assert("interval" in self._db_config)
 
         self._config["emulation"] = self._config["emulation"] == "True"
+        self._db_config["interval"] = float(self._db_config["interval"])
 
     def _initialise_database(self):
         for sensor, config in self._config["sensors"].items():
@@ -99,8 +101,6 @@ class Server:
             name, time_ms, value = sensor
             self._database.insert_sensor_data(name, time_ms, (value,))
             self._logger.debug(f"db <- {name} {time_ms} {value}")
-
-        self._database.commit()
 
     def _initialise_protocol(self):
         self._protocol = protocol.Protocol()
@@ -150,7 +150,11 @@ class Server:
         else:
             self._protocol_factory.serve(self._protocol_serve)
 
-        asyncio.get_event_loop().run_forever()
+        asyncio.get_event_loop().create_task(self._commit_database())
+        try:
+            asyncio.get_event_loop().run_forever()
+        finally:
+            print("End")
 
     def _restful_serve(self, request: restful.RestfulRequest) -> dict:
         self._logger.info(f"Serving: {request}")
@@ -228,6 +232,12 @@ class Server:
         data.reverse()
 
         return data
+
+    async def _commit_database(self):
+        while True:
+            await asyncio.sleep(self._db_config["interval"])
+
+            self._database.commit()
 
     def __enter__(self) -> Server:
         return self
