@@ -19,9 +19,10 @@ import asyncio
 import json
 import threading
 import unittest
-
+import socket
+import struct
 import websockets
-
+import time
 import server
 
 
@@ -40,7 +41,7 @@ class ServerThread(threading.Thread):
         """
         self.running = True
         asyncio.set_event_loop(self.loop)
-        server.Server("127.0.0.1", 19900, "COM0", 115200, "FFFFFFFFFFFFFFFF", "INFO").run()
+        server.Server().serve_forever()
 
     def stop(self):
         """
@@ -67,6 +68,33 @@ class TestServerRestful(unittest.TestCase):
     def test_restful(self):
         ser_thread = ServerThread()
         ser_thread.start()
+
+        asyncio.get_event_loop().run_until_complete(_test_request())
+        ser_thread.stop()
+
+    def test_client_socket(self):
+        ser_thread = ServerThread()
+        ser_thread.start()
+
+        core_pdu_stream_core = struct.pack("<BBdHHHHHHHH", 1, 0, time.time(), 1, 2, 3, 4, 5, 6, 7, 8)
+        core_pdu_stream_core_2 = struct.pack("<BBdHHHHHHHH", 1, 0, time.time()+2, 9, 10, 11, 12, 13, 14, 15, 16)
+        core_pdu_stream_aero = struct.pack("<BBdHHHHHHH", 1, 1, time.time()+4, 1, 2, 3, 4, 5, 6, 7)
+        core_pdu_stream_diag = struct.pack("<BBdHHHH", 1, 2, time.time()+6, 1, 0, 1, 1)
+        core_pdu_stream_power = struct.pack("<BBdHHHHH", 1, 3, time.time()+8, 1, 2, 3, 4, 5)
+        core_pdu_stream_sus = struct.pack("<BBdHHHH", 1, 4, time.time()+10, 1, 2, 3, 4)
+        core_pdu_stream_misc = struct.pack("<BBdHHHH", 1, 5, time.time()+12, 1, 2, 3, 4)
+        core_pdu_stream_bean = struct.pack("<BBdH", 1, 6, time.time(), 1)
+
+        test_streams = [core_pdu_stream_core,
+                        core_pdu_stream_core_2,
+                        core_pdu_stream_aero + core_pdu_stream_diag,
+                        core_pdu_stream_power + core_pdu_stream_sus + core_pdu_stream_misc,
+                        core_pdu_stream_bean]
+
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.connect(("127.0.0.1", 19900))
+            for stream in test_streams:
+                sock.send(stream)
 
         asyncio.get_event_loop().run_until_complete(_test_request())
         ser_thread.stop()

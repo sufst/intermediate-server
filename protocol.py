@@ -15,12 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import asyncio
 import struct
 import xml.etree.ElementTree
-
 import common
-import protocol_factory
 
 
 class ProtocolPDU:
@@ -38,7 +35,7 @@ class ProtocolPDU:
 
         self._parse_pdu()
 
-    def _parse_pdu(self) -> None:
+    def _parse_pdu(self):
         self._fields_names = []
         self._fields = {}
         self._length = 0
@@ -101,13 +98,13 @@ class Protocol:
 
         self._construct_protocol()
 
-    def _construct_protocol(self) -> None:
+    def _construct_protocol(self):
         self._pdu = {}
 
         for name, pdu in self._schema.items():
             self._pdu[pdu["id"]] = ProtocolPDU(name, pdu["fields"])
 
-    def _parse_configuration(self) -> None:
+    def _parse_configuration(self):
         config_root = xml.etree.ElementTree.parse("config.xml").getroot()
         self._config = {}
         self._schema = {}
