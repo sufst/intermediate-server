@@ -187,7 +187,9 @@ class Server:
                 if config["enable"]:
                     if config["group"] not in response:
                         response[config["group"]] = {}
-                    response[config["group"]][sensor] = self._restful_serve_sensor_get_data(sensor, filters)
+                    sensor_data = self._restful_serve_sensor_get_data(sensor, filters)
+                    if len(sensor_data) > 0:
+                        response[config["group"]][sensor] = sensor_data
         elif len(request.get_datasets()) == 2:
             # e.g. /sensors/core
             if request.get_datasets()[1] in self._config["sensors"]:
@@ -196,7 +198,9 @@ class Server:
                 for sensor, config in self._config["sensors"].items():
                     if config["enable"]:
                         if config["group"] == request.get_datasets()[1]:
-                            response[config["group"]][sensor] = self._restful_serve_sensor_get_data(sensor, filters)
+                            sensor_data = self._restful_serve_sensor_get_data(sensor, filters)
+                            if len(sensor_data) > 0:
+                                response[config["group"]][sensor] = sensor_data
             else:
                 raise FileNotFoundError
         else:
