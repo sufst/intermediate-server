@@ -139,13 +139,22 @@ class Restful:
                 request = await websocket.recv()
                 self._logger.info(f"Got request: {request}")
 
+                response = {"status": 200, "result": {}}
+
                 try:
                     request = RestfulRequest(request)
                 except Exception as error:
                     self._logger.error(error)
-                    response = {"ERROR": "503"}
+                    response["status"] = 400
                 else:
-                    response = self._request_callable(request)
+                    try:
+                        response["result"] = self._request_callable(request)
+                    except NotImplementedError:
+                        response["status"] = 501
+                    except SystemError:
+                        response["status"] = 500
+                    except FileNotFoundError:
+                        response["status"] = 404
 
                 self._logger.info(f"Response <- {response}")
                 await websocket.send(json.dumps(response))
