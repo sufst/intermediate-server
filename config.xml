@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
     <server>
-        <config name="emulation">False</config>
-        <config name="verbose">DEBUG</config>
+        <config name="emulation">True</config>
+        <config name="verbose">INFO</config>
     </server>
     <RESTful>
         <config name="url">localhost</config>
@@ -201,7 +201,7 @@
             <sensor name="beans">int(x)</sensor>
         </config>
         <!--Delay in seconds (can be a float)-->
-        <config name="delay">1</config>
+        <config name="delay">0.02</config>
         <config name="verbose">INFO</config>
     </emulation>
     <schema>

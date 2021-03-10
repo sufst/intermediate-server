@@ -65,7 +65,7 @@ class CarEmulator:
         assert("delay" in self._config)
         assert("verbose" in self._config)
 
-        self._config["delay"] = int(self._config["delay"])
+        self._config["delay"] = float(self._config["delay"])
 
     def serve(self):
         """
