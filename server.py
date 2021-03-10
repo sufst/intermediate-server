@@ -208,6 +208,9 @@ class Server:
         for sensor_time, sensor_val in data_raw:
             data.extend([{"time": sensor_time, "value": sensor_val}])
 
+        # RESTful clients want the data from oldest -> earliest (but the db get returns it earliest -> oldest).
+        data.reverse()
+
         return data
 
     def __enter__(self) -> Server:
