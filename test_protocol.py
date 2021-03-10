@@ -32,13 +32,13 @@ class TestProtocol(unittest.TestCase):
     def test_decode(self):
         proto = protocol.Protocol()
 
-        core_pdu_stream_core = struct.pack("<BBdHHHHHHHH", 1, 0, time.time(), 1, 2, 3, 4, 5, 6, 7, 8)
-        core_pdu_stream_core_2 = struct.pack("<BBdHHHHHHHH", 1, 0, time.time()+2, 9, 10, 11, 12, 13, 14, 15, 16)
-        core_pdu_stream_aero = struct.pack("<BBdHHHHHHH", 1, 1, time.time()+4, 1, 2, 3, 4, 5, 6, 7)
-        core_pdu_stream_diag = struct.pack("<BBdHHHH", 1, 2, time.time()+6, 1, 0, 1, 1)
-        core_pdu_stream_power = struct.pack("<BBdHHHHH", 1, 3, time.time()+8, 1, 2, 3, 4, 5)
-        core_pdu_stream_sus = struct.pack("<BBdHHHH", 1, 4, time.time()+10, 1, 2, 3, 4)
-        core_pdu_stream_misc = struct.pack("<BBdHHHH", 1, 5, time.time()+12, 1, 2, 3, 4)
+        core_pdu_stream_core = struct.pack("<BBHdHHHHHHHH", 1, 0, 0x05, time.time(), 1, 2, 3, 4, 5, 6, 7, 8)
+        core_pdu_stream_core_2 = struct.pack("<BBHdHHHHHHHH", 1, 0, 0x05, time.time()+2, 9, 10, 11, 12, 13, 14, 15, 16)
+        core_pdu_stream_aero = struct.pack("<BBHdHHHHHHH", 1, 1, 0x05, time.time()+4, 1, 2, 3, 4, 5, 6, 7)
+        core_pdu_stream_diag = struct.pack("<BBHdHHHH", 1, 2, 0x05, time.time()+6, 1, 0, 1, 1)
+        core_pdu_stream_power = struct.pack("<BBHdHHHHH", 1, 3, 0x05, time.time()+8, 1, 2, 3, 4, 5)
+        core_pdu_stream_sus = struct.pack("<BBHdHHHH", 1, 4, 0x05, time.time()+10, 1, 2, 3, 4)
+        core_pdu_stream_misc = struct.pack("<BBHdHHHH", 1, 5, 0x05, time.time()+12, 1, 2, 3, 4)
 
         test_streams = [core_pdu_stream_core,
                         core_pdu_stream_core_2,
