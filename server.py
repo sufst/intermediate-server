@@ -164,10 +164,17 @@ class Server:
                 filters["amount"] = val
             elif name == "timesince":
                 filters["timesince"] = val
+            else:
+                raise NotImplementedError
 
         if request.get_type() == "GET":
             if request.get_datasets()[0] == "sensors":
-                response = self._restful_serve_sensors(request, filters)
+                try:
+                    response = self._restful_serve_sensors(request, filters)
+                except Exception as exc:
+                    raise exc
+        else:
+            raise NotImplementedError
 
         return response
 
@@ -183,12 +190,17 @@ class Server:
                     response[config["group"]][sensor] = self._restful_serve_sensor_get_data(sensor, filters)
         elif len(request.get_datasets()) == 2:
             # e.g. /sensors/core
-            response[request.get_datasets()[1]] = {}
+            if request.get_datasets()[1] in self._config["sensors"]:
+                response[request.get_datasets()[1]] = {}
 
-            for sensor, config in self._config["sensors"].items():
-                if config["enable"]:
-                    if config["group"] == request.get_datasets()[1]:
-                        response[config["group"]][sensor] = self._restful_serve_sensor_get_data(sensor, filters)
+                for sensor, config in self._config["sensors"].items():
+                    if config["enable"]:
+                        if config["group"] == request.get_datasets()[1]:
+                            response[config["group"]][sensor] = self._restful_serve_sensor_get_data(sensor, filters)
+            else:
+                raise FileNotFoundError
+        else:
+            raise FileNotFoundError
 
         return response
 
