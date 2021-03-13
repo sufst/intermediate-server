@@ -139,7 +139,7 @@ class Restful:
                 request = await websocket.recv()
                 self._logger.info(f"Got request: {request}")
 
-                response = {"status": 200, "result": {}}
+                response = {"status": 200, "result": {}, "epoch": 0}
 
                 try:
                     request = RestfulRequest(request)
@@ -149,6 +149,13 @@ class Restful:
                 else:
                     try:
                         response["result"] = self._request_callable(request)
+
+                        # Find the most recent epoch
+                        for g_name, group in response["result"].items():
+                            for s_name, sensor in group.items():
+                                if sensor[-1]["time"] > response["epoch"]:
+                                    response["epoch"] = sensor[-1]["time"]
+
                     except NotImplementedError:
                         response["status"] = 501
                     except SystemError:
