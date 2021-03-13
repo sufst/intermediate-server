@@ -20,11 +20,11 @@ jobs:
     - name: build with pyinstaller
       run: |
         pyinstaller src/intermediate_server.py --distpath output/windows --add-data "config.xml;./"
-    -name: Zip files
-        uses: papeloto/action-zip@v1
-        with:
-          files: output/windows/
-          dest: my-artifact.zip
+    - name: Zip files
+      uses: papeloto/action-zip@v1
+      with:
+        files: output/windows/
+        dest: my-artifact.zip
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
