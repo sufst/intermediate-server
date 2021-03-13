@@ -1,29 +1,25 @@
-### Python Dependencies: 
-
-
-Flask==1.1.2
-Flask-Compress==1.8.0
-Jinja2==2.11.2
-Werkzeug==1.0.1
-MarkupSafe==1.1.1
+Brotli==1.0.9
 click==7.1.2
 dash==1.18.1
+dash-core-components==1.14.1
+dash-html-components==1.1.1
+dash-renderer==1.8.3
+dash-table==4.11.1
 digi-xbee==1.3.0
-serial==0.0.97
+Flask==1.1.2
+Flask-Compress==1.8.0
 future==0.18.2
 itsdangerous==1.1.0
-numpy==1.19.4
+Jinja2==2.11.2
+MarkupSafe==1.1.1
+numpy==1.19.2
 pandas==1.2.0
 plotly==4.14.1
-pytz==2020.5
-python-dateutil==2.8.1
-retrying==1.3.3
-srp==1.0.16
-six==1.15.0
 pyserial==3.5
-wheel
-setuptools
-
-
-### Note that dash is only used for the GUI Emulation.  
-## Also note that most of these packages will be installed automatically as a dependency on top of others. There are included in this script just in case. 
+python-dateutil==2.8.1
+pytz==2020.5
+retrying==1.3.3
+six==1.15.0
+srp==1.0.16
+websockets==8.1
+Werkzeug==1.0.1
