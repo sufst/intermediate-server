@@ -20,7 +20,12 @@ jobs:
     - name: build with pyinstaller
       run: |
         pyinstaller src/intermediate_server.py --distpath output/windows --add-data "config.xml;./"
-    - uses: actions/upload-artifact@v2
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
       with:
-        name: my-app
-        path: output/windows
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: output/windows
+        asset_name: mything
+        tag: ${{ github.ref }}
+        overwrite: true
+        body: "This is my release text"
