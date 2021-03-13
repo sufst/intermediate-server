@@ -19,7 +19,7 @@ jobs:
         pip install pyinstaller
     - name: build with pyinstaller
       run: |
-        pyinstaller src/intermediate_server.py --distpath dist/windows --add-data "config.xml;./"
+        pyinstaller src/intermediate_server.py --distpath output/windows --add-data "config.xml;./"
     - uses: actions/upload-artifact@v2
       with:
         name: my-app
