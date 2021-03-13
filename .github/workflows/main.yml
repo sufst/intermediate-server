@@ -20,12 +20,28 @@ jobs:
     - name: build with pyinstaller
       run: |
         pyinstaller src/intermediate_server.py --distpath output/windows --add-data "config.xml;./"
-    - name: Upload binaries to release
-      uses: svenstaro/upload-release-action@v2
+    -name: Zip files
+        uses: papeloto/action-zip@v1
+        with:
+          files: output/windows/
+          dest: my-artifact.zip
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: output/windows
-        asset_name: mything
-        tag: ${{ github.ref }}
-        overwrite: true
-        body: "This is my release text"
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+    - name: Upload Release Asset
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: ./my-artifact.zip
+        asset_name: my-artifact.zip
+        asset_content_type: application/zip
