@@ -2,12 +2,12 @@
 <config>
     <server>
         <config name="emulation">True</config>
-        <config name="verbose">INFO</config>
+        <config name="verbose">WARN</config>
     </server>
     <RESTful>
         <config name="url">localhost</config>
         <config name="port">8765</config>
-        <config name="verbose">INFO</config>
+        <config name="verbose">WARN</config>
         <config name="keep_alive">True</config>
     </RESTful>
     <factory>
@@ -22,7 +22,7 @@
             <config name="ip">127.0.0.1</config>
             <config name="port">19900</config>
         </client>
-        <config name="verbose">INFO</config>
+        <config name="verbose">WARN</config>
     </factory>
     <database>
         <config name="name">staging</config>
@@ -204,7 +204,7 @@
         </config>
         <!--Delay in seconds (can be a float)-->
         <config name="delay">0.02</config>
-        <config name="verbose">INFO</config>
+        <config name="verbose">WARN</config>
     </emulation>
     <schema>
         <!--The sensor names must match with the sensor names in the sensor section-->

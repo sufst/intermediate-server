@@ -24,6 +24,8 @@ import common
 import serverdatabase
 import math
 import random
+import threading
+import queue
 
 
 class CarEmulator:
@@ -41,6 +43,7 @@ class CarEmulator:
         """
         self._database = database
         self._running = True
+        self._queue = queue.Queue()
 
         self._parse_configuration()
 
@@ -75,7 +78,21 @@ class CarEmulator:
         Can be stopped by stopping the underlying event loop which is using used to serve or stopping the future.
         """
 
+        threading.Thread(target=self._serve_thread).start()
+        asyncio.get_event_loop().create_task(self._serve_emulator())
+
+    async def _serve_emulator(self):
+        while True:
+            if not self._queue.empty():
+                name, epoch, (value,) = self._queue.get_nowait()
+                self._database.insert_sensor_data(name, epoch, (value,))
+            else:
+                await asyncio.sleep(self._config["delay"])
+
+    def _serve_thread(self):
+        asyncio.set_event_loop(asyncio.new_event_loop())
         asyncio.get_event_loop().create_task(self._serve())
+        asyncio.get_event_loop().run_forever()
 
     async def _serve(self):
         x = 0
@@ -90,7 +107,7 @@ class CarEmulator:
             for name, emulator in self._config["sensors"].items():
                 value = eval(emulator)
                 self._logger.debug(f"{name} <- {value}")
-                self._database.insert_sensor_data(name, epoch, (value,))
+                self._queue.put((name, epoch, (value,)))
 
             x += 1
 

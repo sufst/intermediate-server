@@ -41,6 +41,7 @@ class ServerDatabase:
 
     def _create_database(self):
         self._con = sqlite3.connect(f"{self._name}.db")
+        self._con.execute('PRAGMA journal_mode=MEMORY')
 
     def create_sensor_table(self, sensor: str, columns: list) -> None:
         """
