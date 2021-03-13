@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import unittest
-import protocol
+from src import protocol
 import struct
 import time
 

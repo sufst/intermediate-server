@@ -22,10 +22,12 @@ import xml.etree.ElementTree
 
 import common
 import serverdatabase
-import math
-import random
 import threading
 import queue
+
+# These are for use with the emulator equations.
+import math
+import random
 
 
 class CarEmulator:

@@ -22,7 +22,7 @@ import unittest
 
 import websockets
 
-import restful
+from src import restful
 
 
 async def _restful_serve(request: restful.RestfulRequest):

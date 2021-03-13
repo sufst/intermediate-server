@@ -20,8 +20,7 @@ import asyncio
 import sqlite3
 import unittest
 
-import caremulator
-import serverdatabase
+from src import caremulator, serverdatabase
 
 
 class TestCarEmulatorOverride(serverdatabase.ServerDatabase):

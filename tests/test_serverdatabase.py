@@ -19,7 +19,7 @@ import os
 import time
 import unittest
 
-import serverdatabase
+from src import serverdatabase
 
 
 class TestServerDatabase(unittest.TestCase):

@@ -23,7 +23,7 @@ import socket
 import struct
 import websockets
 import time
-import server
+from src import server
 
 
 class ServerThread(threading.Thread):
