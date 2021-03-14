@@ -63,6 +63,14 @@ class Server:
         self._config = {}
         self._db_config = {}
 
+        type_mapping = {"enable": lambda x: x == "True",
+                        "interval": lambda x: int(x),
+                        "emulation": lambda x: x == "True",
+                        "min": lambda x: int(x),
+                        "max": lambda x: int(x),
+                        "on_dash": lambda x: x == "True"
+                        }
+
         for field in config_root.iter("database"):
             for config in field.findall("config"):
                 self._db_config[config.attrib["name"]] = config.text
@@ -70,12 +78,28 @@ class Server:
         for field in config_root.iter("sensors"):
             self._config["sensors"] = {}
             for sensor in field.findall("sensor"):
-                self._config["sensors"][sensor.attrib["name"]] = {}
+                self._config["sensors"][sensor.attrib["name"]] = {"config": {}, "meta": {}}
+
                 for config in sensor.findall("config"):
-                    self._config["sensors"][sensor.attrib["name"]][config.attrib["name"]] = config.text
-                    if config.attrib["name"] == "enable":
-                        self._config["sensors"][sensor.attrib["name"]][config.attrib["name"]] = \
-                            self._config["sensors"][sensor.attrib["name"]][config.attrib["name"]] == "True"
+                    if config.attrib["name"] in type_mapping:
+                        self._config["sensors"][sensor.attrib["name"]]["config"][config.attrib["name"]] = \
+                            type_mapping[config.attrib["name"]](config.text)
+                    else:
+                        self._config["sensors"][sensor.attrib["name"]]["config"][config.attrib["name"]] = config.text
+
+                assert("enable" in self._config["sensors"][sensor.attrib["name"]]["config"])
+                assert("group" in self._config["sensors"][sensor.attrib["name"]]["config"])
+
+                for meta in sensor.findall("meta"):
+                    if meta.attrib["name"] in type_mapping:
+                        self._config["sensors"][sensor.attrib["name"]]["meta"][meta.attrib["name"]] = \
+                            type_mapping[meta.attrib["name"]](meta.text)
+                    else:
+                        self._config["sensors"][sensor.attrib["name"]]["meta"][meta.attrib["name"]] = meta.text
+
+                assert("min" in self._config["sensors"][sensor.attrib["name"]]["meta"])
+                assert("max" in self._config["sensors"][sensor.attrib["name"]]["meta"])
+                assert("on_dash" in self._config["sensors"][sensor.attrib["name"]]["meta"])
 
         for field in config_root.iter("server"):
             for config in field.findall("config"):
@@ -156,11 +180,26 @@ class Server:
         finally:
             print("End")
 
-    def _restful_serve(self, request: restful.RestfulRequest) -> dict:
+    def _restful_serve(self, request: restful.RestfulRequest) -> tuple:
         self._logger.info(f"Serving: {request}")
 
+        request_handlers = {"GET": self._restful_server_get_request}
+
+        if request.get_type() in request_handlers:
+            try:
+                response, epoch = request_handlers[request.get_type()](request, request.get_filters())
+            except Exception as exc:
+                raise exc
+        else:
+            raise NotImplementedError
+
+        return response, epoch
+
+    def _restful_server_get_request(self, request: restful.RestfulRequest, filters: dict) -> tuple:
         filters = {"amount": 99}
         response = {}
+        dataset_handlers = {"sensors": self._restful_serve_sensors,
+                            "meta": self._restful_server_meta}
 
         for fil in request.get_filters():
             name, val = fil
@@ -171,46 +210,64 @@ class Server:
             else:
                 raise NotImplementedError
 
-        if request.get_type() == "GET":
-            if request.get_datasets()[0] == "sensors":
-                try:
-                    response = self._restful_serve_sensors(request, filters)
-                except Exception as exc:
-                    raise exc
+        if request.get_datasets()[0] in dataset_handlers:
+            try:
+                response, epoch = dataset_handlers[request.get_datasets()[0]](request, filters)
+            except Exception as exc:
+                raise exc
         else:
             raise NotImplementedError
 
-        return response
+        return response, epoch
 
-    def _restful_serve_sensors(self, request: restful.RestfulRequest, filters: dict) -> dict:
+    def _restful_server_meta(self, request: restful.RestfulRequest, filters: dict) -> tuple:
         response = {}
+
+        if request.get_datasets()[1] == "sensors":
+            for sensor, data in self._config["sensors"].items():
+                if data["config"]["enable"]:
+                    if data["config"]["group"] not in response:
+                        response[data["config"]["group"]] = {}
+                    response[data["config"]["group"]][sensor] = self._config["sensors"][sensor]["meta"]
+        else:
+            raise FileNotFoundError
+
+        return response, time.time()
+
+    def _restful_serve_sensors(self, request: restful.RestfulRequest, filters: dict) -> tuple:
+        response = {}
+        epoch = 0
 
         if len(request.get_datasets()) == 1:
             # /sensors
-            for sensor, config in self._config["sensors"].items():
-                if config["enable"]:
-                    if config["group"] not in response:
-                        response[config["group"]] = {}
+            for sensor, data in self._config["sensors"].items():
+                if data["config"]["enable"]:
+                    if data["config"]["group"] not in response:
+                        response[data["config"]["group"]] = {}
                     sensor_data = self._restful_serve_sensor_get_data(sensor, filters)
                     if len(sensor_data) > 0:
-                        response[config["group"]][sensor] = sensor_data
+                        response[data["config"]["group"]][sensor] = sensor_data
+                        if sensor_data[-1]["time"] > epoch:
+                            epoch = sensor_data[-1]["time"]
         elif len(request.get_datasets()) == 2:
             # e.g. /sensors/core
             if request.get_datasets()[1] in self._config["sensors"]:
                 response[request.get_datasets()[1]] = {}
 
-                for sensor, config in self._config["sensors"].items():
-                    if config["enable"]:
-                        if config["group"] == request.get_datasets()[1]:
+                for sensor, data in self._config["sensors"].items():
+                    if data["config"]["enable"]:
+                        if data["config"]["group"] == request.get_datasets()[1]:
                             sensor_data = self._restful_serve_sensor_get_data(sensor, filters)
                             if len(sensor_data) > 0:
-                                response[config["group"]][sensor] = sensor_data
+                                response[data["config"]["group"]][sensor] = sensor_data
+                                if sensor_data[-1]["time"] > epoch:
+                                    epoch = sensor_data[-1]["time"]
             else:
                 raise FileNotFoundError
         else:
             raise FileNotFoundError
 
-        return response
+        return response, epoch
 
     def _restful_serve_sensor_get_data(self, sensor: str, filters: dict) -> list:
         data = []

@@ -34,134 +34,233 @@
         <sensor name="rpm">
             <config name="enable">True</config>
             <config name="group">Core</config>
+            <meta name="min">0</meta>
+            <meta name="max">10000</meta>
+            <meta name="on_dash">True</meta>
         </sensor>
         <sensor name="water_temp_c">
             <config name="enable">True</config>
             <config name="group">Core</config>
+            <meta name="min">0</meta>
+            <meta name="max">120</meta>
+            <meta name="on_dash">True</meta>
         </sensor>
         <sensor name="tps_perc">
             <config name="enable">True</config>
             <config name="group">Core</config>
+            <meta name="min">0</meta>
+            <meta name="max">100</meta>
+            <meta name="on_dash">True</meta>
         </sensor>
         <sensor name="battery_mv">
             <config name="enable">True</config>
             <config name="group">Core</config>
+            <meta name="min">6000</meta>
+            <meta name="max">18000</meta>
+            <meta name="on_dash">True</meta>
         </sensor>
         <sensor name="ext_5v_mv">
             <config name="enable">True</config>
             <config name="group">Core</config>
+            <meta name="min">3000</meta>
+            <meta name="max">6000</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="fuel_flow">
             <config name="enable">True</config>
             <config name="group">Core</config>
+            <meta name="min">0</meta>
+            <meta name="max">50</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="lambda">
             <config name="enable">True</config>
             <config name="group">Core</config>
+            <meta name="min">0</meta>
+            <meta name="max">150</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="speed_kph">
             <config name="enable">True</config>
             <config name="group">Core</config>
+            <meta name="min">0</meta>
+            <meta name="max">120</meta>
+            <meta name="on_dash">True</meta>
         </sensor>
         <sensor name="evo_scan_1">
             <config name="enable">True</config>
             <config name="group">Aero</config>
+            <meta name="min">0</meta>
+            <meta name="max">100</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="evo_scan_2">
             <config name="enable">True</config>
             <config name="group">Aero</config>
+            <meta name="min">0</meta>
+            <meta name="max">100</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="evo_scan_3">
             <config name="enable">True</config>
             <config name="group">Aero</config>
+            <meta name="min">0</meta>
+            <meta name="max">100</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="evo_scan_4">
             <config name="enable">True</config>
             <config name="group">Aero</config>
+            <meta name="min">0</meta>
+            <meta name="max">100</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="evo_scan_5">
             <config name="enable">True</config>
             <config name="group">Aero</config>
+            <meta name="min">0</meta>
+            <meta name="max">100</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="evo_scan_6">
             <config name="enable">True</config>
             <config name="group">Aero</config>
+            <meta name="min">0</meta>
+            <meta name="max">100</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="evo_scan_7">
             <config name="enable">True</config>
             <config name="group">Aero</config>
+            <meta name="min">0</meta>
+            <meta name="max">100</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="status_ecu_connected">
             <config name="enable">True</config>
             <config name="group">Diagnostic</config>
+            <meta name="min">0</meta>
+            <meta name="max">1</meta>
+            <meta name="on_dash">True</meta>
         </sensor>
         <sensor name="status_engine">
             <config name="enable">True</config>
             <config name="group">Diagnostic</config>
+            <meta name="min">0</meta>
+            <meta name="max">2</meta>
+            <meta name="on_dash">True</meta>
         </sensor>
         <sensor name="status_battery">
             <config name="enable">True</config>
             <config name="group">Diagnostic</config>
+            <meta name="min">0</meta>
+            <meta name="max">2</meta>
+            <meta name="on_dash">True</meta>
         </sensor>
         <sensor name="status_logging">
             <config name="enable">True</config>
             <config name="group">Diagnostic</config>
+            <meta name="min">0</meta>
+            <meta name="max">1</meta>
+            <meta name="on_dash">True</meta>
         </sensor>
         <sensor name="inj_time">Power
             <config name="enable">True</config>
-            <config name="group">Diagnostic</config>
+            <config name="group">Power Train</config>
+            <meta name="min">0</meta>
+            <meta name="max">10</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="inj_duty_cycle">
             <config name="enable">True</config>
             <config name="group">Power Train</config>
+            <meta name="min">50</meta>
+            <meta name="max">100</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="lambda_pid_adj">
             <config name="enable">True</config>
             <config name="group">Power Train</config>
+            <meta name="min">0</meta>
+            <meta name="max">40</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="lambda_pid_target">
             <config name="enable">True</config>
             <config name="group">Power Train</config>
+            <meta name="min">80</meta>
+            <meta name="max">120</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="advance">
             <config name="enable">True</config>
             <config name="group">Power Train</config>
+            <meta name="min">0</meta>
+            <meta name="max">10</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="ride_height_fl_cm">
             <config name="enable">True</config>
             <config name="group">Suspension</config>
+            <meta name="min">0</meta>
+            <meta name="max">20</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="ride_height_fr_cm">
             <config name="enable">True</config>
             <config name="group">Suspension</config>
+            <meta name="min">0</meta>
+            <meta name="max">20</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="ride_height_flw_cm">
             <config name="enable">True</config>
             <config name="group">Suspension</config>
+            <meta name="min">0</meta>
+            <meta name="max">20</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="ride_height_rear_cm">
             <config name="enable">True</config>
             <config name="group">Suspension</config>
+            <meta name="min">0</meta>
+            <meta name="max">20</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="lap_time_s">
             <config name="enable">True</config>
             <config name="group">Misc</config>
+            <meta name="min">0</meta>
+            <meta name="max">1000</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="accel_fl_x_mg">
             <config name="enable">True</config>
             <config name="group">Misc</config>
+            <meta name="min">0</meta>
+            <meta name="max">3000</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="accel_fl_y_mg">
             <config name="enable">True</config>
             <config name="group">Misc</config>
+            <meta name="min">0</meta>
+            <meta name="max">3000</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="accel_fl_z_mg">
             <config name="enable">True</config>
             <config name="group">Misc</config>
+            <meta name="min">0</meta>
+            <meta name="max">3000</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
         <sensor name="beans">
             <config name="enable">True</config>
             <config name="group">Bean</config>
+            <meta name="min">0</meta>
+            <meta name="max">3000</meta>
+            <meta name="on_dash">False</meta>
         </sensor>
     </sensors>
     <emulation>
@@ -206,7 +305,7 @@
         <config name="delay">0.02</config>
         <config name="verbose">WARN</config>
     </emulation>
-    <schema>
+    <schema>jjj
         <!--The sensor names must match with the sensor names in the sensor section-->
         <config name="verbose">DEBUG</config>
         <config name="start_byte">1</config>
