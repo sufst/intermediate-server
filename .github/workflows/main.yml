@@ -33,13 +33,13 @@ jobs:
       uses: papeloto/action-zip@v1
       with:
         files: output/windows/
-        dest: ${{ ZIP_NAME }}
+        dest: ${{ env.ZIP_NAME }}
     - name: Upload binaries to release
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: ${{ ZIP_NAME }}
-        asset_name: ${{ ZIP_NAME }}
+        file: ${{ env.ZIP_NAME }}
+        asset_name: ${{ env.ZIP_NAME }}
         tag: ${{ github.event.inputs.version }}
         overwrite: true
         body: "Latest release of the SUFST intermediate server."
