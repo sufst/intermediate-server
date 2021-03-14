@@ -11,6 +11,9 @@ jobs:
   build:
 
     runs-on: windows-latest
+    
+    env:
+      ZIP_NAME: sufst-intermediate-server-${{ github.event.inputs.version }}.zip
 
     steps:
     - uses: actions/checkout@v1
@@ -27,15 +30,11 @@ jobs:
       run: |
         pyinstaller src/intermediate_server.py --distpath output/windows --add-data "config.xml;./"
     - name: Zip files
-      env:
-        ZIP_NAME: ${{ github.event.inputs.version }}
       uses: papeloto/action-zip@v1
       with:
         files: output/windows/
         dest: ${{ ZIP_NAME }}
     - name: Upload binaries to release
-      env:
-        ZIP_NAME: ${{ github.event.inputs.version }}
       uses: svenstaro/upload-release-action@v2
       with:
         repo_token: ${{ secrets.GITHUB_TOKEN }}
