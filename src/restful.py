@@ -48,8 +48,9 @@ class RestfulRequest:
         self._datasets = self._dataset.split("/")[1:]
         split_and = split_question[1].split("&")
 
-        for fil in split_and:
-            self._filters.extend([tuple(fil.split("="))])
+        if not split_and[0] == '':
+            for fil in split_and:
+                self._filters.extend([tuple(fil.split("="))])
 
     def get_type(self) -> str:
         """
@@ -148,14 +149,7 @@ class Restful:
                     response["status"] = 400
                 else:
                     try:
-                        response["result"] = self._request_callable(request)
-
-                        # Find the most recent epoch
-                        for g_name, group in response["result"].items():
-                            for s_name, sensor in group.items():
-                                if sensor[-1]["time"] > response["epoch"]:
-                                    response["epoch"] = sensor[-1]["time"]
-
+                        response["result"], response["epoch"] = self._request_callable(request)
                     except NotImplementedError:
                         response["status"] = 501
                     except SystemError:

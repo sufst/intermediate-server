@@ -180,11 +180,26 @@ class Server:
         finally:
             print("End")
 
-    def _restful_serve(self, request: restful.RestfulRequest) -> dict:
+    def _restful_serve(self, request: restful.RestfulRequest) -> tuple:
         self._logger.info(f"Serving: {request}")
 
+        request_handlers = {"GET": self._restful_server_get_request}
+
+        if request.get_type() in request_handlers:
+            try:
+                response, epoch = request_handlers[request.get_type()](request, request.get_filters())
+            except Exception as exc:
+                raise exc
+        else:
+            raise NotImplementedError
+
+        return response, epoch
+
+    def _restful_server_get_request(self, request: restful.RestfulRequest, filters: dict) -> tuple:
         filters = {"amount": 99}
         response = {}
+        dataset_handlers = {"sensors": self._restful_serve_sensors,
+                            "meta": self._restful_server_meta}
 
         for fil in request.get_filters():
             name, val = fil
@@ -195,19 +210,33 @@ class Server:
             else:
                 raise NotImplementedError
 
-        if request.get_type() == "GET":
-            if request.get_datasets()[0] == "sensors":
-                try:
-                    response = self._restful_serve_sensors(request, filters)
-                except Exception as exc:
-                    raise exc
+        if request.get_datasets()[0] in dataset_handlers:
+            try:
+                response, epoch = dataset_handlers[request.get_datasets()[0]](request, filters)
+            except Exception as exc:
+                raise exc
         else:
             raise NotImplementedError
 
-        return response
+        return response, epoch
 
-    def _restful_serve_sensors(self, request: restful.RestfulRequest, filters: dict) -> dict:
+    def _restful_server_meta(self, request: restful.RestfulRequest, filters: dict) -> tuple:
         response = {}
+
+        if request.get_datasets()[1] == "sensors":
+            for sensor, data in self._config["sensors"].items():
+                if data["config"]["enable"]:
+                    if data["config"]["group"] not in response:
+                        response[data["config"]["group"]] = {}
+                    response[data["config"]["group"]][sensor] = self._config["sensors"][sensor]["meta"]
+        else:
+            raise FileNotFoundError
+
+        return response, time.time()
+
+    def _restful_serve_sensors(self, request: restful.RestfulRequest, filters: dict) -> tuple:
+        response = {}
+        epoch = 0
 
         if len(request.get_datasets()) == 1:
             # /sensors
@@ -234,7 +263,13 @@ class Server:
         else:
             raise FileNotFoundError
 
-        return response
+        # Find the most recent epoch
+        for g_name, group in response.items():
+            for s_name, sensor in group.items():
+                if sensor[-1]["time"] > epoch:
+                    epoch = sensor[-1]["time"]
+
+        return response, epoch
 
     def _restful_serve_sensor_get_data(self, sensor: str, filters: dict) -> list:
         data = []
