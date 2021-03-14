@@ -63,6 +63,14 @@ class Server:
         self._config = {}
         self._db_config = {}
 
+        type_mapping = {"enable": lambda x: x == "True",
+                        "interval": lambda x: int(x),
+                        "emulation": lambda x: x == "True",
+                        "min": lambda x: int(x),
+                        "max": lambda x: int(x),
+                        "on_dash": lambda x: x == "True"
+                        }
+
         for field in config_root.iter("database"):
             for config in field.findall("config"):
                 self._db_config[config.attrib["name"]] = config.text
@@ -70,12 +78,28 @@ class Server:
         for field in config_root.iter("sensors"):
             self._config["sensors"] = {}
             for sensor in field.findall("sensor"):
-                self._config["sensors"][sensor.attrib["name"]] = {}
+                self._config["sensors"][sensor.attrib["name"]] = {"config": {}, "meta": {}}
+
                 for config in sensor.findall("config"):
-                    self._config["sensors"][sensor.attrib["name"]][config.attrib["name"]] = config.text
-                    if config.attrib["name"] == "enable":
-                        self._config["sensors"][sensor.attrib["name"]][config.attrib["name"]] = \
-                            self._config["sensors"][sensor.attrib["name"]][config.attrib["name"]] == "True"
+                    if config.attrib["name"] in type_mapping:
+                        self._config["sensors"][sensor.attrib["name"]]["config"][config.attrib["name"]] = \
+                            type_mapping[config.attrib["name"]](config.text)
+                    else:
+                        self._config["sensors"][sensor.attrib["name"]]["config"][config.attrib["name"]] = config.text
+
+                assert("enable" in self._config["sensors"][sensor.attrib["name"]]["config"])
+                assert("group" in self._config["sensors"][sensor.attrib["name"]]["config"])
+
+                for meta in sensor.findall("meta"):
+                    if meta.attrib["name"] in type_mapping:
+                        self._config["sensors"][sensor.attrib["name"]]["meta"][meta.attrib["name"]] = \
+                            type_mapping[meta.attrib["name"]](meta.text)
+                    else:
+                        self._config["sensors"][sensor.attrib["name"]]["meta"][meta.attrib["name"]] = meta.text
+
+                assert("min" in self._config["sensors"][sensor.attrib["name"]]["meta"])
+                assert("max" in self._config["sensors"][sensor.attrib["name"]]["meta"])
+                assert("on_dash" in self._config["sensors"][sensor.attrib["name"]]["meta"])
 
         for field in config_root.iter("server"):
             for config in field.findall("config"):
@@ -187,24 +211,24 @@ class Server:
 
         if len(request.get_datasets()) == 1:
             # /sensors
-            for sensor, config in self._config["sensors"].items():
-                if config["enable"]:
-                    if config["group"] not in response:
-                        response[config["group"]] = {}
+            for sensor, data in self._config["sensors"].items():
+                if data["config"]["enable"]:
+                    if data["config"]["group"] not in response:
+                        response[data["config"]["group"]] = {}
                     sensor_data = self._restful_serve_sensor_get_data(sensor, filters)
                     if len(sensor_data) > 0:
-                        response[config["group"]][sensor] = sensor_data
+                        response[data["config"]["group"]][sensor] = sensor_data
         elif len(request.get_datasets()) == 2:
             # e.g. /sensors/core
             if request.get_datasets()[1] in self._config["sensors"]:
                 response[request.get_datasets()[1]] = {}
 
-                for sensor, config in self._config["sensors"].items():
-                    if config["enable"]:
-                        if config["group"] == request.get_datasets()[1]:
+                for sensor, data in self._config["sensors"].items():
+                    if data["config"]["enable"]:
+                        if data["config"]["group"] == request.get_datasets()[1]:
                             sensor_data = self._restful_serve_sensor_get_data(sensor, filters)
                             if len(sensor_data) > 0:
-                                response[config["group"]][sensor] = sensor_data
+                                response[data["config"]["group"]][sensor] = sensor_data
             else:
                 raise FileNotFoundError
         else:
