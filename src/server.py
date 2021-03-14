@@ -247,6 +247,8 @@ class Server:
                     sensor_data = self._restful_serve_sensor_get_data(sensor, filters)
                     if len(sensor_data) > 0:
                         response[data["config"]["group"]][sensor] = sensor_data
+                        if sensor_data[-1]["time"] > epoch:
+                            epoch = sensor_data[-1]["time"]
         elif len(request.get_datasets()) == 2:
             # e.g. /sensors/core
             if request.get_datasets()[1] in self._config["sensors"]:
@@ -258,16 +260,12 @@ class Server:
                             sensor_data = self._restful_serve_sensor_get_data(sensor, filters)
                             if len(sensor_data) > 0:
                                 response[data["config"]["group"]][sensor] = sensor_data
+                                if sensor_data[-1]["time"] > epoch:
+                                    epoch = sensor_data[-1]["time"]
             else:
                 raise FileNotFoundError
         else:
             raise FileNotFoundError
-
-        # Find the most recent epoch
-        for g_name, group in response.items():
-            for s_name, sensor in group.items():
-                if sensor[-1]["time"] > epoch:
-                    epoch = sensor[-1]["time"]
 
         return response, epoch
 
