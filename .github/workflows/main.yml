@@ -27,7 +27,7 @@ jobs:
         files: output/windows/
         dest: sufst-intermediate-server.zip
     - name: Create Release
-      id:  $GITHUB_SHA
+      id:  "$GITHUB_SHA"
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
