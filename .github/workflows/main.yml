@@ -28,9 +28,9 @@ jobs:
         pyinstaller src/intermediate_server.py --distpath output/windows --add-data "config.xml;./"
     - name: Zip files
       uses: papeloto/action-zip@v1
-      with:
         env:
           ZIP_NAME: "sufst-intermediate-server-$github.event.inputs.version.zip"
+      with:
         files: output/windows/
         dest: ${{ ZIP_NAME }}
     - name: Upload binaries to release
