@@ -27,17 +27,17 @@ jobs:
       run: |
         pyinstaller src/intermediate_server.py --distpath output/windows --add-data "config.xml;./"
     - name: Zip files
-      uses: papeloto/action-zip@v1
         env:
           ZIP_NAME: "sufst-intermediate-server-$github.event.inputs.version.zip"
+      uses: papeloto/action-zip@v1
       with:
         files: output/windows/
         dest: ${{ ZIP_NAME }}
     - name: Upload binaries to release
+      env:
+        ZIP_NAME: "sufst-intermediate-server-$github.event.inputs.version.zip"
       uses: svenstaro/upload-release-action@v2
       with:
-        env:
-          ZIP_NAME: "sufst-intermediate-server-$github.event.inputs.version.zip"
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         file: ${{ ZIP_NAME }}
         asset_name: ${{ ZIP_NAME }}
