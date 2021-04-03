@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sensors>
+    <!--The sensor names must match with the emulator and schema names-->
+    <rpm>
+        <name>RPM</name>
+        <units>RPM</units>
+        <enable>True</enable>
+        <group>Core</group>
+        <min>0</min>
+        <max>10000</max>
+        <on_dash>True</on_dash>
+        <emulation>int(5000 * modules.math.sin(modules.math.radians(x * 10)) + 5000)</emulation>
+    </rpm>
+    <water_temp_c>
+        <name>Water Temp</name>
+        <units>C</units>
+        <enable>True</enable>
+        <group>Core</group>
+        <min>0</min>
+        <max>120</max>
+        <on_dash>True</on_dash>
+        <emulation>modules.random.randint(80, 100)</emulation>
+    </water_temp_c>
+    <tps_perc>
+        <name>TPS</name>
+        <units>%</units>
+        <enable>True</enable>
+        <group>Core</group>
+        <min>0</min>
+        <max>100</max>
+        <on_dash>True</on_dash>
+        <emulation>int(50*modules.math.sin(modules.math.radians(x*10))+50)</emulation>
+    </tps_perc>
+    <battery_mv>
+        <name>Battery Voltage</name>
+        <units>mV</units>
+        <enable>True</enable>
+        <group>Core</group>
+        <min>6000</min>
+        <max>18000</max>
+        <on_dash>True</on_dash>
+        <emulation>modules.random.randint(11900, 12100)</emulation>
+    </battery_mv>
+    <ext_5v_mv>
+        <name>External 5V Rail</name>
+        <units>mV</units>
+        <enable>True</enable>
+        <group>Core</group>
+        <min>3000</min>
+        <max>6000</max>
+        <on_dash>False</on_dash>
+        <emulation>modules.random.randint(4900, 5100)</emulation>
+    </ext_5v_mv>
+    <fuel_flow>
+        <name>Fuel Flow</name>
+        <units>l/s</units>
+        <enable>True</enable>
+        <group>Core</group>
+        <min>0</min>
+        <max>50</max>
+        <on_dash>False</on_dash>
+        <emulation>int(25 * modules.math.sin(modules.math.radians(x * 10)) + 25)</emulation>
+    </fuel_flow>
+    <lambda>
+        <name>Lambda</name>
+        <units>lambda</units>
+        <enable>True</enable>
+        <group>Core</group>
+        <min>0</min>
+        <max>150</max>
+        <on_dash>False</on_dash>
+        <emulation>int(25 * modules.math.sin(modules.math.radians(x * 10)) + 50)</emulation>
+    </lambda>
+    <speed_kph>
+        <name>Speed</name>
+        <units>kph</units>
+        <enable>True</enable>
+        <group>Core</group>
+        <min>0</min>
+        <max>120</max>
+        <on_dash>True</on_dash>
+        <emulation>int(150 * modules.math.sin(modules.math.radians(x * 10)) + 150)</emulation>
+    </speed_kph>
+    <evo_scan_1>
+        <name>EvoScanner-1</name>
+        <units>Pa</units>
+        <enable>True</enable>
+        <group>Aero</group>
+        <min>0</min>
+        <max>100</max>
+        <on_dash>False</on_dash>
+        <emulation>int(10 * modules.math.sin(modules.math.radians(x * 10)) + 10)</emulation>
+    </evo_scan_1>
+    <evo_scan_2>
+        <name>EvoScanner-2</name>
+        <units>Pa</units>
+        <enable>True</enable>
+        <group>Aero</group>
+        <min>0</min>
+        <max>100</max>
+        <on_dash>False</on_dash>
+        <emulation>int(15 * modules.math.sin(modules.math.radians(x * 10)) + 15)</emulation>
+    </evo_scan_2>
+    <evo_scan_3>
+        <name>EvoScanner-3</name>
+        <units>Pa</units>
+        <enable>True</enable>
+        <group>Aero</group>
+        <min>0</min>
+        <max>100</max>
+        <on_dash>False</on_dash>
+        <emulation>int(15 * modules.math.sin(modules.math.radians(x * 10)) + 20)</emulation>
+    </evo_scan_3>
+    <evo_scan_4>
+        <name>EvoScanner-4</name>
+        <units>Pa</units>
+        <enable>True</enable>
+        <group>Aero</group>
+        <min>0</min>
+        <max>100</max>
+        <on_dash>False</on_dash>
+        <emulation>int(15 * modules.math.sin(modules.math.radians(x * 10)) + 25)</emulation>
+    </evo_scan_4>
+    <evo_scan_5>
+        <name>EvoScanner-5</name>
+        <units>Pa</units>
+        <enable>True</enable>
+        <group>Aero</group>
+        <min>0</min>
+        <max>100</max>
+        <on_dash>False</on_dash>
+        <emulation>int(15 * modules.math.sin(modules.math.radians(x * 10)) + 30)</emulation>
+    </evo_scan_5>
+    <evo_scan_6>
+        <name>EvoScanner-6</name>
+        <units>Pa</units>
+        <enable>True</enable>
+        <group>Aero</group>
+        <min>0</min>
+        <max>100</max>
+        <on_dash>False</on_dash>
+        <emulation>int(15 * modules.math.sin(modules.math.radians(x * 10)) + 35)</emulation>
+    </evo_scan_6>
+    <evo_scan_7>
+        <name>EvoScanner-7</name>
+        <units>Pa</units>
+        <enable>True</enable>
+        <group>Aero</group>
+        <min>0</min>
+        <max>100</max>
+        <on_dash>False</on_dash>
+        <emulation>int(15 * modules.math.sin(modules.math.radians(x * 10)) + 40)</emulation>
+    </evo_scan_7>
+    <status_ecu_connected>
+        <name>ECU Status</name>
+        <units>Code</units>
+        <enable>True</enable>
+        <group>Diagnostic</group>
+        <min>0</min>
+        <max>1</max>
+        <on_dash>True</on_dash>
+        <emulation>int(1)</emulation>
+    </status_ecu_connected>
+    <status_engine>
+        <name>Engine Status</name>
+        <units>Code</units>
+        <enable>True</enable>
+        <group>Diagnostic</group>
+        <min>0</min>
+        <max>2</max>
+        <on_dash>True</on_dash>
+        <emulation>int(1)</emulation>
+    </status_engine>
+    <status_battery>
+        <name>Battery Status</name>
+        <units>Code</units>
+        <enable>True</enable>
+        <group>Diagnostic</group>
+        <min>0</min>
+        <max>2</max>
+        <on_dash>True</on_dash>
+        <emulation>int(2)</emulation>
+    </status_battery>
+    <status_logging>
+        <name>Logging Status</name>
+        <units>Code</units>
+        <enable>True</enable>
+        <group>Diagnostic</group>
+        <min>0</min>
+        <max>1</max>
+        <on_dash>True</on_dash>
+        <emulation>int(1)</emulation>
+    </status_logging>
+    <inj_time>
+        <name>Injection Time</name>
+        <units>ms</units>
+        <enable>True</enable>
+        <group>Power Train</group>
+        <min>0</min>
+        <max>10</max>
+        <on_dash>False</on_dash>
+        <emulation>modules.random.randint(6, 10)</emulation>
+    </inj_time>
+    <inj_duty_cycle>
+        <name>Injection Duty Cycle</name>
+        <units>ms</units>
+        <enable>True</enable>
+        <group>Power Train</group>
+        <min>50</min>
+        <max>100</max>
+        <on_dash>False</on_dash>
+        <emulation>modules.random.randint(70, 80)</emulation>
+    </inj_duty_cycle>
+    <lambda_pid_adj>
+        <name>Lambda PID Adjust</name>
+        <units>%</units>
+        <enable>True</enable>
+        <group>Power Train</group>
+        <min>0</min>
+        <max>40</max>
+        <on_dash>False</on_dash>
+        <emulation>modules.random.randint(10, 20)</emulation>
+    </lambda_pid_adj>
+    <lambda_pid_target>
+        <name>Lambda PID Target</name>
+        <units>%</units>
+        <enable>True</enable>
+        <group>Power Train</group>
+        <min>80</min>
+        <max>120</max>
+        <on_dash>False</on_dash>
+        <emulation>modules.random.randint(95, 105)</emulation>
+    </lambda_pid_target>
+    <advance>
+        <name>Advance</name>
+        <units>advance</units>
+        <enable>True</enable>
+        <group>Power Train</group>
+        <min>0</min>
+        <max>10</max>
+        <on_dash>False</on_dash>
+        <emulation>modules.random.randint(0, 5)</emulation>
+    </advance>
+    <ride_height_fl_cm>
+        <name>Ride Height FL</name>
+        <units>cm</units>
+        <enable>True</enable>
+        <group>Suspension</group>
+        <min>0</min>
+        <max>20</max>
+        <on_dash>False</on_dash>
+        <emulation>int(5 * modules.math.cos(modules.math.radians(x * 15)) + 8)</emulation>
+    </ride_height_fl_cm>
+    <ride_height_fr_cm>
+        <name>Ride Height FR</name>
+        <units>cm</units>
+        <enable>True</enable>
+        <group>Suspension</group>
+        <min>0</min>
+        <max>20</max>
+        <on_dash>False</on_dash>
+        <emulation>int(5 * modules.math.sin(modules.math.radians(x * 15)) + 8)</emulation>
+    </ride_height_fr_cm>
+    <ride_height_flw_cm>
+        <name>Ride Height FLW</name>
+        <units>cm</units>
+        <enable>True</enable>
+        <group>Suspension</group>
+        <min>0</min>
+        <max>20</max>
+        <on_dash>False</on_dash>
+        <emulation>int(5 * modules.math.cos(modules.math.radians(x * 5)) + 8)</emulation>
+    </ride_height_flw_cm>
+    <ride_height_rear_cm>
+        <name>Ride Height Rear</name>
+        <units>cm</units>
+        <enable>True</enable>
+        <group>Suspension</group>
+        <min>0</min>
+        <max>20</max>
+        <on_dash>False</on_dash>
+        <emulation>int(5 * modules.math.sin(modules.math.radians(x * 5)) + 8)</emulation>
+    </ride_height_rear_cm>
+    <lap_time_s>
+        <name>Lap Time</name>
+        <units>s</units>
+        <enable>True</enable>
+        <group>Misc</group>
+        <min>0</min>
+        <max>1000</max>
+        <on_dash>False</on_dash>
+        <emulation>int(x)</emulation>
+    </lap_time_s>
+    <accel_fl_x_mg>
+        <name>Acceleration FL x</name>
+        <units>mg</units>
+        <enable>True</enable>
+        <group>Misc</group>
+        <min>0</min>
+        <max>3000</max>
+        <on_dash>False</on_dash>
+        <emulation>int(500 * modules.math.sin(modules.math.radians(x * 10 + 1)) + 1000)</emulation>
+    </accel_fl_x_mg>
+    <accel_fl_y_mg>
+        <name>Acceleration FL y</name>
+        <units>mg</units>
+        <enable>True</enable>
+        <group>Misc</group>
+        <min>0</min>
+        <max>3000</max>
+        <on_dash>False</on_dash>
+        <emulation>int(500 * modules.math.sin(modules.math.radians(x * 10 + 0.5)) + 1000)</emulation>
+    </accel_fl_y_mg>
+    <accel_fl_z_mg>
+        <name>Acceleration FL z</name>
+        <units>mg</units>
+        <enable>True</enable>
+        <group>Misc</group>
+        <min>0</min>
+        <max>3000</max>
+        <on_dash>False</on_dash>
+        <emulation>int(500 * modules.math.sin(modules.math.radians(x * 10)) + 1000)</emulation>
+    </accel_fl_z_mg>
+</sensors>

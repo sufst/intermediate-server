@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<socket.io>
+    <cloud>
+        <namespaces>
+            <emulation>
+                <enable>False</enable>
+                <interval>0.2</interval>
+            </emulation>
+            <car>
+                <enable>False</enable>
+                <interval>0.2</interval>
+            </car>
+        </namespaces>
+        <url>http://nathanrs97devserver.com:5000</url>
+    </cloud>
+    <sufst_vm>
+        <namespaces>
+            <emulation>
+                <enable>False</enable>
+                <interval>0.2</interval>
+            </emulation>
+            <car>
+                <enable>True</enable>
+                <interval>0.2</interval>
+            </car>
+        </namespaces>
+        <url>http://localhost:5000</url>
+    </sufst_vm>
+</socket.io>
