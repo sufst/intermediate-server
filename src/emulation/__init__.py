@@ -16,8 +16,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from configuration import config
-import asyncio
-import time
+from time import time
+from scheduler import scheduler, IntervalTrigger
 
 __all__ = ["emulator"]
 
@@ -30,14 +30,14 @@ class Modules:
 class Emulation:
     consumers = []
     x = 0
+    data = {}
+    job = None
 
-    async def _periodic_task(self):
-        while True:
-            await asyncio.sleep(config.emulation["interval"])
-            self._generate_next_emit_data()
+    def _invoke_consumers(self):
+        self._generate_next_emit_data()
 
-            for consumer in self.consumers:
-                await consumer(self.data)
+        for consumer in self.consumers:
+            consumer(self.data)
 
     def _generate_next_emit_data(self):
         self.data = {}
@@ -46,7 +46,7 @@ class Emulation:
             mods[module] = __import__(module)
 
         mods = Modules(mods)
-        now = time.time()
+        now = round(time(), 3)
 
         for sensor, conf in config.sensors.items():
             self.data[sensor] = {
@@ -55,15 +55,13 @@ class Emulation:
             }
         self.x += 1
 
-    def emulation_consumer(self):
-        def wrapper(func):
-            self.consumers.append(func)
-        return wrapper
-
-    async def start(self):
+    def start(self):
         print("Starting emulation")
-        asyncio.get_running_loop().create_task(self._periodic_task())
+        scheduler.add_job(self._invoke_consumers, IntervalTrigger(seconds=config.emulation["interval"]))
         print("Started emulation")
+
+    def register_consumer(self, func):
+        self.consumers.append(func)
 
 
 emulator = Emulation()

@@ -1,29 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <socket.io>
     <cloud>
-        <namespaces>
-            <emulation>
-                <enable>False</enable>
-                <interval>0.2</interval>
-            </emulation>
-            <car>
-                <enable>False</enable>
-                <interval>0.2</interval>
-            </car>
-        </namespaces>
+        <!-- emulation enabled will connect to /emulation and emit emulation sensor data
+        based on the configuration in sensors.xml and emulation.xml -->
+        <emulation>False</emulation>
+        <!--The lowest accurate interval is ~0.5-->
+        <interval>0.5</interval>
+        <retries>0</retries>
         <url>http://nathanrs97devserver.com:5000</url>
     </cloud>
     <sufst_vm>
-        <namespaces>
-            <emulation>
-                <enable>False</enable>
-                <interval>0.2</interval>
-            </emulation>
-            <car>
-                <enable>True</enable>
-                <interval>0.2</interval>
-            </car>
-        </namespaces>
+        <!-- emulation enabled will connect to /emulation and emit emulation sensor data
+        based on the configuration in sensors.xml and emulation.xml -->
+        <emulation>True</emulation>
+        <!--The lowest accurate interval is ~0.5-->
+        <interval>0.5</interval>
+        <retries>10</retries>
         <url>http://localhost:5000</url>
     </sufst_vm>
+    <retry_interval>2</retry_interval>
 </socket.io>

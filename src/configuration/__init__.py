@@ -1,6 +1,6 @@
 """
     Southampton University Formula Student Team Intermediate Server
-    Copyright (C) 2020 Nathan Rowley-Smith
+    Copyright (C) 2021 Nathan Rowley-Smith
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -50,7 +50,9 @@ class ConfigurationManager:
 
         parsed = self._build_dict_from_elem(root, {
             "interval": lambda x: float(x),
-            "enable": lambda x: x == "True"
+            "emulation": lambda x: x == "True",
+            "retries": lambda x: int(x),
+            "retry_interval": lambda x: int(x)
         })
 
         self.master_config["socket.io"] = parsed

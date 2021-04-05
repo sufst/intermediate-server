@@ -19,6 +19,7 @@ from protocol.pdu import PDU
 from configuration import config
 import asyncio
 from protocol.factory import Socket, XBee
+import functools
 
 __all__ = ["protocol"]
 
@@ -31,7 +32,7 @@ class Protocol:
         for name, conf in config.schema["pdu"].items():
             self.pdus[conf["id"]] = PDU(name, conf["struct"])
 
-    async def start(self):
+    def start(self):
         print("Starting protocol")
 
         if config.client["socket"]["enable"]:
@@ -72,9 +73,7 @@ class Protocol:
                 else:
                     self.pdus[pdu_type].decode(data[index:index + self.pdus[pdu_type].length])
                     if self.pdus[pdu_type].name in self.event_handlers:
-                        asyncio.get_running_loop().create_task(
-                            self.event_handlers[self.pdus[pdu_type].name](self.pdus[pdu_type].fields)
-                        )
+                        self.event_handlers[self.pdus[pdu_type].name](self.pdus[pdu_type].fields)
 
                     index += self.pdus[pdu_type].length
             else:
@@ -82,7 +81,7 @@ class Protocol:
 
     def connection_made(self):
         if "connect" in self.event_handlers:
-            asyncio.get_running_loop().create_task(self.event_handlers["connect"]())
+            self.event_handlers["connect"]()
 
     def data_received(self, data):
         try:
@@ -92,13 +91,22 @@ class Protocol:
 
     def connection_lost(self, exc):
         if "disconnect" in self.event_handlers:
-            asyncio.get_running_loop().create_task(self.event_handlers["disconnect"](exc))
+            self.event_handlers["disconnect"](exc)
 
     def on(self, event):
         def wrapper(func):
-            self.event_handlers[event] = func
+            @functools.wraps(func)
+            def decorator(*args, **kwargs):
+                func(*args, **kwargs)
+
+            self.event_handlers[event] = decorator
+
+            return decorator
 
         return wrapper
+
+    def register_on(self, event, func):
+        self.event_handlers[event] = func
 
 
 protocol = Protocol()
