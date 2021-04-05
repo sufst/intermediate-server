@@ -4,7 +4,7 @@
         <!-- emulation enabled will connect to /emulation and emit emulation sensor data
         based on the configuration in sensors.xml and emulation.xml -->
         <emulation>False</emulation>
-        <!--The lowest accurate interval is ~0.5-->
+        <!--The lowest accurate interval is ~0.5 on windows-->
         <interval>0.5</interval>
         <retries>0</retries>
         <url>http://nathanrs97devserver.com:5000</url>
@@ -13,7 +13,7 @@
         <!-- emulation enabled will connect to /emulation and emit emulation sensor data
         based on the configuration in sensors.xml and emulation.xml -->
         <emulation>True</emulation>
-        <!--The lowest accurate interval is ~0.5-->
+        <!--The lowest accurate interval is ~0.5 on windows-->
         <interval>0.5</interval>
         <retries>10</retries>
         <url>http://localhost:5000</url>

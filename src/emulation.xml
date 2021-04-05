@@ -6,6 +6,6 @@
         <random>random</random>
     </modules>
     <!--Interval of emulation generation in seconds (can be a float)-->
-    <!--Due to scheduling limitations the lowest accurate interval is ~0.03-->
-    <interval>0.03</interval>
+    <!--Due to scheduling limitations the lowest accurate interval is ~0.03 on windows-->
+    <interval>0.02</interval>
 </emulation>
