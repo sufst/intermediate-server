@@ -126,6 +126,7 @@ class SocketIO:
 
             wait = config.socket_io["retry_interval"]
             print(f"Attempting retry in {wait}s")
+            sleep(wait)
 
     @property
     def cloud(self):
