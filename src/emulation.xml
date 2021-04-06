@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<emulation>
+    <!--Python modules that are required for the sensor emulators-->
+    <modules>
+        <math>math</math>
+        <random>random</random>
+    </modules>
+    <!--Interval of emulation generation in seconds (can be a float)-->
+    <!--Due to scheduling limitations the lowest accurate interval is ~0.03 on windows-->
+    <interval>0.02</interval>
+</emulation>
