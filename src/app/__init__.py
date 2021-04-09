@@ -19,8 +19,10 @@ from configuration import config
 from socket_io import socket_io
 from emulation import emulator
 from protocol import protocol
-from scheduler import scheduler
+from scheduler import scheduler, DateTrigger
 import asyncio
+from datetime import datetime
+from time import time
 
 
 __all__ = ["run"]
@@ -41,6 +43,7 @@ def run():
         print("Started scheduler")
 
         socket_io.start()
+
         emulator.start()
         protocol.start()
 
@@ -51,6 +54,15 @@ def run():
         loop.stop()
 
     print("Stopped")
+
+
+@socket_io.on("error")
+def _on_socket_io_error(error):
+    print(error)
+    wait = config.socket_io["retry_interval"]
+    print(f"Attempting socket.io restart in {wait}s")
+
+    scheduler.add_job(socket_io.start, DateTrigger(datetime.fromtimestamp(time() + wait)))
 
 
 @protocol.on("connect")

@@ -20,9 +20,10 @@ from socketio import Client, ClientNamespace
 from emulation import emulator
 import requests
 import json
-from scheduler import scheduler, IntervalTrigger
+from scheduler import scheduler, IntervalTrigger, DateTrigger
 from protocol import protocol
 from time import sleep
+import functools
 
 __all__ = ["socket_io"]
 
@@ -33,6 +34,19 @@ class SocketIO:
         "sufst_vm": Client(reconnection=False)
     }
     health_job = None
+    restart_job = None
+    event_handlers = {}
+
+    def on(self, event):
+        def wrapper(func):
+            @functools.wraps(func)
+            def decorator(*args, **kwargs):
+                func(*args, **kwargs)
+
+            self.event_handlers[event] = decorator
+            return decorator
+
+        return wrapper
 
     def _health_check(self):
         healthy = False
@@ -42,91 +56,75 @@ class SocketIO:
                 healthy = True
 
         if not healthy:
-            print("Clients not connected")
+            self._unhealthy("Health check failed")
 
-            wait = config.socket_io["retry_interval"]
-            print(f"Attempting restart in {wait}s")
+    def _unhealthy(self, error):
+        if self.health_job is not None:
+            self.health_job.remove()
+            del self.health_job
 
-            scheduler.remove_job(self.health_job.id)
-
-            try:
-                sleep(wait)
-                self.start()
-            except Exception as error:
-                print(str(error))
+        if self.event_handlers["error"] is not None:
+            self.event_handlers["error"](error)
 
     def start(self):
         print("Starting socket.io")
-        try:
-            for server, client in self.clients.items():
-                self._connect_client(client, server)
-        except Exception as error:
-            raise error
 
-        success = False
-        for _, client in self.clients.items():
-            if client.connected:
-                success = True
-
-        if not success:
-            print("No backend connection...")
-            print("Attempting restart")
-            self.start()
-
-        print("Starting heath check job")
-        self.health_job = scheduler.add_job(self._health_check, IntervalTrigger(seconds=1))
+        scheduler.add_job(self._connect_clients)
 
         print("Started socket.io")
 
-    @staticmethod
-    def _connect_client(client, server):
-        namespace_handlers = {
-            "/emulation": lambda ns, ser: EmulationNamespace(ns, ser),
-            "/car": lambda ns, ser: CarNamespace(ns, ser),
-        }
+    def _connect_clients(self):
+        connected = False
 
-        namespace = "/emulation" if config.socket_io[server]["emulation"] else "/car"
-        url = config.socket_io[server]['url']
-
-        client.register_namespace(namespace_handlers[namespace](namespace, server))
-
-        for retry in range(0, config.socket_io[server]["retries"] + 1):
-            print(f"On connect {retry} of {config.socket_io[server]['retries']}")
-
+        for server, client in self.clients.items():
             try:
-                print(f"Attempting {url}/login")
-                response = requests.post(f"{url}/login", data=json.dumps(
-                    {
-                        "username": "intermediate-server",
-                        "password": "sufst"
-                    }
-                ), timeout=10)
+                self._connect_client(client, server)
             except Exception as error:
                 print(error)
             else:
-                if response.status_code != 200:
-                    raise Exception("Back-end denied login request")
+                connected = True
 
-                access_token = json.loads(response.text)["access_token"]
+        if not connected:
+            self._unhealthy(ConnectionError("No active clients"))
+        else:
+            self.health_job = scheduler.add_job(self._health_check, IntervalTrigger(seconds=1))
 
-                try:
-                    if client.connected:
-                        client.disconnect()
+    @staticmethod
+    def _connect_client(client, server):
+        namespace = config.socket_io[server]["namespace"]
+        url = config.socket_io[server]['url']
 
-                    client.connect(
-                        config.socket_io[server]["url"],
-                        namespaces=[namespace],
-                        headers={"Authorization": "Bearer " + access_token},
-                        wait=True
-                    )
-                except Exception as error:
-                    print(error)
-                else:
-                    break
+        client.register_namespace(_Namespace(namespace, server))
 
-            wait = config.socket_io["retry_interval"]
-            print(f"Attempting retry in {wait}s")
-            sleep(wait)
+        try:
+            print(f"Attempting {url}/login")
+            response = requests.post(
+                f"{url}/login",
+                headers={"Content-Type": "application/json"},
+                data=json.dumps({
+                    "username": "intermediate-server",
+                    "password": "sufst"
+                }), timeout=10)
+        except Exception as error:
+            print(error)
+        else:
+            if response.status_code != 200:
+                raise Exception("Back-end denied login request")
+
+            access_token = json.loads(response.text)["access_token"]
+
+            try:
+                if client.connected:
+                    client.disconnect()
+
+                client.connect(
+                    config.socket_io[server]["url"],
+                    namespaces=[namespace],
+                    headers={"Authorization": "Bearer " + access_token},
+                    wait=True
+                )
+            except Exception as error:
+                raise error
 
     @property
     def cloud(self):
@@ -137,13 +135,24 @@ class SocketIO:
         return self.clients["sufst_vm"]
 
 
-class Namespace(ClientNamespace):
+class _Namespace(ClientNamespace):
+    datastore = {}
+    server = None
+    job = None
+
     def __init__(self, namespace, server):
         super().__init__(namespace)
-
         self.datastore = {}
         self.server = server
         self.job = None
+
+        if not config.socket_io[server]["emulation"]:
+            for pdu in config.schema["pdu"]:
+                protocol.register_on(pdu, self._handle_protocol_pdu)
+
+    def _handle_protocol_pdu(self, pdu):
+        for sensor, value in filter(lambda entry: entry[0] != "epoch", pdu.items()):
+            self._add_sensor_values_to_datastore(sensor, {"epoch": pdu["epoch"], "value": value})
 
     def _emit_datastore(self):
         if not self.datastore == {}:
@@ -161,6 +170,10 @@ class Namespace(ClientNamespace):
             self.datastore[sensor] = []
         self.datastore[sensor].append(values)
 
+    def _emulation_consumer(self, data):
+        for sensor, values in data.items():
+            self._add_sensor_values_to_datastore(sensor, values)
+
     def on_connect(self):
         print(f"{self.server} <- {self.namespace}")
         print("Starting emit job")
@@ -168,29 +181,11 @@ class Namespace(ClientNamespace):
             self._emit_datastore, IntervalTrigger(seconds=config.socket_io[self.server]["interval"]))
         self.emit("meta", json.dumps(config.sensors))
 
+        if config.socket_io[self.server]["emulation"]:
+            emulator.register_consumer(self._emulation_consumer)
+
     def on_disconnect(self):
         print(f"{self.server} </- {self.namespace}")
-
-
-class EmulationNamespace(Namespace):
-    def on_connect(self):
-        super().on_connect()
-        emulator.register_consumer(self._emulation_consumer)
-
-    def _emulation_consumer(self, data):
-        for sensor, values in data.items():
-            self._add_sensor_values_to_datastore(sensor, values)
-
-
-class CarNamespace(Namespace):
-    def __init__(self, namespace, server):
-        super().__init__(namespace, server)
-        for pdu in config.schema["pdu"]:
-            protocol.register_on(pdu, self._handle_protocol_pdu)
-
-    def _handle_protocol_pdu(self, pdu):
-        for sensor, value in filter(lambda entry: entry[0] != "epoch", pdu.items()):
-            self._add_sensor_values_to_datastore(sensor, {"epoch": pdu["epoch"], "value": value})
 
 
 socket_io = SocketIO()
