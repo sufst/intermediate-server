@@ -1,5 +1,5 @@
 """
-    Southampton University Formula Student Team Back-End
+    Southampton University Formula Student Team Intermediate Server
     Copyright (C) 2021 Nathan Rowley-Smith
 
     This program is free software: you can redistribute it and/or modify
@@ -15,10 +15,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from apscheduler.schedulers.background import BackgroundScheduler
-from apscheduler.triggers.interval import IntervalTrigger
-from apscheduler.triggers.date import DateTrigger
+import json
+import configparser
 
-__all__ = ["scheduler", "IntervalTrigger", "DateTrigger"]
+config = configparser.ConfigParser()
+config.read('config.ini')
 
-scheduler = BackgroundScheduler()
+schema = json.load(open(config['schema']['schema'], 'r'))
+sensors = json.load(open(config['schema']['sensors'], 'r'))
