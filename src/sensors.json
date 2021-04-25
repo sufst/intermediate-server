@@ -1,0 +1,322 @@
+{
+  "rpm": {
+    "name": "RPM",
+    "units": "RPM",
+    "enable": true,
+    "group": "Core",
+    "min": 0,
+    "max": 10000,
+    "on_dash": true,
+    "emulation": "int(5000 * modules.math.sin(modules.math.radians(x * 10)) + 5000)"
+  },
+  "water_temp_c": {
+    "name": "Water Temp",
+    "units": "C",
+    "enable": true,
+    "group": "Core",
+    "min": 0,
+    "max": 120,
+    "on_dash": true,
+    "emulation": "modules.random.randint(80, 100)"
+  },
+  "tps_perc": {
+    "name": "TPS",
+    "units": "%",
+    "enable": true,
+    "group": "Core",
+    "min": 0,
+    "max": 100,
+    "on_dash": true,
+    "emulation": "int(50*modules.math.sin(modules.math.radians(x*10))+50)"
+  },
+  "battery_mv": {
+    "name": "Battery Voltage",
+    "units": "mV",
+    "enable": true,
+    "group": "Core",
+    "min": 6000,
+    "max": 18000,
+    "on_dash": true,
+    "emulation": "modules.random.randint(11900, 12100)"
+  },
+  "ext_5v_mv": {
+    "name": "External 5V Rail",
+    "units": "mV",
+    "enable": true,
+    "group": "Core",
+    "min": 3000,
+    "max": 6000,
+    "on_dash": false,
+    "emulation": "modules.random.randint(4900, 5100)"
+  },
+  "fuel_flow": {
+    "name": "Fuel Flow",
+    "units": "l/s",
+    "enable": true,
+    "group": "Core",
+    "min": 0,
+    "max": 50,
+    "on_dash": false,
+    "emulation": "int(25 * modules.math.sin(modules.math.radians(x * 10)) + 25)"
+  },
+  "lambda": {
+    "name": "Lambda",
+    "units": "lambda",
+    "enable": true,
+    "group": "Core",
+    "min": 0,
+    "max": 150,
+    "on_dash": false,
+    "emulation": "int(25 * modules.math.sin(modules.math.radians(x * 10)) + 50)"
+  },
+  "speed_kph": {
+    "name": "Speed",
+    "units": "kph",
+    "enable": true,
+    "group": "Core",
+    "min": 0,
+    "max": 120,
+    "on_dash": true,
+    "emulation": "int(150 * modules.math.sin(modules.math.radians(x * 10)) + 150)"
+  },
+  "evo_scan_1": {
+    "name": "EvoScanner-1",
+    "units": "Pa",
+    "enable": true,
+    "group": "Aero",
+    "min": 0,
+    "max": 100,
+    "on_dash": false,
+    "emulation": "int(10 * modules.math.sin(modules.math.radians(x * 10)) + 10)"
+  },
+  "evo_scan_2": {
+    "name": "EvoScanner-2",
+    "units": "Pa",
+    "enable": true,
+    "group": "Aero",
+    "min": 0,
+    "max": 100,
+    "on_dash": false,
+    "emulation": "int(15 * modules.math.sin(modules.math.radians(x * 10)) + 15)"
+  },
+  "evo_scan_3": {
+    "name": "EvoScanner-3",
+    "units": "Pa",
+    "enable": true,
+    "group": "Aero",
+    "min": 0,
+    "max": 100,
+    "on_dash": false,
+    "emulation": "int(15 * modules.math.sin(modules.math.radians(x * 10)) + 20)"
+  },
+  "evo_scan_4": {
+    "name": "EvoScanner-4",
+    "units": "Pa",
+    "enable": true,
+    "group": "Aero",
+    "min": 0,
+    "max": 100,
+    "on_dash": false,
+    "emulation": "int(15 * modules.math.sin(modules.math.radians(x * 10)) + 25)"
+  },
+  "evo_scan_5": {
+    "name": "EvoScanner-5",
+    "units": "Pa",
+    "enable": true,
+    "group": "Aero",
+    "min": 0,
+    "max": 100,
+    "on_dash": false,
+    "emulation": "int(15 * modules.math.sin(modules.math.radians(x * 10)) + 30)"
+  },
+  "evo_scan_6": {
+    "name": "EvoScanner-6",
+    "units": "Pa",
+    "enable": true,
+    "group": "Aero",
+    "min": 0,
+    "max": 100,
+    "on_dash": false,
+    "emulation": "int(15 * modules.math.sin(modules.math.radians(x * 10)) + 35)"
+  },
+  "evo_scan_7": {
+    "name": "EvoScanner-7",
+    "units": "Pa",
+    "enable": true,
+    "group": "Aero",
+    "min": 0,
+    "max": 100,
+    "on_dash": false,
+    "emulation": "int(15 * modules.math.sin(modules.math.radians(x * 10)) + 40)"
+  },
+  "status_ecu_connected": {
+    "name": "ECU Status",
+    "units": "Code",
+    "enable": true,
+    "group": "Diagnostic",
+    "min": 0,
+    "max": 1,
+    "on_dash": true,
+    "emulation": "int(1)"
+  },
+  "status_engine": {
+    "name": "Engine Status",
+    "units": "Code",
+    "enable": true,
+    "group": "Diagnostic",
+    "min": 0,
+    "max": 2,
+    "on_dash": true,
+    "emulation": "int(1)"
+  },
+  "status_battery": {
+    "name": "Battery Status",
+    "units": "Code",
+    "enable": true,
+    "group": "Diagnostic",
+    "min": 0,
+    "max": 2,
+    "on_dash": true,
+    "emulation": "int(2)"
+  },
+  "status_logging": {
+    "name": "Logging Status",
+    "units": "Code",
+    "enable": true,
+    "group": "Diagnostic",
+    "min": 0,
+    "max": 1,
+    "on_dash": true,
+    "emulation": "int(1)"
+  },
+  "inj_time": {
+    "name": "Injection Time",
+    "units": "ms",
+    "enable": true,
+    "group": "Power Train",
+    "min": 0,
+    "max": 10,
+    "on_dash": false,
+    "emulation": "modules.random.randint(6, 10)"
+  },
+  "inj_duty_cycle": {
+    "name": "Injection Duty Cycle",
+    "units": "ms",
+    "enable": true,
+    "group": "Power Train",
+    "min": 50,
+    "max": 100,
+    "on_dash": false,
+    "emulation": "modules.random.randint(70, 80)"
+  },
+  "lambda_pid_adj": {
+    "name": "Lambda PID Adjust",
+    "units": "%",
+    "enable": true,
+    "group": "Power Train",
+    "min": 0,
+    "max": 40,
+    "on_dash": false,
+    "emulation": "modules.random.randint(10, 20)"
+  },
+  "lambda_pid_target": {
+    "name": "Lambda PID Target",
+    "units": "%",
+    "enable": true,
+    "group": "Power Train",
+    "min": 80,
+    "max": 120,
+    "on_dash": false,
+    "emulation": "modules.random.randint(95, 105)"
+  },
+  "advance": {
+    "name": "Advance",
+    "units": "advance",
+    "enable": true,
+    "group": "Power Train",
+    "min": 0,
+    "max": 10,
+    "on_dash": false,
+    "emulation": "modules.random.randint(0, 5)"
+  },
+  "ride_height_fl_cm": {
+    "name": "Ride Height FL",
+    "units": "cm",
+    "enable": true,
+    "group": "Suspension",
+    "min": 0,
+    "max": 20,
+    "on_dash": false,
+    "emulation": "int(5 * modules.math.cos(modules.math.radians(x * 15)) + 8)"
+  },
+  "ride_height_fr_cm": {
+    "name": "Ride Height FR",
+    "units": "cm",
+    "enable": true,
+    "group": "Suspension",
+    "min": 0,
+    "max": 20,
+    "on_dash": false,
+    "emulation": "int(5 * modules.math.sin(modules.math.radians(x * 15)) + 8)"
+  },
+  "ride_height_flw_cm": {
+    "name": "Ride Height FLW",
+    "units": "cm",
+    "enable": true,
+    "group": "Suspension",
+    "min": 0,
+    "max": 20,
+    "on_dash": false,
+    "emulation": "int(5 * modules.math.cos(modules.math.radians(x * 5)) + 8)"
+  },
+  "ride_height_rear_cm": {
+    "name": "Ride Height Rear",
+    "units": "cm",
+    "enable": true,
+    "group": "Suspension",
+    "min": 0,
+    "max": 20,
+    "on_dash": false,
+    "emulation": "int(5 * modules.math.sin(modules.math.radians(x * 5)) + 8)"
+  },
+  "lap_time_s": {
+    "name": "Lap Time",
+    "units": "s",
+    "enable": true,
+    "group": "Misc",
+    "min": 0,
+    "max": 1000,
+    "on_dash": false,
+    "emulation": "int(x)"
+  },
+  "accel_fl_x_mg": {
+    "name": "Acceleration FL x",
+    "units": "mg",
+    "enable": true,
+    "group": "Misc",
+    "min": 0,
+    "max": 3000,
+    "on_dash": false,
+    "emulation": "int(500 * modules.math.sin(modules.math.radians(x * 10 + 1)) + 1000)"
+  },
+  "accel_fl_y_mg": {
+    "name": "Acceleration FL y",
+    "units": "mg",
+    "enable": true,
+    "group": "Misc",
+    "min": 0,
+    "max": 3000,
+    "on_dash": false,
+    "emulation": "int(500 * modules.math.sin(modules.math.radians(x * 10 + 0.5)) + 1000)"
+  },
+  "accel_fl_z_mg": {
+    "name": "Acceleration FL z",
+    "units": "mg",
+    "enable": true,
+    "group": "Misc",
+    "min": 0,
+    "max": 3000,
+    "on_dash": false,
+    "emulation": "int(500 * modules.math.sin(modules.math.radians(x * 10)) + 1000)"
+  }
+}

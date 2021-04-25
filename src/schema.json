@@ -1,0 +1,235 @@
+{
+  "startByte": 1,
+  "pdu": {
+    "core": {
+      "id": 0,
+      "header":
+      [
+        {
+          "name": "valid_bitfield",
+          "cType": "I"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body":
+      [
+        {
+          "name": "rpm",
+          "cType": "H"
+        },
+        {
+          "name": "water_temp_c",
+          "cType": "H"
+        },
+        {
+          "name": "tps_perc",
+          "cType": "H"
+        },
+        {
+          "name": "battery_mv",
+          "cType": "H"
+        },
+        {
+          "name": "ext_5v_mv",
+          "cType": "H"
+        },
+        {
+          "name": "fuel_flow",
+          "cType": "H"
+        },
+        {
+          "name": "lambda",
+          "cType": "H"
+        },
+        {
+          "name": "speed_kph",
+          "cType": "H"
+        }
+      ]
+    },
+    "aero": {
+      "id": 1,
+      "header":
+      [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body":
+      [
+        {
+          "name": "evo_scan_1",
+          "cType": "H"
+        },
+        {
+          "name": "evo_scan_2",
+          "cType": "H"
+        },
+        {
+          "name": "evo_scan_3",
+          "cType": "H"
+        },
+        {
+          "name": "evo_scan_4",
+          "cType": "H"
+        },
+        {
+          "name": "evo_scan_5",
+          "cType": "H"
+        },
+        {
+          "name": "evo_scan_6",
+          "cType": "H"
+        },
+        {
+          "name": "evo_scan_7",
+          "cType": "H"
+        }
+      ]
+    },
+    "diagnostic": {
+      "id": 2,
+      "header":
+      [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body":
+      [
+        {
+          "name": "status_ecu_connected",
+          "cType": "H"
+        },
+        {
+          "name": "status_engine",
+          "cType": "H"
+        },
+        {
+          "name": "status_battery",
+          "cType": "H"
+        },
+        {
+          "name": "status_logging",
+          "cType": "H"
+        }
+      ]
+    },
+    "power_train": {
+      "id": 3,
+      "header":
+      [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body":
+      [
+        {
+          "name": "inj_time",
+          "cType": "H"
+        },
+        {
+          "name": "inj_duty_cycle",
+          "cType": "H"
+        },
+        {
+          "name": "lambda_pid_adj",
+          "cType": "H"
+        },
+        {
+          "name": "lambda_pid_target",
+          "cType": "H"
+        },
+        {
+          "name": "advance",
+          "cType": "H"
+        }
+      ]
+    },
+    "suspension": {
+      "id": 4,
+      "header":
+      [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body":
+      [
+        {
+          "name": "ride_height_fl_cm",
+          "cType": "H"
+        },
+        {
+          "name": "ride_height_fr_cm",
+          "cType": "H"
+        },
+        {
+          "name": "ride_height_flw_cm",
+          "cType": "H"
+        },
+        {
+          "name": "ride_height_rear_cm",
+          "cType": "H"
+        }
+      ]
+    },
+    "misc": {
+      "id": 5,
+      "header":
+      [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body":
+      [
+        {
+          "name": "lap_time_s",
+          "cType": "H"
+        },
+        {
+          "name": "accel_fl_x_mg",
+          "cType": "H"
+        },
+        {
+          "name": "accel_fl_y_mg",
+          "cType": "H"
+        },
+        {
+          "name": "accel_fl_z_mg",
+          "cType": "H"
+        }
+      ]
+    }
+  }
+}

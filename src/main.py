@@ -15,12 +15,101 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from helpers import config, scheduler
+from plugins import schema, sio, emulation
+import asyncio
+from datetime import datetime
+from time import time
+import json
+import os
+import importlib
 
-import app
+
+_datastore = {}
+
+
+@schema.on('connect')
+def _on_schema_connect():
+    print('schema connected')
+
+
+@schema.on('disconnect')
+def _on_schema_disconnect(exc):
+    print('schema disconnect')
+    if exc is not None:
+        print(f'Schema error: {exc}')
+
+
+@emulation.on
+def _on_emulation(data):
+    if sio.client.connected:
+        for sensor, values in data.items():
+            if sensor not in _datastore:
+                _datastore[sensor] = []
+            _datastore[sensor].append(values)
+
+
+@schema.on('PDU')
+def _on_schema_pdu(pdu):
+    for sensor, value in filter(lambda entry: entry[0] != 'epoch', pdu.items()):
+        if sensor not in _datastore:
+            _datastore[sensor] = []
+        _datastore[sensor].append({'epoch': pdu['epoch'], 'value': value})
+
+
+@scheduler.schedule_job(scheduler.IntervalTrigger(seconds=sio.conf.getfloat('Interval')))
+def on_sio_client_emit():
+    if sio.client.connected:
+        if not _datastore == {}:
+            sio.client.emit('data', json.dumps(_datastore), sio.conf['Namespace'])
+
+    _datastore.clear()
+
+
+@sio.client.on('connect', namespace=sio.conf['Namespace'])
+def on_sio_client_namespace_connect():
+    print(f'{sio.conf["Namespace"]} connect')
+    sio.client.emit('meta', json.dumps(config.sensors), sio.conf['Namespace'])
+
+
+@sio.client.on('disconnect', namespace=sio.conf['Namespace'])
+def on_sio_client_namespace_connect():
+    print(f'{sio.conf["Namespace"]} disconnect')
+    wait = sio.conf.getint('RetryInterval')
+    print(f'Attempting client restart in {wait}s')
+
+    scheduler.add_job(sio.connect, scheduler.DateTrigger(datetime.fromtimestamp(time() + wait)))
+
+
+@sio.client.on('error')
+def _on_error(err):
+    print(err)
+    wait = sio.conf.getint('RetryInterval')
+    print(f'Attempting client restart in {wait}s')
+
+    scheduler.add_job(sio.connect, scheduler.DateTrigger(datetime.fromtimestamp(time() + wait)))
+
 
 if __name__ == '__main__':
-    print(f"SUFST Intermediate-Server Copyright (C) 2021 Nathan Rowley-Smith\n" +
-          "This program comes with ABSOLUTELY NO WARRANTY;\n" +
-          "This is free software, and you are welcome to redistribute it")
+    print(f'SUFST Intermediate-Server Copyright (C) 2021 Nathan Rowley-Smith\n' +
+          'This program comes with ABSOLUTELY NO WARRANTY;\n' +
+          'This is free software, and you are welcome to redistribute it')
 
-    app.run()
+    loop = asyncio.get_event_loop()
+    asyncio.set_event_loop(loop)
+
+    for f in os.listdir('./plugins'):
+        if f not in '__init__':
+            module = importlib.import_module(f'plugins.{f.split(".")[0]}')
+            if hasattr(module, 'load'):
+                module.load()
+
+    try:
+        loop.run_forever()
+    except Exception as error:
+        print(repr(error))
+        print('Stopping')
+        loop.stop()
+
+    print('Stopped')
+
