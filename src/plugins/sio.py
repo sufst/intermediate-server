@@ -28,10 +28,9 @@ def connect():
     try:
         print(f"Attempting {conf['Url']}/login")
         response = requests.post(
-            f"{conf['Url']}/login",
+            f"{conf['Url']}/login/intermediate_server",
             headers={"Content-Type": "application/json"},
             data=json.dumps({
-                "username": "intermediate-server",
                 "password": "sufst"
             }), timeout=10)
     except Exception as error:
