@@ -15,8 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from helpers import config, scheduler
-from plugins import schema, sio, emulation
+from src.helpers import config, scheduler
+from src.plugins import schema, sio, emulation, plugins_load, plugins_run
 import asyncio
 from datetime import datetime
 from time import time
@@ -98,11 +98,9 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     asyncio.set_event_loop(loop)
 
-    for f in os.listdir('./plugins'):
-        if f not in '__init__':
-            module = importlib.import_module(f'plugins.{f.split(".")[0]}')
-            if hasattr(module, 'load'):
-                module.load()
+    plugins_load()
+
+    plugins_run()
 
     try:
         loop.run_forever()
@@ -112,4 +110,3 @@ if __name__ == '__main__':
         loop.stop()
 
     print('Stopped')
-
