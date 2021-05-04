@@ -131,3 +131,5 @@ dmypy.json
 .pyre/
 /test_database.db
 /src/.idea/
+
+.idea/

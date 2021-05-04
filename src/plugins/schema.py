@@ -15,7 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from helpers import config
+from src.helpers import config
 import functools
 import asyncio
 import serial
