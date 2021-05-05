@@ -29,7 +29,7 @@ _conf = config.config['schema']
 
 
 class _PDU:
-    def __init__(self, name, header, body):
+    def __init__(self, name: str, header: list, body: list):
         self.name = name
         self.length = 0
         self._header = header
@@ -50,7 +50,7 @@ class _PDU:
         # Remove the valid_bitfield field.
         self._fields_names = self._fields_names[1:]
 
-    def decode(self, bytes_in):
+    def decode(self, bytes_in: bytes) -> None:
         values = iter(struct.unpack(self._struct_format, bytes_in))
 
         # The first value should be the valid bitfield.
@@ -70,23 +70,23 @@ class _PDU:
 
 
 class _Socket(asyncio.Protocol):
-    def connection_made(self, transport):
+    def connection_made(self, transport: asyncio.transports.Transport) -> None:
         if "connect" in _event_handlers:
             _event_handlers["connect"]()
 
-    def data_received(self, data):
+    def data_received(self, data: bytes) -> None:
         try:
             _parse_data(data)
         except Exception as error:
             print(f'Schema parse error: {error}')
 
-    def connection_lost(self, exc):
+    def connection_lost(self, exc: Exception) -> None:
         if "disconnect" in _event_handlers:
             _event_handlers["disconnect"](exc)
 
 
 class _XBee:
-    def __init__(self, com, baud, mac_peer):
+    def __init__(self, com: str, baud: int, mac_peer: str):
         self.com = com
         self.baud = baud
         self.mac_peer = mac_peer
@@ -106,23 +106,23 @@ class _XBee:
             if "disconnect" in _event_handlers:
                 _event_handlers["disconnect"](err)
 
-    def _on_xbee_receive(self, message: xbee_message.XBeeMessage):
+    def _on_xbee_receive(self, message: xbee_message.XBeeMessage) -> None:
         data = bytes(message.data)
 
         asyncio.run_coroutine_threadsafe(self._on_xbee_receive_async(data), self.event_loop)
 
     @staticmethod
-    async def _on_xbee_receive_async(data):
+    async def _on_xbee_receive_async(data: bytes) -> None:
         try:
             _parse_data(data)
         except Exception as error:
             print(error)
 
 
-def _parse_data(data):
+def _parse_data(data: bytes) -> None:
     index = 0
     while index < len(data):
-        if data[index] != _schema_conf['startByte']:
+        if data[index] != _conf['startByte']:
             raise Exception('Invalid start byte')
         index += 1
 
@@ -141,10 +141,10 @@ def _parse_data(data):
             raise Exception('Invalid PDU type')
 
 
-def on(event):
-    def wrapper(func):
+def on(event: str) -> callable:
+    def wrapper(func: callable) -> callable:
         @functools.wraps(func)
-        def decorator(*args, **kwargs):
+        def decorator(*args, **kwargs) -> callable:
             func(*args, **kwargs)
 
         _event_handlers[event] = decorator
@@ -154,7 +154,7 @@ def on(event):
     return wrapper
 
 
-def load():
+def load() -> None:
     for name, conf in config.schema['pdu'].items():
         _pdus[conf['id']] = _PDU(name, conf['header'], conf['body'])
 

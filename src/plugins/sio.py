@@ -24,7 +24,7 @@ client = socketio.Client(reconnection=False)
 conf = config.config['sio']
 
 
-def connect():
+def connect() -> None:
     try:
         print(f"Attempting {conf['Url']}/login")
         response = requests.post(
@@ -55,5 +55,5 @@ def connect():
             client.handlers['/']['error'](error)
 
 
-def load():
+def load() -> None:
     connect()

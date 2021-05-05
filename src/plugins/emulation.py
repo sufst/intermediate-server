@@ -30,7 +30,7 @@ _x = 0
 _conf = config.config['emulation']
 
 
-def _invoke_consumers():
+def _invoke_consumers() -> None:
     global _x
     data = {}
     mods = {}
@@ -52,7 +52,7 @@ def _invoke_consumers():
         consumer(data)
 
 
-def on(func):
+def on(func: callable) -> callable:
     @functools.wraps(func)
     def decorator(*args, **kwargs):
         func(*args, **kwargs)
@@ -61,6 +61,6 @@ def on(func):
     return decorator
 
 
-def load():
+def load() -> None:
     if _conf.getboolean('Enable'):
         scheduler.add_job(_invoke_consumers, scheduler.IntervalTrigger(seconds=_conf.getfloat('Interval')))

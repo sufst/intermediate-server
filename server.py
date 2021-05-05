@@ -21,27 +21,25 @@ import asyncio
 from datetime import datetime
 from time import time
 import json
-import os
-import importlib
 
 
 _datastore = {}
 
 
 @schema.on('connect')
-def _on_schema_connect():
+def _on_schema_connect() -> None:
     print('schema connected')
 
 
 @schema.on('disconnect')
-def _on_schema_disconnect(exc):
+def _on_schema_disconnect(exc: Exception) -> None:
     print('schema disconnect')
     if exc is not None:
         print(f'Schema error: {exc}')
 
 
 @emulation.on
-def _on_emulation(data):
+def _on_emulation(data: dict) -> None:
     if sio.client.connected:
         for sensor, values in data.items():
             if sensor not in _datastore:
@@ -50,7 +48,7 @@ def _on_emulation(data):
 
 
 @schema.on('PDU')
-def _on_schema_pdu(pdu):
+def _on_schema_pdu(pdu: dict) -> None:
     for sensor, value in filter(lambda entry: entry[0] != 'epoch', pdu.items()):
         if sensor not in _datastore:
             _datastore[sensor] = []
@@ -58,7 +56,7 @@ def _on_schema_pdu(pdu):
 
 
 @scheduler.schedule_job(scheduler.IntervalTrigger(seconds=sio.conf.getfloat('Interval')))
-def on_sio_client_emit():
+def on_sio_client_emit() -> None:
     if sio.client.connected:
         if not _datastore == {}:
             sio.client.emit('data', json.dumps(_datastore), sio.conf['Namespace'])
@@ -67,13 +65,13 @@ def on_sio_client_emit():
 
 
 @sio.client.on('connect', namespace=sio.conf['Namespace'])
-def on_sio_client_namespace_connect():
+def on_sio_client_namespace_connect() -> None:
     print(f'{sio.conf["Namespace"]} connect')
     sio.client.emit('meta', json.dumps(config.sensors), sio.conf['Namespace'])
 
 
 @sio.client.on('disconnect', namespace=sio.conf['Namespace'])
-def on_sio_client_namespace_connect():
+def on_sio_client_namespace_connect() -> None:
     print(f'{sio.conf["Namespace"]} disconnect')
     wait = sio.conf.getint('RetryInterval')
     print(f'Attempting client restart in {wait}s')
@@ -82,7 +80,7 @@ def on_sio_client_namespace_connect():
 
 
 @sio.client.on('error')
-def _on_error(err):
+def _on_error(err: Exception) -> None:
     print(err)
     wait = sio.conf.getint('RetryInterval')
     print(f'Attempting client restart in {wait}s')
