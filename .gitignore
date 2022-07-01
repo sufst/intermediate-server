@@ -109,6 +109,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+inter-server-venv/
 
 # Spyder project settings
 .spyderproject
@@ -129,7 +130,11 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-/test_database.db
 /src/.idea/
 
 .idea/
+
+#Databases
+/test_database.db
+/emulation.db
+
