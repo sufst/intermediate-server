@@ -19,7 +19,7 @@ import json
 import configparser
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read('/intermediate-server/config.ini')
 
 schema = json.load(open('/intermediate-server/schema.json', 'r'))
 sensors = json.load(open('/intermediate-server/sensors.json', 'r'))
