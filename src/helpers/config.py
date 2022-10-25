@@ -21,5 +21,5 @@ import configparser
 config = configparser.ConfigParser()
 config.read('config.ini')
 
-schema = json.load(open('schema.json', 'r'))
-sensors = json.load(open('sensors.json', 'r'))
+schema = json.load(open('/intermediate-server/schema.json', 'r'))
+sensors = json.load(open('/intermediate-server/sensors.json', 'r'))
