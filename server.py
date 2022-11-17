@@ -15,6 +15,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+from dotenv.main import load_dotenv
+
 from src.helpers import config, scheduler
 from src.plugins import schema, sio, emulation, plugins_load, plugins_run
 import asyncio
@@ -22,8 +24,6 @@ from datetime import datetime
 from time import time
 import json
 import os
-import importlib
-
 
 _datastore = {}
 

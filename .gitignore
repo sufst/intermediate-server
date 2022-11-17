@@ -132,9 +132,12 @@ dmypy.json
 .pyre/
 /src/.idea/
 
-.idea/
+.idea/*
+
 
 #Databases
 /test_database.db
 /emulation.db
+
+.DS_Store
 

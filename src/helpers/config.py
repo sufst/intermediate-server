@@ -17,9 +17,14 @@
 """
 import json
 import configparser
+import os
+from dotenv.main import load_dotenv
+
+if os.path.exists('.env'):
+    load_dotenv()
 
 config = configparser.ConfigParser()
-config.read('/intermediate-server/config.ini')
+config.read(os.environ['CONFIG'])
 
-schema = json.load(open('/intermediate-server/schema.json', 'r'))
-sensors = json.load(open('/intermediate-server/sensors.json', 'r'))
+schema = json.load(open('schema.json', 'r'))
+sensors = json.load(open('sensors.json', 'r'))
