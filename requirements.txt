@@ -63,7 +63,7 @@ tzdata==2022.5
 tzlocal==4.2
 urllib3==1.26.12
 websocket-client==1.4.1
-Werkzeug==2.0.3
+Werkzeug==1.0.1
 yarl==1.8.1
 zed==1.1.1
 zipp==3.10.0
