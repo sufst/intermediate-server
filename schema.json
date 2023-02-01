@@ -1,59 +1,40 @@
 {
   "startByte": 1,
   "pdu": {
-    "core": {
+    "M173_Modulation_And_Flux_Info": {
       "id": 0,
-      "header":
-      [
+      "header": [
         {
           "name": "valid_bitfield",
-          "cType": "I"
+          "cType": "H"
         },
         {
           "name": "epoch",
           "cType": "d"
         }
       ],
-      "body":
-      [
+      "body": [
         {
-          "name": "rpm",
-          "cType": "H"
+          "name": "INV_Modulation_Index",
+          "cType": "h"
         },
         {
-          "name": "water_temp_c",
-          "cType": "H"
+          "name": "INV_Flux_Weakening_Output",
+          "cType": "h"
         },
         {
-          "name": "tps_perc",
-          "cType": "H"
+          "name": "INV_Id_Command",
+          "cType": "h"
         },
         {
-          "name": "battery_mv",
-          "cType": "H"
-        },
-        {
-          "name": "ext_5v_mv",
-          "cType": "H"
-        },
-        {
-          "name": "fuel_flow",
-          "cType": "H"
-        },
-        {
-          "name": "lambda",
-          "cType": "H"
-        },
-        {
-          "name": "speed_kph",
-          "cType": "H"
+          "name": "INV_Iq_Command",
+          "cType": "h"
         }
       ]
     },
-    "aero": {
+    "M172_Torque_And_Timer_Info": {
       "id": 1,
-      "header":
-      [
+      "header": [
         {
           "name": "valid_bitfield",
           "cType": "H"
@@ -63,42 +44,24 @@
           "cType": "d"
         }
       ],
-      "body":
-      [
+      "body": [
         {
-          "name": "evo_scan_1",
-          "cType": "H"
+          "name": "INV_Commanded_Torque",
+          "cType": "h"
         },
         {
-          "name": "evo_scan_2",
-          "cType": "H"
+          "name": "INV_Torque_Feedback",
+          "cType": "h"
         },
         {
-          "name": "evo_scan_3",
-          "cType": "H"
-        },
-        {
-          "name": "evo_scan_4",
-          "cType": "H"
-        },
-        {
-          "name": "evo_scan_5",
-          "cType": "H"
-        },
-        {
-          "name": "evo_scan_6",
-          "cType": "H"
-        },
-        {
-          "name": "evo_scan_7",
-          "cType": "H"
+          "name": "INV_Power_On_Timer",
+          "cType": "I"
         }
       ]
     },
-    "diagnostic": {
+    "M194_Read_Write_Param_Response": {
       "id": 2,
-      "header":
-      [
+      "header": [
         {
           "name": "valid_bitfield",
           "cType": "H"
@@ -108,30 +71,24 @@
           "cType": "d"
         }
       ],
-      "body":
-      [
+      "body": [
         {
-          "name": "status_ecu_connected",
+          "name": "INV_Parameter_Response_Addr",
           "cType": "H"
         },
         {
-          "name": "status_engine",
-          "cType": "H"
+          "name": "INV_Parameter_Response_Write_OK",
+          "cType": "B"
         },
         {
-          "name": "status_battery",
-          "cType": "H"
-        },
-        {
-          "name": "status_logging",
-          "cType": "H"
+          "name": "INV_Parameter_Response_Data",
+          "cType": "h"
         }
       ]
     },
-    "power_train": {
+    "M193_Read_Write_Param_Command": {
       "id": 3,
-      "header":
-      [
+      "header": [
         {
           "name": "valid_bitfield",
           "cType": "H"
@@ -141,34 +98,24 @@
           "cType": "d"
         }
       ],
-      "body":
-      [
+      "body": [
         {
-          "name": "inj_time",
+          "name": "VCU_INV_Parameter_Address",
           "cType": "H"
         },
         {
-          "name": "inj_duty_cycle",
-          "cType": "H"
+          "name": "VCU_INV_Parameter_RW_Command",
+          "cType": "B"
         },
         {
-          "name": "lambda_pid_adj",
-          "cType": "H"
-        },
-        {
-          "name": "lambda_pid_target",
-          "cType": "H"
-        },
-        {
-          "name": "advance",
-          "cType": "H"
+          "name": "VCU_INV_Parameter_Data",
+          "cType": "h"
         }
       ]
     },
-    "suspension": {
+    "M192_Command_Message": {
       "id": 4,
-      "header":
-      [
+      "header": [
         {
           "name": "valid_bitfield",
           "cType": "H"
@@ -178,30 +125,75 @@
           "cType": "d"
         }
       ],
-      "body":
-      [
+      "body": [
         {
-          "name": "ride_height_fl_cm",
+          "name": "VCU_INV_Torque_Command",
+          "cType": "h"
+        },
+        {
+          "name": "VCU_INV_Speed_Command",
+          "cType": "h"
+        },
+        {
+          "name": "VCU_INV_Direction_Command",
+          "cType": "B"
+        },
+        {
+          "name": "VCU_INV_Inverter_Enable",
+          "cType": "B"
+        },
+        {
+          "name": "VCU_INV_Inverter_Discharge",
+          "cType": "B"
+        },
+        {
+          "name": "VCU_INV_Speed_Mode_Enable",
+          "cType": "B"
+        },
+        {
+          "name": "VCU_INV_Heater_Mode_Enable",
+          "cType": "B"
+        },
+        {
+          "name": "VCU_INV_Torque_Limit_Command",
+          "cType": "h"
+        }
+      ]
+    },
+    "M171_Fault_Codes": {
+      "id": 5,
+      "header": [
+        {
+          "name": "valid_bitfield",
           "cType": "H"
         },
         {
-          "name": "ride_height_fr_cm",
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "INV_Post_Fault_Lo",
           "cType": "H"
         },
         {
-          "name": "ride_height_flw_cm",
+          "name": "INV_Post_Fault_Hi",
           "cType": "H"
         },
         {
-          "name": "ride_height_rear_cm",
+          "name": "INV_Run_Fault_Lo",
+          "cType": "H"
+        },
+        {
+          "name": "INV_Run_Fault_Hi",
           "cType": "H"
         }
       ]
     },
-    "misc": {
-      "id": 5,
-      "header":
-      [
+    "M170_Internal_States": {
+      "id": 6,
+      "header": [
         {
           "name": "valid_bitfield",
           "cType": "H"
@@ -211,23 +203,544 @@
           "cType": "d"
         }
       ],
-      "body":
-      [
+      "body": [
         {
-          "name": "lap_time_s",
+          "name": "INV_VSM_State",
+          "cType": "B"
+        },
+        {
+          "name": "INV_PWM_Frequency",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Inverter_State",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Relay_1_Status",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Relay_2_Status",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Relay_3_Status",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Relay_4_Status",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Relay_5_Status",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Relay_6_Status",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Inverter_Run_Mode",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Inverter_Discharge_State",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Inverter_Command_Mode",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Rolling_Counter",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Inverter_Enable_State",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Inverter_Enable_Lockout",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Direction_Command",
+          "cType": "B"
+        },
+        {
+          "name": "INV_BMS_Active",
+          "cType": "B"
+        },
+        {
+          "name": "INV_BMS_Torque_Limiting",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Limit_Max_Speed",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Limit_Hot_Spot",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Low_Speed_Limiting",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Limit_Coolant_Derating",
+          "cType": "B"
+        }
+      ]
+    },
+    "M169_Internal_Voltages": {
+      "id": 7,
+      "header": [
+        {
+          "name": "valid_bitfield",
           "cType": "H"
         },
         {
-          "name": "accel_fl_x_mg",
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "INV_Ref_Voltage_1_5",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Ref_Voltage_2_5",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Ref_Voltage_5_0",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Ref_Voltage_12_0",
+          "cType": "h"
+        }
+      ]
+    },
+    "M168_Flux_ID_IQ_Info": {
+      "id": 8,
+      "header": [
+        {
+          "name": "valid_bitfield",
           "cType": "H"
         },
         {
-          "name": "accel_fl_y_mg",
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "INV_Flux_Command",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Flux_Feedback",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Id",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Iq",
+          "cType": "h"
+        }
+      ]
+    },
+    "M167_Voltage_Info": {
+      "id": 9,
+      "header": [
+        {
+          "name": "valid_bitfield",
           "cType": "H"
         },
         {
-          "name": "accel_fl_z_mg",
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "INV_DC_Bus_Voltage",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Output_Voltage",
+          "cType": "h"
+        },
+        {
+          "name": "INV_VAB_Vd_Voltage",
+          "cType": "h"
+        },
+        {
+          "name": "INV_VBC_Vq_Voltage",
+          "cType": "h"
+        }
+      ]
+    },
+    "M166_Current_Info": {
+      "id": 10,
+      "header": [
+        {
+          "name": "valid_bitfield",
           "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "INV_Phase_A_Current",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Phase_B_Current",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Phase_C_Current",
+          "cType": "h"
+        },
+        {
+          "name": "INV_DC_Bus_Current",
+          "cType": "h"
+        }
+      ]
+    },
+    "M165_Motor_Position_Info": {
+      "id": 11,
+      "header": [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "INV_Motor_Angle_Electrical",
+          "cType": "H"
+        },
+        {
+          "name": "INV_Motor_Speed",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Electrical_Output_Frequency",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Delta_Resolver_Filtered",
+          "cType": "h"
+        }
+      ]
+    },
+    "M164_Digital_Input_Status": {
+      "id": 12,
+      "header": [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "INV_Digital_Input_1",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Digital_Input_2",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Digital_Input_3",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Digital_Input_4",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Digital_Input_5",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Digital_Input_6",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Digital_Input_7",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Digital_Input_8",
+          "cType": "B"
+        }
+      ]
+    },
+    "M163_Analog_Input_Voltages": {
+      "id": 13,
+      "header": [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "INV_Analog_Input_1",
+          "cType": "H"
+        },
+        {
+          "name": "INV_Analog_Input_2",
+          "cType": "H"
+        },
+        {
+          "name": "INV_Analog_Input_3",
+          "cType": "H"
+        },
+        {
+          "name": "INV_Analog_Input_4",
+          "cType": "H"
+        },
+        {
+          "name": "INV_Analog_Input_5",
+          "cType": "H"
+        },
+        {
+          "name": "INV_Analog_Input_6",
+          "cType": "H"
+        }
+      ]
+    },
+    "M162_Temperature_Set_3": {
+      "id": 14,
+      "header": [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "INV_Coolant_Temp",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Hot_Spot_Temp",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Motor_Temp",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Torque_Shudder",
+          "cType": "h"
+        }
+      ]
+    },
+    "M161_Temperature_Set_2": {
+      "id": 15,
+      "header": [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "INV_Control_Board_Temp",
+          "cType": "h"
+        },
+        {
+          "name": "INV_RTD1_Temperature",
+          "cType": "h"
+        },
+        {
+          "name": "INV_RTD2_Temperature",
+          "cType": "h"
+        }
+      ]
+    },
+    "M160_Temperature_Set_1": {
+      "id": 16,
+      "header": [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "INV_Module_A_Temp",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Module_B_Temp",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Module_C_Temp",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Gate_Driver_Board_Temp",
+          "cType": "h"
+        }
+      ]
+    },
+    "M174_Firmware_Info": {
+      "id": 17,
+      "header": [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "INV_Project_Code_EEP_Ver",
+          "cType": "H"
+        },
+        {
+          "name": "INV_SW_Version",
+          "cType": "H"
+        },
+        {
+          "name": "INV_DateCode_MMDD",
+          "cType": "H"
+        },
+        {
+          "name": "INV_DateCode_YYYY",
+          "cType": "H"
+        }
+      ]
+    },
+    "M175_Diag_Data": {
+      "id": 18,
+      "header": [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "INV_Diag_Buffer_Record",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Diag_Buffer_Segment",
+          "cType": "B"
+        },
+        {
+          "name": "INV_Diag_Data_1",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Diag_Data_2",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Diag_Data_3",
+          "cType": "h"
+        }
+      ]
+    },
+    "BMS_Current_Limit": {
+      "id": 19,
+      "header": [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "BMS_Max_Discharge_Current",
+          "cType": "H"
+        },
+        {
+          "name": "BMS_Max_Charge_Current",
+          "cType": "H"
+        }
+      ]
+    },
+    "M176_Fast_Info": {
+      "id": 20,
+      "header": [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "INV_Fast_Torque_Command",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Fast_Torque_Feedback",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Fast_Motor_Speed",
+          "cType": "h"
+        },
+        {
+          "name": "INV_Fast_DC_Bus_Voltage",
+          "cType": "h"
         }
       ]
     }
