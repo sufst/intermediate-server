@@ -1,1016 +1,1116 @@
 {
-  "INV_Modulation_Index": {
-    "name": "INV Modulation Index",
+  "PM100_Modulation_Index": {
+    "name": "PM100 Modulation Index",
     "units": "Code",
     "enable": true,
-    "group": "M173_Modulation_And_Flux_Info",
+    "group": "PM100_Modulation_And_Flux_Info",
     "min": -3.2768,
     "max": 3.2767,
     "on_dash": false,
     "emulation": "float(3.27675 * modules.math.sin(modules.math.radians(x * 10)) - 5.000000000032756e-05)"
   },
-  "INV_Flux_Weakening_Output": {
-    "name": "INV Flux Weakening Output",
+  "PM100_Flux_Weakening_Output": {
+    "name": "PM100 Flux Weakening Output",
     "units": "A",
     "enable": true,
-    "group": "M173_Modulation_And_Flux_Info",
+    "group": "PM100_Modulation_And_Flux_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Id_Command": {
-    "name": "INV Id Command",
+  "PM100_Id_Command": {
+    "name": "PM100 Id Command",
     "units": "A",
     "enable": true,
-    "group": "M173_Modulation_And_Flux_Info",
+    "group": "PM100_Modulation_And_Flux_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Iq_Command": {
-    "name": "INV Iq Command",
+  "PM100_Iq_Command": {
+    "name": "PM100 Iq Command",
     "units": "A",
     "enable": true,
-    "group": "M173_Modulation_And_Flux_Info",
+    "group": "PM100_Modulation_And_Flux_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Commanded_Torque": {
-    "name": "INV Commanded Torque",
+  "PM100_Commanded_Torque": {
+    "name": "PM100 Commanded Torque",
     "units": "Nm",
     "enable": true,
-    "group": "M172_Torque_And_Timer_Info",
+    "group": "PM100_Torque_And_Timer_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Torque_Feedback": {
-    "name": "INV Torque Feedback",
+  "PM100_Torque_Feedback": {
+    "name": "PM100 Torque Feedback",
     "units": "Nm",
     "enable": true,
-    "group": "M172_Torque_And_Timer_Info",
+    "group": "PM100_Torque_And_Timer_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Power_On_Timer": {
-    "name": "INV Power On Timer",
-    "units": "second",
+  "PM100_Power_On_Timer": {
+    "name": "PM100 Power On Timer",
+    "units": "Sec",
     "enable": true,
-    "group": "M172_Torque_And_Timer_Info",
+    "group": "PM100_Torque_And_Timer_Info",
     "min": 0,
     "max": 12884800,
     "on_dash": false,
     "emulation": "int(6442400.0 * modules.math.sin(modules.math.radians(x * 10)) + 6442400.0)"
   },
-  "INV_Parameter_Response_Addr": {
-    "name": "INV Parameter Response Addr",
+  "PM100_Parameter_Address_Response": {
+    "name": "PM100 Parameter Address Response",
     "units": "Code",
     "enable": true,
-    "group": "M194_Read_Write_Param_Response",
+    "group": "PM100_Read_Write_Param_Response",
     "min": 0,
     "max": 65535,
     "on_dash": false,
     "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) + 32767.5)"
   },
-  "INV_Parameter_Response_Write_OK": {
-    "name": "INV Parameter Response Write OK",
+  "PM100_Write_Success": {
+    "name": "PM100 Write Success",
     "units": "Code",
     "enable": true,
-    "group": "M194_Read_Write_Param_Response",
+    "group": "PM100_Read_Write_Param_Response",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Parameter_Response_Data": {
-    "name": "INV Parameter Response Data",
+  "PM100_Data_Response": {
+    "name": "PM100 Data Response",
     "units": "Code",
     "enable": true,
-    "group": "M194_Read_Write_Param_Response",
+    "group": "PM100_Read_Write_Param_Response",
     "min": -32768,
     "max": 32767,
     "on_dash": false,
     "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) - 0.5)"
   },
-  "VCU_INV_Parameter_Address": {
-    "name": "VCU INV Parameter Address",
+  "PM100_Parameter_Address_Command": {
+    "name": "PM100 Parameter Address Command",
     "units": "Code",
     "enable": true,
-    "group": "M193_Read_Write_Param_Command",
+    "group": "PM100_Read_Write_Param_Command",
     "min": 0,
     "max": 65535,
     "on_dash": false,
     "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) + 32767.5)"
   },
-  "VCU_INV_Parameter_RW_Command": {
-    "name": "VCU INV Parameter RW Command",
+  "PM100_Read_Write_Command": {
+    "name": "PM100 Read Write Command",
     "units": "Code",
     "enable": true,
-    "group": "M193_Read_Write_Param_Command",
+    "group": "PM100_Read_Write_Param_Command",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "VCU_INV_Parameter_Data": {
-    "name": "VCU INV Parameter Data",
+  "PM100_Data_Command": {
+    "name": "PM100 Data Command",
     "units": "Code",
     "enable": true,
-    "group": "M193_Read_Write_Param_Command",
+    "group": "PM100_Read_Write_Param_Command",
     "min": -32768,
     "max": 32767,
     "on_dash": false,
     "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) - 0.5)"
   },
-  "VCU_INV_Torque_Command": {
-    "name": "VCU INV Torque Command",
+  "PM100_Torque_Command": {
+    "name": "PM100 Torque Command",
     "units": "Nm",
     "enable": true,
-    "group": "M192_Command_Message",
+    "group": "PM100_Command_Message",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "VCU_INV_Speed_Command": {
-    "name": "VCU INV Speed Command",
+  "PM100_Speed_Command": {
+    "name": "PM100 Speed Command",
     "units": "rpm",
     "enable": true,
-    "group": "M192_Command_Message",
+    "group": "PM100_Command_Message",
     "min": -32768,
     "max": 32767,
     "on_dash": false,
     "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) - 0.5)"
   },
-  "VCU_INV_Direction_Command": {
-    "name": "VCU INV Direction Command",
-    "units": "Code",
+  "PM100_Direction_Command": {
+    "name": "PM100 Direction Command",
+    "units": "Bit",
     "enable": true,
-    "group": "M192_Command_Message",
+    "group": "PM100_Command_Message",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "VCU_INV_Inverter_Enable": {
-    "name": "VCU INV Inverter Enable",
-    "units": "Code",
+  "PM100_Inverter_Enable": {
+    "name": "PM100 Inverter Enable",
+    "units": "Bit",
     "enable": true,
-    "group": "M192_Command_Message",
+    "group": "PM100_Command_Message",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "VCU_INV_Inverter_Discharge": {
-    "name": "VCU INV Inverter Discharge",
-    "units": "Code",
+  "PM100_Inverter_Discharge": {
+    "name": "PM100 Inverter Discharge",
+    "units": "Bit",
     "enable": true,
-    "group": "M192_Command_Message",
+    "group": "PM100_Command_Message",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "VCU_INV_Speed_Mode_Enable": {
-    "name": "VCU INV Speed Mode Enable",
-    "units": "Code",
+  "PM100_Speed_Mode_Enable": {
+    "name": "PM100 Speed Mode Enable",
+    "units": "Bit",
     "enable": true,
-    "group": "M192_Command_Message",
+    "group": "PM100_Command_Message",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "VCU_INV_Heater_Mode_Enable": {
-    "name": "VCU INV Heater Mode Enable",
-    "units": "Code",
+  "PM100_RollingCounter": {
+    "name": "PM100 RollingCounter",
+    "units": "Bits",
     "enable": true,
-    "group": "M192_Command_Message",
-    "min": null,
-    "max": null,
-    "on_dash": false,
-    "emulation": "0"
-  },
-  "VCU_INV_Torque_Limit_Command": {
-    "name": "VCU INV Torque Limit Command",
-    "units": "Nm",
-    "enable": true,
-    "group": "M192_Command_Message",
-    "min": -3276.8,
-    "max": 3276.7,
-    "on_dash": false,
-    "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
-  },
-  "INV_Post_Fault_Lo": {
-    "name": "INV Post Fault Lo",
-    "units": "Code",
-    "enable": true,
-    "group": "M171_Fault_Codes",
-    "min": 0,
-    "max": 65535,
-    "on_dash": false,
-    "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) + 32767.5)"
-  },
-  "INV_Post_Fault_Hi": {
-    "name": "INV Post Fault Hi",
-    "units": "Code",
-    "enable": true,
-    "group": "M171_Fault_Codes",
-    "min": 0,
-    "max": 65535,
-    "on_dash": false,
-    "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) + 32767.5)"
-  },
-  "INV_Run_Fault_Lo": {
-    "name": "INV Run Fault Lo",
-    "units": "Code",
-    "enable": true,
-    "group": "M171_Fault_Codes",
-    "min": 0,
-    "max": 65535,
-    "on_dash": false,
-    "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) + 32767.5)"
-  },
-  "INV_Run_Fault_Hi": {
-    "name": "INV Run Fault Hi",
-    "units": "Code",
-    "enable": true,
-    "group": "M171_Fault_Codes",
-    "min": 0,
-    "max": 65535,
-    "on_dash": false,
-    "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) + 32767.5)"
-  },
-  "INV_VSM_State": {
-    "name": "INV VSM State",
-    "units": "Code",
-    "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Command_Message",
     "min": 0,
     "max": 15,
     "on_dash": false,
     "emulation": "int(7.5 * modules.math.sin(modules.math.radians(x * 10)) + 7.5)"
   },
-  "INV_PWM_Frequency": {
-    "name": "INV PWM Frequency",
+  "PM100_Torque_Limit_Command": {
+    "name": "PM100 Torque Limit Command",
+    "units": "Nm",
+    "enable": true,
+    "group": "PM100_Command_Message",
+    "min": -3276.8,
+    "max": 3276.7,
+    "on_dash": false,
+    "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
+  },
+  "PM100_Post_Fault_Lo": {
+    "name": "PM100 Post Fault Lo",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Fault_Codes",
+    "min": 0,
+    "max": 65535,
+    "on_dash": false,
+    "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) + 32767.5)"
+  },
+  "PM100_Post_Fault_Hi": {
+    "name": "PM100 Post Fault Hi",
+    "units": "Code",
+    "enable": true,
+    "group": "PM100_Fault_Codes",
+    "min": 0,
+    "max": 65535,
+    "on_dash": false,
+    "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) + 32767.5)"
+  },
+  "PM100_Run_Fault_Lo": {
+    "name": "PM100 Run Fault Lo",
+    "units": "Code",
+    "enable": true,
+    "group": "PM100_Fault_Codes",
+    "min": 0,
+    "max": 65535,
+    "on_dash": false,
+    "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) + 32767.5)"
+  },
+  "PM100_Run_Fault_Hi": {
+    "name": "PM100 Run Fault Hi",
+    "units": "Code",
+    "enable": true,
+    "group": "PM100_Fault_Codes",
+    "min": 0,
+    "max": 65535,
+    "on_dash": false,
+    "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) + 32767.5)"
+  },
+  "PM100_VSM_State": {
+    "name": "PM100 VSM State",
+    "units": "Code",
+    "enable": true,
+    "group": "PM100_Internal_States",
+    "min": 0,
+    "max": 15,
+    "on_dash": false,
+    "emulation": "int(7.5 * modules.math.sin(modules.math.radians(x * 10)) + 7.5)"
+  },
+  "PM100_PWM_Frequency": {
+    "name": "PM100 PWM Frequency",
+    "units": "kHz",
+    "enable": true,
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 255,
     "on_dash": false,
     "emulation": "int(127.5 * modules.math.sin(modules.math.radians(x * 10)) + 127.5)"
   },
-  "INV_Inverter_State": {
-    "name": "INV Inverter State",
+  "PM100_Inverter_State": {
+    "name": "PM100 Inverter State",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 255,
     "on_dash": false,
     "emulation": "int(127.5 * modules.math.sin(modules.math.radians(x * 10)) + 127.5)"
   },
-  "INV_Relay_1_Status": {
-    "name": "INV Relay 1 Status",
+  "PM100_Relay_1_Status": {
+    "name": "PM100 Relay 1 Status",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Relay_2_Status": {
-    "name": "INV Relay 2 Status",
+  "PM100_Relay_2_Status": {
+    "name": "PM100 Relay 2 Status",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Relay_3_Status": {
-    "name": "INV Relay 3 Status",
+  "PM100_Relay_3_Status": {
+    "name": "PM100 Relay 3 Status",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Relay_4_Status": {
-    "name": "INV Relay 4 Status",
+  "PM100_Relay_4_Status": {
+    "name": "PM100 Relay 4 Status",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Relay_5_Status": {
-    "name": "INV Relay 5 Status",
+  "PM100_Relay_5_Status": {
+    "name": "PM100 Relay 5 Status",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Relay_6_Status": {
-    "name": "INV Relay 6 Status",
+  "PM100_Relay_6_Status": {
+    "name": "PM100 Relay 6 Status",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Inverter_Run_Mode": {
-    "name": "INV Inverter Run Mode",
+  "PM100_Inverter_Run_Mode": {
+    "name": "PM100 Inverter Run Mode",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Inverter_Discharge_State": {
-    "name": "INV Inverter Discharge State",
+  "PM100_Inverter_Discharge_State": {
+    "name": "PM100 Inverter Discharge State",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 7,
     "on_dash": false,
     "emulation": "int(3.5 * modules.math.sin(modules.math.radians(x * 10)) + 3.5)"
   },
-  "INV_Inverter_Command_Mode": {
-    "name": "INV Inverter Command Mode",
+  "PM100_Inverter_Command_Mode": {
+    "name": "PM100 Inverter Command Mode",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Rolling_Counter": {
-    "name": "INV Rolling Counter",
+  "PM100_Rolling_Counter": {
+    "name": "PM100 Rolling Counter",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 15,
     "on_dash": false,
     "emulation": "int(7.5 * modules.math.sin(modules.math.radians(x * 10)) + 7.5)"
   },
-  "INV_Inverter_Enable_State": {
-    "name": "INV Inverter Enable State",
+  "PM100_Inverter_Enable_State": {
+    "name": "PM100 Inverter Enable State",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Inverter_Enable_Lockout": {
-    "name": "INV Inverter Enable Lockout",
+  "PM100_Start_Mode_Active": {
+    "name": "PM100 Start Mode Active",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Direction_Command": {
-    "name": "INV Direction Command",
+  "PM100_Inverter_Enable_Lockout": {
+    "name": "PM100 Inverter Enable Lockout",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_BMS_Active": {
-    "name": "INV BMS Active",
+  "PM100_Direction_Command_State": {
+    "name": "PM100 Direction Command State",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_BMS_Torque_Limiting": {
-    "name": "INV BMS Torque Limiting",
+  "PM100_BMS_Active": {
+    "name": "PM100 BMS Active",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
-    "min": null,
-    "max": null,
-    "on_dash": false,
-    "emulation": "0"
-  },
-  "INV_Limit_Max_Speed": {
-    "name": "INV Limit Max Speed",
-    "units": "Code",
-    "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Limit_Hot_Spot": {
-    "name": "INV Limit Hot Spot",
+  "PM100_BMS_Torque_Limiting": {
+    "name": "PM100 BMS Torque Limiting",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Low_Speed_Limiting": {
-    "name": "INV Low Speed Limiting",
+  "PM100_Max_Speed_Limiting": {
+    "name": "PM100 Max Speed Limiting",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Limit_Coolant_Derating": {
-    "name": "INV Limit Coolant Derating",
+  "PM100_Low_Speed_Limiting": {
+    "name": "PM100 Low Speed Limiting",
     "units": "Code",
     "enable": true,
-    "group": "M170_Internal_States",
+    "group": "PM100_Internal_States",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Ref_Voltage_1_5": {
-    "name": "INV Ref Voltage 1 5",
+  "PM100_Reference_Voltage_1_5": {
+    "name": "PM100 Reference Voltage 1 5",
     "units": "V",
     "enable": true,
-    "group": "M169_Internal_Voltages",
+    "group": "PM100_Internal_Voltages",
     "min": -327.68,
     "max": 327.67,
     "on_dash": false,
     "emulation": "float(327.675 * modules.math.sin(modules.math.radians(x * 10)) - 0.0049999999999954525)"
   },
-  "INV_Ref_Voltage_2_5": {
-    "name": "INV Ref Voltage 2 5",
+  "PM100_Reference_Voltage_2_5": {
+    "name": "PM100 Reference Voltage 2 5",
     "units": "V",
     "enable": true,
-    "group": "M169_Internal_Voltages",
+    "group": "PM100_Internal_Voltages",
     "min": -327.68,
     "max": 327.67,
     "on_dash": false,
     "emulation": "float(327.675 * modules.math.sin(modules.math.radians(x * 10)) - 0.0049999999999954525)"
   },
-  "INV_Ref_Voltage_5_0": {
-    "name": "INV Ref Voltage 5 0",
+  "PM100_Reference_Voltage_5_0": {
+    "name": "PM100 Reference Voltage 5 0",
     "units": "V",
     "enable": true,
-    "group": "M169_Internal_Voltages",
+    "group": "PM100_Internal_Voltages",
     "min": -327.68,
     "max": 327.67,
     "on_dash": false,
     "emulation": "float(327.675 * modules.math.sin(modules.math.radians(x * 10)) - 0.0049999999999954525)"
   },
-  "INV_Ref_Voltage_12_0": {
-    "name": "INV Ref Voltage 12 0",
+  "PM100_Reference_Voltage_12_0": {
+    "name": "PM100 Reference Voltage 12 0",
     "units": "V",
     "enable": true,
-    "group": "M169_Internal_Voltages",
+    "group": "PM100_Internal_Voltages",
     "min": -327.68,
     "max": 327.67,
     "on_dash": false,
     "emulation": "float(327.675 * modules.math.sin(modules.math.radians(x * 10)) - 0.0049999999999954525)"
   },
-  "INV_Flux_Command": {
-    "name": "INV Flux Command",
+  "PM100_Flux_Command": {
+    "name": "PM100 Flux Command",
     "units": "Wb",
     "enable": true,
-    "group": "M168_Flux_ID_IQ_Info",
+    "group": "PM100_Flux_ID_IQ_Info",
     "min": -32.768,
     "max": 32.767,
     "on_dash": false,
     "emulation": "float(32.7675 * modules.math.sin(modules.math.radians(x * 10)) - 0.0005000000000023874)"
   },
-  "INV_Flux_Feedback": {
-    "name": "INV Flux Feedback",
+  "PM100_Flux_Feedback": {
+    "name": "PM100 Flux Feedback",
     "units": "Wb",
     "enable": true,
-    "group": "M168_Flux_ID_IQ_Info",
+    "group": "PM100_Flux_ID_IQ_Info",
     "min": -32.768,
     "max": 32.767,
     "on_dash": false,
     "emulation": "float(32.7675 * modules.math.sin(modules.math.radians(x * 10)) - 0.0005000000000023874)"
   },
-  "INV_Id": {
-    "name": "INV Id",
+  "PM100_Id": {
+    "name": "PM100 Id",
     "units": "A",
     "enable": true,
-    "group": "M168_Flux_ID_IQ_Info",
+    "group": "PM100_Flux_ID_IQ_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Iq": {
-    "name": "INV Iq",
+  "PM100_Iq": {
+    "name": "PM100 Iq",
     "units": "A",
     "enable": true,
-    "group": "M168_Flux_ID_IQ_Info",
+    "group": "PM100_Flux_ID_IQ_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_DC_Bus_Voltage": {
-    "name": "INV DC Bus Voltage",
+  "PM100_DC_Bus_Voltage": {
+    "name": "PM100 DC Bus Voltage",
     "units": "V",
     "enable": true,
-    "group": "M167_Voltage_Info",
+    "group": "PM100_Voltage_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Output_Voltage": {
-    "name": "INV Output Voltage",
+  "PM100_Output_Voltage": {
+    "name": "PM100 Output Voltage",
     "units": "V",
     "enable": true,
-    "group": "M167_Voltage_Info",
+    "group": "PM100_Voltage_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_VAB_Vd_Voltage": {
-    "name": "INV VAB Vd Voltage",
+  "PM100_VAB_Vd_Voltage": {
+    "name": "PM100 VAB Vd Voltage",
     "units": "V",
     "enable": true,
-    "group": "M167_Voltage_Info",
+    "group": "PM100_Voltage_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_VBC_Vq_Voltage": {
-    "name": "INV VBC Vq Voltage",
+  "PM100_VBC_Vq_Voltage": {
+    "name": "PM100 VBC Vq Voltage",
     "units": "V",
     "enable": true,
-    "group": "M167_Voltage_Info",
+    "group": "PM100_Voltage_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Phase_A_Current": {
-    "name": "INV Phase A Current",
+  "PM100_Phase_A_Current": {
+    "name": "PM100 Phase A Current",
     "units": "A",
     "enable": true,
-    "group": "M166_Current_Info",
+    "group": "PM100_Current_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Phase_B_Current": {
-    "name": "INV Phase B Current",
+  "PM100_Phase_B_Current": {
+    "name": "PM100 Phase B Current",
     "units": "A",
     "enable": true,
-    "group": "M166_Current_Info",
+    "group": "PM100_Current_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Phase_C_Current": {
-    "name": "INV Phase C Current",
+  "PM100_Phase_C_Current": {
+    "name": "PM100 Phase C Current",
     "units": "A",
     "enable": true,
-    "group": "M166_Current_Info",
+    "group": "PM100_Current_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_DC_Bus_Current": {
-    "name": "INV DC Bus Current",
+  "PM100_DC_Bus_Current": {
+    "name": "PM100 DC Bus Current",
     "units": "A",
     "enable": true,
-    "group": "M166_Current_Info",
+    "group": "PM100_Current_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Motor_Angle_Electrical": {
-    "name": "INV Motor Angle Electrical",
+  "PM100_Motor_Angle_Electrical": {
+    "name": "PM100 Motor Angle Electrical",
     "units": "deg",
     "enable": true,
-    "group": "M165_Motor_Position_Info",
+    "group": "PM100_Motor_Position_Info",
     "min": 0,
     "max": 6553.5,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) + 3276.75)"
   },
-  "INV_Motor_Speed": {
-    "name": "INV Motor Speed",
+  "PM100_Motor_Speed": {
+    "name": "PM100 Motor Speed",
     "units": "rpm",
     "enable": true,
-    "group": "M165_Motor_Position_Info",
+    "group": "PM100_Motor_Position_Info",
     "min": -32768,
     "max": 32767,
     "on_dash": false,
     "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) - 0.5)"
   },
-  "INV_Electrical_Output_Frequency": {
-    "name": "INV Electrical Output Frequency",
-    "units": "Hz",
+  "PM100_Electrical_Output_Freq": {
+    "name": "PM100 Electrical Output Freq",
+    "units": "hz",
     "enable": true,
-    "group": "M165_Motor_Position_Info",
+    "group": "PM100_Motor_Position_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Delta_Resolver_Filtered": {
-    "name": "INV Delta Resolver Filtered",
+  "PM100_Delta_Resolver_Filtered": {
+    "name": "PM100 Delta Resolver Filtered",
     "units": "deg",
     "enable": true,
-    "group": "M165_Motor_Position_Info",
+    "group": "PM100_Motor_Position_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Digital_Input_1": {
-    "name": "INV Digital Input 1",
-    "units": "Code",
+  "PM100_Digital_Input_1": {
+    "name": "PM100 Digital Input 1",
+    "units": "boolean",
     "enable": true,
-    "group": "M164_Digital_Input_Status",
+    "group": "PM100_Digital_Input_Status",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Digital_Input_2": {
-    "name": "INV Digital Input 2",
-    "units": "Code",
+  "PM100_Digital_Input_2": {
+    "name": "PM100 Digital Input 2",
+    "units": "boolean",
     "enable": true,
-    "group": "M164_Digital_Input_Status",
+    "group": "PM100_Digital_Input_Status",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Digital_Input_3": {
-    "name": "INV Digital Input 3",
-    "units": "Code",
+  "PM100_Digital_Input_3": {
+    "name": "PM100 Digital Input 3",
+    "units": "boolean",
     "enable": true,
-    "group": "M164_Digital_Input_Status",
+    "group": "PM100_Digital_Input_Status",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Digital_Input_4": {
-    "name": "INV Digital Input 4",
-    "units": "Code",
+  "PM100_Digital_Input_4": {
+    "name": "PM100 Digital Input 4",
+    "units": "boolean",
     "enable": true,
-    "group": "M164_Digital_Input_Status",
+    "group": "PM100_Digital_Input_Status",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Digital_Input_5": {
-    "name": "INV Digital Input 5",
-    "units": "Code",
+  "PM100_Digital_Input_5": {
+    "name": "PM100 Digital Input 5",
+    "units": "boolean",
     "enable": true,
-    "group": "M164_Digital_Input_Status",
+    "group": "PM100_Digital_Input_Status",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Digital_Input_6": {
-    "name": "INV Digital Input 6",
-    "units": "Code",
+  "PM100_Digital_Input_6": {
+    "name": "PM100 Digital Input 6",
+    "units": "boolean",
     "enable": true,
-    "group": "M164_Digital_Input_Status",
+    "group": "PM100_Digital_Input_Status",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Digital_Input_7": {
-    "name": "INV Digital Input 7",
-    "units": "Code",
+  "PM100_Digital_Input_7": {
+    "name": "PM100 Digital Input 7",
+    "units": "boolean",
     "enable": true,
-    "group": "M164_Digital_Input_Status",
+    "group": "PM100_Digital_Input_Status",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Digital_Input_8": {
-    "name": "INV Digital Input 8",
-    "units": "Code",
+  "PM100_Digital_Input_8": {
+    "name": "PM100 Digital Input 8",
+    "units": "boolean",
     "enable": true,
-    "group": "M164_Digital_Input_Status",
+    "group": "PM100_Digital_Input_Status",
     "min": 0,
     "max": 1,
     "on_dash": false,
     "emulation": "bool((x % 50) > 25)"
   },
-  "INV_Analog_Input_1": {
-    "name": "INV Analog Input 1",
+  "PM100_Analog_Input_1": {
+    "name": "PM100 Analog Input 1",
     "units": "V",
     "enable": true,
-    "group": "M163_Analog_Input_Voltages",
+    "group": "PM100_Analog_Input_Voltages",
     "min": 0,
     "max": 10.23,
     "on_dash": false,
     "emulation": "float(5.115 * modules.math.sin(modules.math.radians(x * 10)) + 5.115)"
   },
-  "INV_Analog_Input_2": {
-    "name": "INV Analog Input 2",
+  "PM100_Analog_Input_2": {
+    "name": "PM100 Analog Input 2",
     "units": "V",
     "enable": true,
-    "group": "M163_Analog_Input_Voltages",
+    "group": "PM100_Analog_Input_Voltages",
     "min": 0,
     "max": 10.23,
     "on_dash": false,
     "emulation": "float(5.115 * modules.math.sin(modules.math.radians(x * 10)) + 5.115)"
   },
-  "INV_Analog_Input_3": {
-    "name": "INV Analog Input 3",
+  "PM100_Analog_Input_3": {
+    "name": "PM100 Analog Input 3",
     "units": "V",
     "enable": true,
-    "group": "M163_Analog_Input_Voltages",
+    "group": "PM100_Analog_Input_Voltages",
     "min": 0,
     "max": 10.23,
     "on_dash": false,
     "emulation": "float(5.115 * modules.math.sin(modules.math.radians(x * 10)) + 5.115)"
   },
-  "INV_Analog_Input_4": {
-    "name": "INV Analog Input 4",
+  "PM100_Analog_Input_4": {
+    "name": "PM100 Analog Input 4",
     "units": "V",
     "enable": true,
-    "group": "M163_Analog_Input_Voltages",
+    "group": "PM100_Analog_Input_Voltages",
     "min": 0,
     "max": 10.23,
     "on_dash": false,
     "emulation": "float(5.115 * modules.math.sin(modules.math.radians(x * 10)) + 5.115)"
   },
-  "INV_Analog_Input_5": {
-    "name": "INV Analog Input 5",
+  "PM100_Analog_Input_5": {
+    "name": "PM100 Analog Input 5",
     "units": "V",
     "enable": true,
-    "group": "M163_Analog_Input_Voltages",
+    "group": "PM100_Analog_Input_Voltages",
     "min": 0,
     "max": 10.23,
     "on_dash": false,
     "emulation": "float(5.115 * modules.math.sin(modules.math.radians(x * 10)) + 5.115)"
   },
-  "INV_Analog_Input_6": {
-    "name": "INV Analog Input 6",
+  "PM100_Analog_Input_6": {
+    "name": "PM100 Analog Input 6",
     "units": "V",
     "enable": true,
-    "group": "M163_Analog_Input_Voltages",
+    "group": "PM100_Analog_Input_Voltages",
     "min": 0,
     "max": 10.23,
     "on_dash": false,
     "emulation": "float(5.115 * modules.math.sin(modules.math.radians(x * 10)) + 5.115)"
   },
-  "INV_Coolant_Temp": {
-    "name": "INV Coolant Temp",
-    "units": "C",
+  "PM100_RTD4_Temperature": {
+    "name": "PM100 RTD4 Temperature",
+    "units": "degC",
     "enable": true,
-    "group": "M162_Temperature_Set_3",
+    "group": "PM100_Temperature_Set_3",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Hot_Spot_Temp": {
-    "name": "INV Hot Spot Temp",
-    "units": "C",
+  "PM100_RTD5_Temperature": {
+    "name": "PM100 RTD5 Temperature",
+    "units": "degC",
     "enable": true,
-    "group": "M162_Temperature_Set_3",
+    "group": "PM100_Temperature_Set_3",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Motor_Temp": {
-    "name": "INV Motor Temp",
-    "units": "C",
+  "PM100_Motor_Temperature": {
+    "name": "PM100 Motor Temperature",
+    "units": "degC",
     "enable": true,
-    "group": "M162_Temperature_Set_3",
+    "group": "PM100_Temperature_Set_3",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Torque_Shudder": {
-    "name": "INV Torque Shudder",
+  "PM100_Torque_Shudder": {
+    "name": "PM100 Torque Shudder",
     "units": "Nm",
     "enable": true,
-    "group": "M162_Temperature_Set_3",
+    "group": "PM100_Temperature_Set_3",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Control_Board_Temp": {
-    "name": "INV Control Board Temp",
-    "units": "C",
+  "PM100_Control_Board_Temperature": {
+    "name": "PM100 Control Board Temperature",
+    "units": "degC",
     "enable": true,
-    "group": "M161_Temperature_Set_2",
+    "group": "PM100_Temperature_Set_2",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_RTD1_Temperature": {
-    "name": "INV RTD1 Temperature",
-    "units": "C",
+  "PM100_RTD1_Temperature": {
+    "name": "PM100 RTD1 Temperature",
+    "units": "degC",
     "enable": true,
-    "group": "M161_Temperature_Set_2",
+    "group": "PM100_Temperature_Set_2",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_RTD2_Temperature": {
-    "name": "INV RTD2 Temperature",
-    "units": "C",
+  "PM100_RTD2_Temperature": {
+    "name": "PM100 RTD2 Temperature",
+    "units": "degC",
     "enable": true,
-    "group": "M161_Temperature_Set_2",
+    "group": "PM100_Temperature_Set_2",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Module_A_Temp": {
-    "name": "INV Module A Temp",
-    "units": "C",
+  "PM100_RTD3_Temperature": {
+    "name": "PM100 RTD3 Temperature",
+    "units": "degC",
     "enable": true,
-    "group": "M160_Temperature_Set_1",
+    "group": "PM100_Temperature_Set_2",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Module_B_Temp": {
-    "name": "INV Module B Temp",
-    "units": "C",
+  "PM100_Module_A": {
+    "name": "PM100 Module A",
+    "units": "degC",
     "enable": true,
-    "group": "M160_Temperature_Set_1",
+    "group": "PM100_Temperature_Set_1",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Module_C_Temp": {
-    "name": "INV Module C Temp",
-    "units": "C",
+  "PM100_Module_B": {
+    "name": "PM100 Module B",
+    "units": "degC",
     "enable": true,
-    "group": "M160_Temperature_Set_1",
+    "group": "PM100_Temperature_Set_1",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Gate_Driver_Board_Temp": {
-    "name": "INV Gate Driver Board Temp",
-    "units": "C",
+  "PM100_Module_C": {
+    "name": "PM100 Module C",
+    "units": "degC",
     "enable": true,
-    "group": "M160_Temperature_Set_1",
+    "group": "PM100_Temperature_Set_1",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Project_Code_EEP_Ver": {
-    "name": "INV Project Code EEP Ver",
+  "PM100_Gate_Driver_Board": {
+    "name": "PM100 Gate Driver Board",
+    "units": "degC",
+    "enable": true,
+    "group": "PM100_Temperature_Set_1",
+    "min": -3276.8,
+    "max": 3276.7,
+    "on_dash": false,
+    "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
+  },
+  "PM100_Project_Code_EEP_Ver": {
+    "name": "PM100 Project Code EEP Ver",
     "units": "Code",
     "enable": true,
-    "group": "M174_Firmware_Info",
+    "group": "PM100_Firmware_Info",
     "min": 0,
     "max": 65535,
     "on_dash": false,
     "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) + 32767.5)"
   },
-  "INV_SW_Version": {
-    "name": "INV SW Version",
+  "PM100_SW_Version": {
+    "name": "PM100 SW Version",
     "units": "Code",
     "enable": true,
-    "group": "M174_Firmware_Info",
+    "group": "PM100_Firmware_Info",
     "min": 0,
     "max": 65535,
     "on_dash": false,
     "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) + 32767.5)"
   },
-  "INV_DateCode_MMDD": {
-    "name": "INV DateCode MMDD",
+  "PM100_DateCode_MMDD": {
+    "name": "PM100 DateCode MMDD",
     "units": "Code",
     "enable": true,
-    "group": "M174_Firmware_Info",
+    "group": "PM100_Firmware_Info",
     "min": 0,
     "max": 65535,
     "on_dash": false,
     "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) + 32767.5)"
   },
-  "INV_DateCode_YYYY": {
-    "name": "INV DateCode YYYY",
+  "PM100_DateCode_YYYY": {
+    "name": "PM100 DateCode YYYY",
     "units": "Code",
     "enable": true,
-    "group": "M174_Firmware_Info",
+    "group": "PM100_Firmware_Info",
     "min": 0,
     "max": 65535,
     "on_dash": false,
     "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) + 32767.5)"
   },
-  "INV_Diag_Buffer_Record": {
-    "name": "INV Diag Buffer Record",
+  "PM100_Buffer_Record": {
+    "name": "PM100 Buffer Record",
     "units": "Code",
     "enable": true,
-    "group": "M175_Diag_Data",
+    "group": "PM100_Diag_Data",
     "min": 0,
     "max": 255,
     "on_dash": false,
     "emulation": "int(127.5 * modules.math.sin(modules.math.radians(x * 10)) + 127.5)"
   },
-  "INV_Diag_Buffer_Segment": {
-    "name": "INV Diag Buffer Segment",
+  "PM100_Buffer_Segment": {
+    "name": "PM100 Buffer Segment",
     "units": "Code",
     "enable": true,
-    "group": "M175_Diag_Data",
+    "group": "PM100_Diag_Data",
     "min": 0,
     "max": 5,
     "on_dash": false,
     "emulation": "int(2.5 * modules.math.sin(modules.math.radians(x * 10)) + 2.5)"
   },
-  "INV_Diag_Data_1": {
-    "name": "INV Diag Data 1",
+  "PM100_Diag_Data_1": {
+    "name": "PM100 Diag Data 1",
     "units": "Code",
     "enable": true,
-    "group": "M175_Diag_Data",
+    "group": "PM100_Diag_Data",
     "min": -32768,
     "max": 32767,
     "on_dash": false,
     "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) - 0.5)"
   },
-  "INV_Diag_Data_2": {
-    "name": "INV Diag Data 2",
+  "PM100_Diag_Data_2": {
+    "name": "PM100 Diag Data 2",
     "units": "Code",
     "enable": true,
-    "group": "M175_Diag_Data",
+    "group": "PM100_Diag_Data",
     "min": -32768,
     "max": 32767,
     "on_dash": false,
     "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) - 0.5)"
   },
-  "INV_Diag_Data_3": {
-    "name": "INV Diag Data 3",
+  "PM100_Diag_Data_3": {
+    "name": "PM100 Diag Data 3",
     "units": "Code",
     "enable": true,
-    "group": "M175_Diag_Data",
+    "group": "PM100_Diag_Data",
     "min": -32768,
     "max": 32767,
     "on_dash": false,
     "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) - 0.5)"
   },
-  "BMS_Max_Discharge_Current": {
-    "name": "BMS Max Discharge Current",
+  "PM100_ID_Byte": {
+    "name": "PM100 ID Byte",
+    "units": "Code",
+    "enable": true,
+    "group": "PM100_U2C_Command_Txd",
+    "min": 0,
+    "max": 255,
+    "on_dash": false,
+    "emulation": "int(127.5 * modules.math.sin(modules.math.radians(x * 10)) + 127.5)"
+  },
+  "PM100_Setpoint_Calc": {
+    "name": "PM100 Setpoint Calc",
+    "units": "Code",
+    "enable": true,
+    "group": "PM100_U2C_Command_Txd",
+    "min": 0,
+    "max": 255,
+    "on_dash": false,
+    "emulation": "int(127.5 * modules.math.sin(modules.math.radians(x * 10)) + 127.5)"
+  },
+  "PM100_HV_Input_Current_Validity": {
+    "name": "PM100 HV Input Current Validity",
+    "units": "Code",
+    "enable": true,
+    "group": "PM100_U2C_Message_Rxd",
+    "min": 0,
+    "max": 1,
+    "on_dash": false,
+    "emulation": "bool((x % 50) > 25)"
+  },
+  "PM100_14V_Master_Fault": {
+    "name": "PM100 14V Master Fault",
+    "units": "Code",
+    "enable": true,
+    "group": "PM100_U2C_Message_Rxd",
+    "min": 0,
+    "max": 1,
+    "on_dash": false,
+    "emulation": "bool((x % 50) > 25)"
+  },
+  "PM100_HV_Input_Current": {
+    "name": "PM100 HV Input Current",
+    "units": "Code",
+    "enable": true,
+    "group": "PM100_U2C_Message_Rxd",
+    "min": 0,
+    "max": 255,
+    "on_dash": false,
+    "emulation": "int(127.5 * modules.math.sin(modules.math.radians(x * 10)) + 127.5)"
+  },
+  "PM100_DTC_Status": {
+    "name": "PM100 DTC Status",
+    "units": "Code",
+    "enable": true,
+    "group": "PM100_U2C_Message_Rxd",
+    "min": 0,
+    "max": 7,
+    "on_dash": false,
+    "emulation": "int(3.5 * modules.math.sin(modules.math.radians(x * 10)) + 3.5)"
+  },
+  "PM100_DTC_Index": {
+    "name": "PM100 DTC Index",
+    "units": "Code",
+    "enable": true,
+    "group": "PM100_U2C_Message_Rxd",
+    "min": 0,
+    "max": 31,
+    "on_dash": false,
+    "emulation": "int(15.5 * modules.math.sin(modules.math.radians(x * 10)) + 15.5)"
+  },
+  "PM100_14V_Monitor": {
+    "name": "PM100 14V Monitor",
+    "units": "Code",
+    "enable": true,
+    "group": "PM100_U2C_Message_Rxd",
+    "min": 0,
+    "max": 255,
+    "on_dash": false,
+    "emulation": "int(127.5 * modules.math.sin(modules.math.radians(x * 10)) + 127.5)"
+  },
+  "PM100_14V_Conditional": {
+    "name": "PM100 14V Conditional",
+    "units": "Code",
+    "enable": true,
+    "group": "PM100_U2C_Message_Rxd",
+    "min": 0,
+    "max": 1,
+    "on_dash": false,
+    "emulation": "bool((x % 50) > 25)"
+  },
+  "PM100_14V_Current_Monitor": {
+    "name": "PM100 14V Current Monitor",
+    "units": "Code",
+    "enable": true,
+    "group": "PM100_U2C_Message_Rxd",
+    "min": 0,
+    "max": 127,
+    "on_dash": false,
+    "emulation": "int(63.5 * modules.math.sin(modules.math.radians(x * 10)) + 63.5)"
+  },
+  "PM100_Max_Discharge_Current": {
+    "name": "PM100 Max Discharge Current",
     "units": "A",
     "enable": true,
     "group": "BMS_Current_Limit",
@@ -1019,8 +1119,8 @@
     "on_dash": false,
     "emulation": "int(500.0 * modules.math.sin(modules.math.radians(x * 10)) + 500.0)"
   },
-  "BMS_Max_Charge_Current": {
-    "name": "BMS Max Charge Current",
+  "PM100_Max_Charge_Current": {
+    "name": "PM100 Max Charge Current",
     "units": "A",
     "enable": true,
     "group": "BMS_Current_Limit",
@@ -1029,41 +1129,41 @@
     "on_dash": false,
     "emulation": "int(500.0 * modules.math.sin(modules.math.radians(x * 10)) + 500.0)"
   },
-  "INV_Fast_Torque_Command": {
-    "name": "INV Fast Torque Command",
+  "PM100_Fast_Torque_Command": {
+    "name": "PM100 Fast Torque Command",
     "units": "Nm",
     "enable": true,
-    "group": "M176_Fast_Info",
-    "min": -3276.8,
-    "max": 32767.7,
-    "on_dash": false,
-    "emulation": "float(18022.25 * modules.math.sin(modules.math.radians(x * 10)) + 14745.45)"
-  },
-  "INV_Fast_Torque_Feedback": {
-    "name": "INV Fast Torque Feedback",
-    "units": "Nm",
-    "enable": true,
-    "group": "M176_Fast_Info",
+    "group": "PM100_Fast_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,
     "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
   },
-  "INV_Fast_Motor_Speed": {
-    "name": "INV Fast Motor Speed",
+  "PM100_Fast_Torque_Feedback": {
+    "name": "PM100 Fast Torque Feedback",
+    "units": "Nm",
+    "enable": true,
+    "group": "PM100_Fast_Info",
+    "min": -3276.8,
+    "max": 3276.7,
+    "on_dash": false,
+    "emulation": "float(3276.75 * modules.math.sin(modules.math.radians(x * 10)) - 0.0500000000001819)"
+  },
+  "PM100_Fast_Motor_Speed": {
+    "name": "PM100 Fast Motor Speed",
     "units": "rpm",
     "enable": true,
-    "group": "M176_Fast_Info",
+    "group": "PM100_Fast_Info",
     "min": -32768,
     "max": 32767,
     "on_dash": false,
     "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) - 0.5)"
   },
-  "INV_Fast_DC_Bus_Voltage": {
-    "name": "INV Fast DC Bus Voltage",
+  "PM100_Fast_DC_Bus_Voltage": {
+    "name": "PM100 Fast DC Bus Voltage",
     "units": "V",
     "enable": true,
-    "group": "M176_Fast_Info",
+    "group": "PM100_Fast_Info",
     "min": -3276.8,
     "max": 3276.7,
     "on_dash": false,

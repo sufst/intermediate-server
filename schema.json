@@ -1,7 +1,7 @@
 {
   "startByte": 1,
   "pdu": {
-    "M173_Modulation_And_Flux_Info": {
+    "PM100_Modulation_And_Flux_Info": {
       "id": 0,
       "header": [
         {
@@ -15,24 +15,24 @@
       ],
       "body": [
         {
-          "name": "INV_Modulation_Index",
+          "name": "PM100_Modulation_Index",
           "cType": "h"
         },
         {
-          "name": "INV_Flux_Weakening_Output",
+          "name": "PM100_Flux_Weakening_Output",
           "cType": "h"
         },
         {
-          "name": "INV_Id_Command",
+          "name": "PM100_Id_Command",
           "cType": "h"
         },
         {
-          "name": "INV_Iq_Command",
+          "name": "PM100_Iq_Command",
           "cType": "h"
         }
       ]
     },
-    "M172_Torque_And_Timer_Info": {
+    "PM100_Torque_And_Timer_Info": {
       "id": 1,
       "header": [
         {
@@ -46,20 +46,20 @@
       ],
       "body": [
         {
-          "name": "INV_Commanded_Torque",
+          "name": "PM100_Commanded_Torque",
           "cType": "h"
         },
         {
-          "name": "INV_Torque_Feedback",
+          "name": "PM100_Torque_Feedback",
           "cType": "h"
         },
         {
-          "name": "INV_Power_On_Timer",
+          "name": "PM100_Power_On_Timer",
           "cType": "I"
         }
       ]
     },
-    "M194_Read_Write_Param_Response": {
+    "PM100_Read_Write_Param_Response": {
       "id": 2,
       "header": [
         {
@@ -73,20 +73,20 @@
       ],
       "body": [
         {
-          "name": "INV_Parameter_Response_Addr",
+          "name": "PM100_Parameter_Address_Response",
           "cType": "H"
         },
         {
-          "name": "INV_Parameter_Response_Write_OK",
+          "name": "PM100_Write_Success",
           "cType": "B"
         },
         {
-          "name": "INV_Parameter_Response_Data",
+          "name": "PM100_Data_Response",
           "cType": "h"
         }
       ]
     },
-    "M193_Read_Write_Param_Command": {
+    "PM100_Read_Write_Param_Command": {
       "id": 3,
       "header": [
         {
@@ -100,20 +100,20 @@
       ],
       "body": [
         {
-          "name": "VCU_INV_Parameter_Address",
+          "name": "PM100_Parameter_Address_Command",
           "cType": "H"
         },
         {
-          "name": "VCU_INV_Parameter_RW_Command",
+          "name": "PM100_Read_Write_Command",
           "cType": "B"
         },
         {
-          "name": "VCU_INV_Parameter_Data",
+          "name": "PM100_Data_Command",
           "cType": "h"
         }
       ]
     },
-    "M192_Command_Message": {
+    "PM100_Command_Message": {
       "id": 4,
       "header": [
         {
@@ -127,40 +127,40 @@
       ],
       "body": [
         {
-          "name": "VCU_INV_Torque_Command",
+          "name": "PM100_Torque_Command",
           "cType": "h"
         },
         {
-          "name": "VCU_INV_Speed_Command",
+          "name": "PM100_Speed_Command",
           "cType": "h"
         },
         {
-          "name": "VCU_INV_Direction_Command",
+          "name": "PM100_Direction_Command",
           "cType": "B"
         },
         {
-          "name": "VCU_INV_Inverter_Enable",
+          "name": "PM100_Inverter_Enable",
           "cType": "B"
         },
         {
-          "name": "VCU_INV_Inverter_Discharge",
+          "name": "PM100_Inverter_Discharge",
           "cType": "B"
         },
         {
-          "name": "VCU_INV_Speed_Mode_Enable",
+          "name": "PM100_Speed_Mode_Enable",
           "cType": "B"
         },
         {
-          "name": "VCU_INV_Heater_Mode_Enable",
+          "name": "PM100_RollingCounter",
           "cType": "B"
         },
         {
-          "name": "VCU_INV_Torque_Limit_Command",
+          "name": "PM100_Torque_Limit_Command",
           "cType": "h"
         }
       ]
     },
-    "M171_Fault_Codes": {
+    "PM100_Fault_Codes": {
       "id": 5,
       "header": [
         {
@@ -174,24 +174,24 @@
       ],
       "body": [
         {
-          "name": "INV_Post_Fault_Lo",
+          "name": "PM100_Post_Fault_Lo",
           "cType": "H"
         },
         {
-          "name": "INV_Post_Fault_Hi",
+          "name": "PM100_Post_Fault_Hi",
           "cType": "H"
         },
         {
-          "name": "INV_Run_Fault_Lo",
+          "name": "PM100_Run_Fault_Lo",
           "cType": "H"
         },
         {
-          "name": "INV_Run_Fault_Hi",
+          "name": "PM100_Run_Fault_Hi",
           "cType": "H"
         }
       ]
     },
-    "M170_Internal_States": {
+    "PM100_Internal_States": {
       "id": 6,
       "header": [
         {
@@ -205,96 +205,92 @@
       ],
       "body": [
         {
-          "name": "INV_VSM_State",
+          "name": "PM100_VSM_State",
           "cType": "B"
         },
         {
-          "name": "INV_PWM_Frequency",
+          "name": "PM100_PWM_Frequency",
           "cType": "B"
         },
         {
-          "name": "INV_Inverter_State",
+          "name": "PM100_Inverter_State",
           "cType": "B"
         },
         {
-          "name": "INV_Relay_1_Status",
+          "name": "PM100_Relay_1_Status",
           "cType": "B"
         },
         {
-          "name": "INV_Relay_2_Status",
+          "name": "PM100_Relay_2_Status",
           "cType": "B"
         },
         {
-          "name": "INV_Relay_3_Status",
+          "name": "PM100_Relay_3_Status",
           "cType": "B"
         },
         {
-          "name": "INV_Relay_4_Status",
+          "name": "PM100_Relay_4_Status",
           "cType": "B"
         },
         {
-          "name": "INV_Relay_5_Status",
+          "name": "PM100_Relay_5_Status",
           "cType": "B"
         },
         {
-          "name": "INV_Relay_6_Status",
+          "name": "PM100_Relay_6_Status",
           "cType": "B"
         },
         {
-          "name": "INV_Inverter_Run_Mode",
+          "name": "PM100_Inverter_Run_Mode",
           "cType": "B"
         },
         {
-          "name": "INV_Inverter_Discharge_State",
+          "name": "PM100_Inverter_Discharge_State",
           "cType": "B"
         },
         {
-          "name": "INV_Inverter_Command_Mode",
+          "name": "PM100_Inverter_Command_Mode",
           "cType": "B"
         },
         {
-          "name": "INV_Rolling_Counter",
+          "name": "PM100_Rolling_Counter",
           "cType": "B"
         },
         {
-          "name": "INV_Inverter_Enable_State",
+          "name": "PM100_Inverter_Enable_State",
           "cType": "B"
         },
         {
-          "name": "INV_Inverter_Enable_Lockout",
+          "name": "PM100_Start_Mode_Active",
           "cType": "B"
         },
         {
-          "name": "INV_Direction_Command",
+          "name": "PM100_Inverter_Enable_Lockout",
           "cType": "B"
         },
         {
-          "name": "INV_BMS_Active",
+          "name": "PM100_Direction_Command_State",
           "cType": "B"
         },
         {
-          "name": "INV_BMS_Torque_Limiting",
+          "name": "PM100_BMS_Active",
           "cType": "B"
         },
         {
-          "name": "INV_Limit_Max_Speed",
+          "name": "PM100_BMS_Torque_Limiting",
           "cType": "B"
         },
         {
-          "name": "INV_Limit_Hot_Spot",
+          "name": "PM100_Max_Speed_Limiting",
           "cType": "B"
         },
         {
-          "name": "INV_Low_Speed_Limiting",
-          "cType": "B"
-        },
-        {
-          "name": "INV_Limit_Coolant_Derating",
+          "name": "PM100_Low_Speed_Limiting",
           "cType": "B"
         }
       ]
     },
-    "M169_Internal_Voltages": {
+    "PM100_Internal_Voltages": {
       "id": 7,
       "header": [
         {
@@ -308,24 +304,24 @@
       ],
       "body": [
         {
-          "name": "INV_Ref_Voltage_1_5",
+          "name": "PM100_Reference_Voltage_1_5",
           "cType": "h"
         },
         {
-          "name": "INV_Ref_Voltage_2_5",
+          "name": "PM100_Reference_Voltage_2_5",
           "cType": "h"
         },
         {
-          "name": "INV_Ref_Voltage_5_0",
+          "name": "PM100_Reference_Voltage_5_0",
           "cType": "h"
         },
         {
-          "name": "INV_Ref_Voltage_12_0",
+          "name": "PM100_Reference_Voltage_12_0",
           "cType": "h"
         }
       ]
     },
-    "M168_Flux_ID_IQ_Info": {
+    "PM100_Flux_ID_IQ_Info": {
       "id": 8,
       "header": [
         {
@@ -339,24 +335,24 @@
       ],
       "body": [
         {
-          "name": "INV_Flux_Command",
+          "name": "PM100_Flux_Command",
           "cType": "h"
         },
         {
-          "name": "INV_Flux_Feedback",
+          "name": "PM100_Flux_Feedback",
           "cType": "h"
         },
         {
-          "name": "INV_Id",
+          "name": "PM100_Id",
           "cType": "h"
         },
         {
-          "name": "INV_Iq",
+          "name": "PM100_Iq",
           "cType": "h"
         }
       ]
     },
-    "M167_Voltage_Info": {
+    "PM100_Voltage_Info": {
       "id": 9,
       "header": [
         {
@@ -370,24 +366,24 @@
       ],
       "body": [
         {
-          "name": "INV_DC_Bus_Voltage",
+          "name": "PM100_DC_Bus_Voltage",
           "cType": "h"
         },
         {
-          "name": "INV_Output_Voltage",
+          "name": "PM100_Output_Voltage",
           "cType": "h"
         },
         {
-          "name": "INV_VAB_Vd_Voltage",
+          "name": "PM100_VAB_Vd_Voltage",
           "cType": "h"
         },
         {
-          "name": "INV_VBC_Vq_Voltage",
+          "name": "PM100_VBC_Vq_Voltage",
           "cType": "h"
         }
       ]
     },
-    "M166_Current_Info": {
+    "PM100_Current_Info": {
       "id": 10,
       "header": [
         {
@@ -401,24 +397,24 @@
       ],
       "body": [
         {
-          "name": "INV_Phase_A_Current",
+          "name": "PM100_Phase_A_Current",
           "cType": "h"
         },
         {
-          "name": "INV_Phase_B_Current",
+          "name": "PM100_Phase_B_Current",
           "cType": "h"
         },
         {
-          "name": "INV_Phase_C_Current",
+          "name": "PM100_Phase_C_Current",
           "cType": "h"
         },
         {
-          "name": "INV_DC_Bus_Current",
+          "name": "PM100_DC_Bus_Current",
           "cType": "h"
         }
       ]
     },
-    "M165_Motor_Position_Info": {
+    "PM100_Motor_Position_Info": {
       "id": 11,
       "header": [
         {
@@ -432,24 +428,24 @@
       ],
       "body": [
         {
-          "name": "INV_Motor_Angle_Electrical",
+          "name": "PM100_Motor_Angle_Electrical",
           "cType": "H"
         },
         {
-          "name": "INV_Motor_Speed",
+          "name": "PM100_Motor_Speed",
           "cType": "h"
         },
         {
-          "name": "INV_Electrical_Output_Frequency",
+          "name": "PM100_Electrical_Output_Freq",
           "cType": "h"
         },
         {
-          "name": "INV_Delta_Resolver_Filtered",
+          "name": "PM100_Delta_Resolver_Filtered",
           "cType": "h"
         }
       ]
     },
-    "M164_Digital_Input_Status": {
+    "PM100_Digital_Input_Status": {
       "id": 12,
       "header": [
         {
@@ -463,40 +459,40 @@
       ],
       "body": [
         {
-          "name": "INV_Digital_Input_1",
+          "name": "PM100_Digital_Input_1",
           "cType": "B"
         },
         {
-          "name": "INV_Digital_Input_2",
+          "name": "PM100_Digital_Input_2",
           "cType": "B"
         },
         {
-          "name": "INV_Digital_Input_3",
+          "name": "PM100_Digital_Input_3",
           "cType": "B"
         },
         {
-          "name": "INV_Digital_Input_4",
+          "name": "PM100_Digital_Input_4",
           "cType": "B"
         },
         {
-          "name": "INV_Digital_Input_5",
+          "name": "PM100_Digital_Input_5",
           "cType": "B"
         },
         {
-          "name": "INV_Digital_Input_6",
+          "name": "PM100_Digital_Input_6",
           "cType": "B"
         },
         {
-          "name": "INV_Digital_Input_7",
+          "name": "PM100_Digital_Input_7",
           "cType": "B"
         },
         {
-          "name": "INV_Digital_Input_8",
+          "name": "PM100_Digital_Input_8",
           "cType": "B"
         }
       ]
     },
-    "M163_Analog_Input_Voltages": {
+    "PM100_Analog_Input_Voltages": {
       "id": 13,
       "header": [
         {
@@ -510,32 +506,32 @@
       ],
       "body": [
         {
-          "name": "INV_Analog_Input_1",
+          "name": "PM100_Analog_Input_1",
           "cType": "H"
         },
         {
-          "name": "INV_Analog_Input_2",
+          "name": "PM100_Analog_Input_2",
           "cType": "H"
         },
         {
-          "name": "INV_Analog_Input_3",
+          "name": "PM100_Analog_Input_3",
           "cType": "H"
         },
         {
-          "name": "INV_Analog_Input_4",
+          "name": "PM100_Analog_Input_4",
           "cType": "H"
         },
         {
-          "name": "INV_Analog_Input_5",
+          "name": "PM100_Analog_Input_5",
           "cType": "H"
         },
         {
-          "name": "INV_Analog_Input_6",
+          "name": "PM100_Analog_Input_6",
           "cType": "H"
         }
       ]
     },
-    "M162_Temperature_Set_3": {
+    "PM100_Temperature_Set_3": {
       "id": 14,
       "header": [
         {
@@ -549,24 +545,24 @@
       ],
       "body": [
         {
-          "name": "INV_Coolant_Temp",
+          "name": "PM100_RTD4_Temperature",
           "cType": "h"
         },
         {
-          "name": "INV_Hot_Spot_Temp",
+          "name": "PM100_RTD5_Temperature",
           "cType": "h"
         },
         {
-          "name": "INV_Motor_Temp",
+          "name": "PM100_Motor_Temperature",
           "cType": "h"
         },
         {
-          "name": "INV_Torque_Shudder",
+          "name": "PM100_Torque_Shudder",
           "cType": "h"
         }
       ]
     },
-    "M161_Temperature_Set_2": {
+    "PM100_Temperature_Set_2": {
       "id": 15,
       "header": [
         {
@@ -580,20 +576,24 @@
       ],
       "body": [
         {
-          "name": "INV_Control_Board_Temp",
+          "name": "PM100_Control_Board_Temperature",
           "cType": "h"
         },
         {
-          "name": "INV_RTD1_Temperature",
+          "name": "PM100_RTD1_Temperature",
           "cType": "h"
         },
         {
-          "name": "INV_RTD2_Temperature",
+          "name": "PM100_RTD2_Temperature",
+          "cType": "h"
+        },
+        {
+          "name": "PM100_RTD3_Temperature",
           "cType": "h"
         }
       ]
     },
-    "M160_Temperature_Set_1": {
+    "PM100_Temperature_Set_1": {
       "id": 16,
       "header": [
         {
@@ -607,24 +607,24 @@
       ],
       "body": [
         {
-          "name": "INV_Module_A_Temp",
+          "name": "PM100_Module_A",
           "cType": "h"
         },
         {
-          "name": "INV_Module_B_Temp",
+          "name": "PM100_Module_B",
           "cType": "h"
         },
         {
-          "name": "INV_Module_C_Temp",
+          "name": "PM100_Module_C",
           "cType": "h"
         },
         {
-          "name": "INV_Gate_Driver_Board_Temp",
+          "name": "PM100_Gate_Driver_Board",
           "cType": "h"
         }
       ]
     },
-    "M174_Firmware_Info": {
+    "PM100_Firmware_Info": {
       "id": 17,
       "header": [
         {
@@ -638,24 +638,24 @@
       ],
       "body": [
         {
-          "name": "INV_Project_Code_EEP_Ver",
+          "name": "PM100_Project_Code_EEP_Ver",
           "cType": "H"
         },
         {
-          "name": "INV_SW_Version",
+          "name": "PM100_SW_Version",
           "cType": "H"
         },
         {
-          "name": "INV_DateCode_MMDD",
+          "name": "PM100_DateCode_MMDD",
           "cType": "H"
         },
         {
-          "name": "INV_DateCode_YYYY",
+          "name": "PM100_DateCode_YYYY",
           "cType": "H"
         }
       ]
     },
-    "M175_Diag_Data": {
+    "PM100_Diag_Data": {
       "id": 18,
       "header": [
         {
@@ -669,28 +669,28 @@
       ],
       "body": [
         {
-          "name": "INV_Diag_Buffer_Record",
+          "name": "PM100_Buffer_Record",
           "cType": "B"
         },
         {
-          "name": "INV_Diag_Buffer_Segment",
+          "name": "PM100_Buffer_Segment",
           "cType": "B"
         },
         {
-          "name": "INV_Diag_Data_1",
+          "name": "PM100_Diag_Data_1",
           "cType": "h"
         },
         {
-          "name": "INV_Diag_Data_2",
+          "name": "PM100_Diag_Data_2",
           "cType": "h"
         },
         {
-          "name": "INV_Diag_Data_3",
+          "name": "PM100_Diag_Data_3",
           "cType": "h"
         }
       ]
     },
-    "BMS_Current_Limit": {
+    "PM100_U2C_Command_Txd": {
       "id": 19,
       "header": [
         {
@@ -704,16 +704,16 @@
       ],
       "body": [
         {
-          "name": "BMS_Max_Discharge_Current",
-          "cType": "H"
+          "name": "PM100_ID_Byte",
+          "cType": "B"
         },
         {
-          "name": "BMS_Max_Charge_Current",
-          "cType": "H"
+          "name": "PM100_Setpoint_Calc",
+          "cType": "B"
         }
       ]
     },
-    "M176_Fast_Info": {
+    "PM100_U2C_Message_Rxd": {
       "id": 20,
       "header": [
         {
@@ -727,19 +727,89 @@
       ],
       "body": [
         {
-          "name": "INV_Fast_Torque_Command",
+          "name": "PM100_HV_Input_Current_Validity",
+          "cType": "B"
+        },
+        {
+          "name": "PM100_14V_Master_Fault",
+          "cType": "B"
+        },
+        {
+          "name": "PM100_HV_Input_Current",
+          "cType": "B"
+        },
+        {
+          "name": "PM100_DTC_Status",
+          "cType": "B"
+        },
+        {
+          "name": "PM100_DTC_Index",
+          "cType": "B"
+        },
+        {
+          "name": "PM100_14V_Monitor",
+          "cType": "B"
+        },
+        {
+          "name": "PM100_14V_Conditional",
+          "cType": "B"
+        },
+        {
+          "name": "PM100_14V_Current_Monitor",
+          "cType": "B"
+        }
+      ]
+    },
+    "BMS_Current_Limit": {
+      "id": 21,
+      "header": [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "PM100_Max_Discharge_Current",
+          "cType": "H"
+        },
+        {
+          "name": "PM100_Max_Charge_Current",
+          "cType": "H"
+        }
+      ]
+    },
+    "PM100_Fast_Info": {
+      "id": 22,
+      "header": [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "PM100_Fast_Torque_Command",
           "cType": "h"
         },
         {
-          "name": "INV_Fast_Torque_Feedback",
+          "name": "PM100_Fast_Torque_Feedback",
           "cType": "h"
         },
         {
-          "name": "INV_Fast_Motor_Speed",
+          "name": "PM100_Fast_Motor_Speed",
           "cType": "h"
         },
         {
-          "name": "INV_Fast_DC_Bus_Voltage",
+          "name": "PM100_Fast_DC_Bus_Voltage",
           "cType": "h"
         }
       ]
