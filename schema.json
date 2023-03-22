@@ -1,6 +1,56 @@
 {
   "startByte": 1,
   "pdu": {
+    "VCU_Internal_States": {
+      "id": 6,
+      "header": [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "VCU_Ready_To_Drive",
+          "cType": "B"
+        },
+        {
+          "name": "VCU_Shutdown",
+          "cType": "B"
+        },
+        {
+          "name": "VCU_Rolling_Counter",
+          "cType": "H"
+        }
+      ]
+    },
+    "VCU_Driver_Inputs": {
+      "id": 5,
+      "header": [
+        {
+          "name": "valid_bitfield",
+          "cType": "H"
+        },
+        {
+          "name": "epoch",
+          "cType": "d"
+        }
+      ],
+      "body": [
+        {
+          "name": "VCU_APPS",
+          "cType": "H"
+        },
+        {
+          "name": "VCU_BPS",
+          "cType": "H"
+        }
+      ]
+    },
     "PM100_Fault_Codes": {
       "id": 4,
       "header": [

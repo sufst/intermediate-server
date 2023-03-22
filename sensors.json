@@ -1,4 +1,54 @@
 {
+  "VCU_Ready_To_Drive": {
+    "name": "VCU Ready To Drive",
+    "units": "Code",
+    "enable": true,
+    "group": "VCU_Internal_States",
+    "min": 0,
+    "max": 1,
+    "on_dash": false,
+    "emulation": "bool((x % 50) > 25)"
+  },
+  "VCU_Shutdown": {
+    "name": "VCU Shutdown",
+    "units": "Code",
+    "enable": true,
+    "group": "VCU_Internal_States",
+    "min": 0,
+    "max": 1,
+    "on_dash": false,
+    "emulation": "bool((x % 50) > 25)"
+  },
+  "VCU_Rolling_Counter": {
+    "name": "VCU Rolling Counter",
+    "units": "Code",
+    "enable": true,
+    "group": "VCU_Internal_States",
+    "min": 0,
+    "max": 65535,
+    "on_dash": false,
+    "emulation": "int(32767.5 * modules.math.sin(modules.math.radians(x * 10)) + 32767.5)"
+  },
+  "VCU_APPS": {
+    "name": "VCU APPS",
+    "units": "%",
+    "enable": true,
+    "group": "VCU_Driver_Inputs",
+    "min": 0,
+    "max": 100,
+    "on_dash": false,
+    "emulation": "int(50.0 * modules.math.sin(modules.math.radians(x * 10)) + 50.0)"
+  },
+  "VCU_BPS": {
+    "name": "VCU BPS",
+    "units": "Code",
+    "enable": true,
+    "group": "VCU_Driver_Inputs",
+    "min": 0,
+    "max": 100,
+    "on_dash": false,
+    "emulation": "int(50.0 * modules.math.sin(modules.math.radians(x * 10)) + 50.0)"
+  },
   "PM100_Post_Fault_Lo": {
     "name": "PM100 Post Fault Lo",
     "units": "Code",
