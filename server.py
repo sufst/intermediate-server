@@ -51,6 +51,7 @@ def _on_emulation(data):
 
 @schema.on('PDU')
 def _on_schema_pdu(pdu):
+    print(f"in PDU, {pdu}")
     for sensor, value in filter(lambda entry: entry[0] != 'epoch', pdu.items()):
         if sensor not in _datastore:
             _datastore[sensor] = []

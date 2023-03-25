@@ -10,7 +10,7 @@
         },
         {
           "name": "epoch",
-          "cType": "d"
+          "cType": "i"
         }
       ],
       "body": [
@@ -41,7 +41,7 @@
         },
         {
           "name": "epoch",
-          "cType": "d"
+          "cType": "i"
         }
       ],
       "body": [
@@ -140,7 +140,7 @@
         },
         {
           "name": "epoch",
-          "cType": "d"
+          "cType": "i"
         }
       ],
       "body": [
@@ -171,7 +171,7 @@
         },
         {
           "name": "epoch",
-          "cType": "d"
+          "cType": "i"
         }
       ],
       "body": [
